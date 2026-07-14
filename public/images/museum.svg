@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250">
+  <defs>
+    <linearGradient id="museumbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#181010"/>
+      <stop offset="100%" stop-color="#0E0808"/>
+    </linearGradient>
+    <radialGradient id="spotlight1" cx="25%" cy="0%">
+      <stop offset="0%" stop-color="#FFE0A0" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#FFE0A0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="spotlight2" cx="75%" cy="0%">
+      <stop offset="0%" stop-color="#FFE0A0" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#FFE0A0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="spotlight3" cx="50%" cy="0%">
+      <stop offset="0%" stop-color="#FFE8B0" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#FFE8B0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="250" fill="url(#museumbg)"/>
+  <!-- Floor reflection -->
+  <rect x="0" y="200" width="400" height="50" fill="#120C0C"/>
+  <line x1="0" y1="200" x2="400" y2="200" stroke="#2A1A1A" stroke-width="1"/>
+  <!-- Spotlights -->
+  <ellipse cx="100" cy="0" rx="120" ry="200" fill="url(#spotlight1)"/>
+  <ellipse cx="300" cy="0" rx="120" ry="200" fill="url(#spotlight2)"/>
+  <ellipse cx="200" cy="0" rx="80" ry="160" fill="url(#spotlight3)"/>
+  <!-- Wall -->
+  <rect x="0" y="0" width="400" height="200" fill="none" stroke="#2A1A1A" stroke-width="1"/>
+  <!-- Left painting frame -->
+  <rect x="30" y="40" width="100" height="130" rx="3" fill="#3A2A1A" stroke="#C8A96E" stroke-width="3"/>
+  <rect x="36" y="46" width="88" height="118" fill="#1C0E08"/>
+  <!-- Abstract painting left - warm landscape -->
+  <rect x="36" y="46" width="88" height="118" fill="#1C0E08"/>
+  <ellipse cx="80" cy="100" rx="35" ry="25" fill="#C8382A" opacity="0.7"/>
+  <ellipse cx="95" cy="120" rx="28" ry="18" fill="#E8781A" opacity="0.6"/>
+  <rect x="36" y="130" width="88" height="34" fill="#0A3020" opacity="0.8"/>
+  <path d="M36 110 Q60 90 80 105 Q100 118 124 100 L124 130 L36 130Z" fill="#1A5030" opacity="0.7"/>
+  <!-- Spotlight on left painting -->
+  <path d="M80 0 L55 40 L105 40Z" fill="#FFE0A0" opacity="0.15"/>
+  <!-- Center painting frame (large) -->
+  <rect x="155" y="20" width="90" height="140" rx="3" fill="#3A2A1A" stroke="#C8A96E" stroke-width="3"/>
+  <rect x="161" y="26" width="78" height="128" fill="#1C0E08"/>
+  <!-- Abstract painting center - blue tones -->
+  <rect x="161" y="26" width="78" height="128" fill="#060E1A"/>
+  <ellipse cx="200" cy="80" rx="30" ry="40" fill="#1A4A8A" opacity="0.8"/>
+  <ellipse cx="215" cy="100" rx="20" ry="30" fill="#2A6AB0" opacity="0.6"/>
+  <ellipse cx="185" cy="110" rx="15" ry="20" fill="#0A2A5C" opacity="0.7"/>
+  <path d="M161 130 Q180 110 200 125 Q220 140 239 120 L239 154 L161 154Z" fill="#0D1A2A" opacity="0.9"/>
+  <!-- Spotlight on center -->
+  <path d="M200 0 L175 20 L225 20Z" fill="#FFE0A0" opacity="0.2"/>
+  <!-- Right painting frame -->
+  <rect x="270" y="50" width="100" height="110" rx="3" fill="#3A2A1A" stroke="#C8A96E" stroke-width="3"/>
+  <rect x="276" y="56" width="88" height="98" fill="#1C0E08"/>
+  <!-- Abstract painting right - geometric -->
+  <rect x="276" y="56" width="88" height="98" fill="#181818"/>
+  <rect x="276" y="56" width="44" height="49" fill="#C8A96E" opacity="0.4"/>
+  <rect x="320" y="105" width="44" height="49" fill="#8B2010" opacity="0.5"/>
+  <circle cx="320" cy="80" r="20" fill="#2A5A2A" opacity="0.6"/>
+  <!-- Spotlight on right -->
+  <path d="M320 0 L295 50 L345 50Z" fill="#FFE0A0" opacity="0.12"/>
+  <!-- Small spotlights on ceiling -->
+  <circle cx="100" cy="5" r="5" fill="#C8A96E" opacity="0.8"/>
+  <circle cx="200" cy="5" r="5" fill="#C8A96E" opacity="0.8"/>
+  <circle cx="320" cy="5" r="5" fill="#C8A96E" opacity="0.8"/>
+  <!-- Floor reflection of paintings -->
+  <rect x="30" y="200" width="100" height="30" rx="1" fill="#C8A96E" opacity="0.04"/>
+  <rect x="155" y="200" width="90" height="30" rx="1" fill="#C8A96E" opacity="0.05"/>
+  <!-- Visitors silhouette -->
+  <ellipse cx="200" cy="194" rx="10" ry="6" fill="#0A0606" opacity="0.5"/>
+  <rect x="196" y="160" width="8" height="34" rx="4" fill="#1A0E0E" opacity="0.7"/>
+  <ellipse cx="200" cy="156" rx="7" ry="7" fill="#2A1A1A" opacity="0.7"/>
+</svg>

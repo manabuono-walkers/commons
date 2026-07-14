@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250">
+  <defs>
+    <linearGradient id="sakebg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A1008"/>
+      <stop offset="100%" stop-color="#0D0804"/>
+    </linearGradient>
+    <radialGradient id="warmglow" cx="50%" cy="40%">
+      <stop offset="0%" stop-color="#C8882A" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#C8882A" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="woodtop" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#5C3A1E"/>
+      <stop offset="50%" stop-color="#7A4F2C"/>
+      <stop offset="100%" stop-color="#5C3A1E"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="250" fill="url(#sakebg)"/>
+  <ellipse cx="200" cy="100" rx="250" ry="180" fill="url(#warmglow)"/>
+  <!-- Wooden counter -->
+  <rect x="0" y="190" width="400" height="10" rx="2" fill="url(#woodtop)"/>
+  <rect x="0" y="200" width="400" height="50" fill="#3D2010"/>
+  <!-- Wood grain lines -->
+  <line x1="0" y1="205" x2="400" y2="207" stroke="#4A2A14" stroke-width="1" opacity="0.5"/>
+  <line x1="0" y1="215" x2="400" y2="213" stroke="#4A2A14" stroke-width="1" opacity="0.4"/>
+  <!-- Tokkuri (sake bottle) left -->
+  <g transform="translate(110, 80)">
+    <ellipse cx="0" cy="115" rx="22" ry="8" fill="#1A0E06" opacity="0.5"/>
+    <path d="M-18 110 Q-22 80 -15 50 Q-10 20 0 15 Q10 20 15 50 Q22 80 18 110Z" fill="#F5F0E8"/>
+    <rect x="-8" y="8" width="16" height="12" rx="4" fill="#E8E0D0"/>
+    <rect x="-5" y="0" width="10" height="12" rx="3" fill="#D8D0C0"/>
+    <!-- Label -->
+    <rect x="-14" y="55" width="28" height="40" rx="2" fill="#C8382A"/>
+    <text x="0" y="72" text-anchor="middle" font-size="7" fill="#FFFFFF" font-family="serif">純米</text>
+    <text x="0" y="82" text-anchor="middle" font-size="7" fill="#FFFFFF" font-family="serif">大吟醸</text>
+    <text x="0" y="92" text-anchor="middle" font-size="5" fill="#FFD080" font-family="serif">DAIGINJO</text>
+  </g>
+  <!-- Ochoko (sake cup) center -->
+  <g transform="translate(190, 165)">
+    <ellipse cx="0" cy="28" rx="18" ry="5" fill="#2A1A0A" opacity="0.6"/>
+    <path d="M-16 25 Q-18 10 -14 4 Q0 0 14 4 Q18 10 16 25Z" fill="#F0EDE8"/>
+    <ellipse cx="0" cy="25" rx="16" ry="4" fill="#E8E4DE"/>
+    <ellipse cx="0" cy="6" rx="13" ry="3.5" fill="#C8F0F8" opacity="0.7"/>
+    <!-- Sake in cup -->
+    <ellipse cx="0" cy="8" rx="11" ry="2.5" fill="#F8F5F0" opacity="0.9"/>
+  </g>
+  <!-- Second Tokkuri right -->
+  <g transform="translate(280, 90)">
+    <path d="M-16 105 Q-20 75 -13 48 Q-8 22 0 18 Q8 22 13 48 Q20 75 16 105Z" fill="#1C3A5E"/>
+    <rect x="-7" y="11" width="14" height="11" rx="4" fill="#1A3558"/>
+    <rect x="-4" y="3" width="8" height="11" rx="3" fill="#152A44"/>
+    <rect x="-13" y="52" width="26" height="36" rx="2" fill="#FFFFFF" opacity="0.9"/>
+    <text x="0" y="67" text-anchor="middle" font-size="7" fill="#1C3A5E" font-family="serif">吟醸</text>
+    <text x="0" y="79" text-anchor="middle" font-size="5.5" fill="#1C3A5E" font-family="serif">GINJO</text>
+  </g>
+  <!-- Chopsticks -->
+  <rect x="155" y="185" width="3" height="55" rx="1.5" fill="#8B6914" transform="rotate(-5 155 185)"/>
+  <rect x="162" y="185" width="3" height="55" rx="1.5" fill="#8B6914" transform="rotate(3 162 185)"/>
+  <!-- Small dish -->
+  <ellipse cx="330" cy="198" rx="28" ry="8" fill="#E8E0D0"/>
+  <ellipse cx="330" cy="196" rx="24" ry="6" fill="#F5F0E8"/>
+  <!-- Lantern hint top right -->
+  <rect x="350" y="10" width="20" height="30" rx="10" fill="#C8382A" opacity="0.6"/>
+  <rect x="355" y="8" width="10" height="5" rx="2" fill="#8B2010" opacity="0.7"/>
+  <line x1="360" y1="40" x2="360" y2="50" stroke="#8B2010" stroke-width="1.5" opacity="0.7"/>
+  <!-- Japanese characters on wall -->
+  <text x="40" y="90" font-size="28" fill="#8B6914" opacity="0.25" font-family="serif">酒</text>
+  <text x="340" y="130" font-size="20" fill="#8B6914" opacity="0.2" font-family="serif">和</text>
+</svg>

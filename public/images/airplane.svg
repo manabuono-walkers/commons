@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250">
+  <defs>
+    <linearGradient id="skybg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0A1628"/>
+      <stop offset="50%" stop-color="#1A3A6E"/>
+      <stop offset="100%" stop-color="#2E6AB8"/>
+    </linearGradient>
+    <radialGradient id="moonlight" cx="85%" cy="18%">
+      <stop offset="0%" stop-color="#F8F0D8" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#F8F0D8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="planebody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E8E8E8"/>
+      <stop offset="100%" stop-color="#C0C0C0"/>
+    </linearGradient>
+    <linearGradient id="trail" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- Sky background -->
+  <rect width="400" height="250" fill="url(#skybg)"/>
+  <!-- Moonlight glow -->
+  <ellipse cx="340" cy="45" rx="200" ry="180" fill="url(#moonlight)"/>
+  <!-- Moon -->
+  <circle cx="340" cy="38" r="22" fill="#F8F0D8" opacity="0.9"/>
+  <circle cx="333" cy="33" r="18" fill="#1A3A6E" opacity="0.85"/>
+  <!-- Stars -->
+  <g fill="#FFFFFF" opacity="0.8">
+    <circle cx="30" cy="25" r="1.2"/><circle cx="65" cy="12" r="0.8"/><circle cx="110" cy="30" r="1.5"/>
+    <circle cx="155" cy="8" r="1"/><circle cx="200" cy="20" r="0.8"/><circle cx="50" cy="50" r="0.6"/>
+    <circle cx="240" cy="15" r="1.2"/><circle cx="280" cy="35" r="0.8"/><circle cx="15" cy="80" r="1"/>
+    <circle cx="90" cy="70" r="0.7"/><circle cx="170" cy="55" r="1"/><circle cx="375" cy="80" r="1.2"/>
+  </g>
+  <!-- Clouds (night, darker) -->
+  <g fill="#FFFFFF" opacity="0.12">
+    <ellipse cx="60" cy="160" rx="70" ry="25"/>
+    <ellipse cx="30" cy="165" rx="40" ry="18"/>
+    <ellipse cx="90" cy="165" rx="50" ry="18"/>
+    <ellipse cx="320" cy="200" rx="80" ry="28"/>
+    <ellipse cx="280" cy="205" rx="45" ry="20"/>
+    <ellipse cx="360" cy="205" rx="55" ry="20"/>
+  </g>
+  <!-- Contrail -->
+  <rect x="0" y="110" width="260" height="4" rx="2" fill="url(#trail)" opacity="0.6"/>
+  <rect x="0" y="120" width="220" height="2" rx="1" fill="url(#trail)" opacity="0.3"/>
+  <!-- Aircraft group -->
+  <g transform="translate(260, 95) rotate(-8)">
+    <!-- Fuselage -->
+    <ellipse cx="0" cy="0" rx="60" ry="10" fill="url(#planebody)"/>
+    <!-- Nose -->
+    <path d="M55 0 Q75 0 80 0" stroke="#D0D0D0" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Tail fin -->
+    <path d="M-55 0 L-65 -18 L-45 -2Z" fill="#D8D8D8"/>
+    <!-- Horizontal stabilizer -->
+    <path d="M-50 2 L-70 10 L-45 5Z" fill="#D8D8D8"/>
+    <path d="M-50 -2 L-70 -8 L-45 -4Z" fill="#E0E0E0"/>
+    <!-- Main wings -->
+    <path d="M10 2 L-30 35 L-15 2Z" fill="#E0E0E0"/>
+    <path d="M10 -2 L-30 -35 L-15 -2Z" fill="#E8E8E8"/>
+    <!-- Engine nacelles -->
+    <ellipse cx="-5" cy="22" rx="12" ry="4" fill="#BDBDBD"/>
+    <ellipse cx="-5" cy="-22" rx="12" ry="4" fill="#C8C8C8"/>
+    <!-- Windows row -->
+    <g fill="#C8E8FF" opacity="0.8">
+      <rect x="20" y="-3" width="5" height="6" rx="2"/>
+      <rect x="30" y="-3" width="5" height="6" rx="2"/>
+      <rect x="40" y="-3" width="5" height="6" rx="2"/>
+    </g>
+    <!-- Navigation lights -->
+    <circle cx="-28" cy="34" r="2" fill="#FF4444" opacity="0.9" filter="url(#glow)"/>
+    <circle cx="-28" cy="-34" r="2" fill="#44FF44" opacity="0.9" filter="url(#glow)"/>
+    <circle cx="78" cy="0" r="2" fill="#FFFFFF" opacity="0.9" filter="url(#glow)"/>
+  </g>
+</svg>

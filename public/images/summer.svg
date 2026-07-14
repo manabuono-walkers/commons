@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A6BB5"/>
+      <stop offset="100%" stop-color="#5BC4F5"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0E9AD8"/>
+      <stop offset="100%" stop-color="#0B6FA8"/>
+    </linearGradient>
+    <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F5D87A"/>
+      <stop offset="100%" stop-color="#E2B84A"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#FFF3A0"/>
+      <stop offset="40%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#FFA500" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- Sky -->
+  <rect width="400" height="200" fill="url(#sky)"/>
+  <!-- Sun -->
+  <circle cx="320" cy="50" r="35" fill="url(#sun)" opacity="0.9"/>
+  <circle cx="320" cy="50" r="22" fill="#FFE566"/>
+  <!-- Sun rays -->
+  <g stroke="#FFD700" stroke-width="2" opacity="0.6">
+    <line x1="320" y1="8" x2="320" y2="0"/>
+    <line x1="350" y1="20" x2="357" y2="13"/>
+    <line x1="362" y1="50" x2="370" y2="50"/>
+    <line x1="350" y1="80" x2="357" y2="87"/>
+    <line x1="320" y1="92" x2="320" y2="100"/>
+    <line x1="290" y1="80" x2="283" y2="87"/>
+    <line x1="278" y1="50" x2="270" y2="50"/>
+    <line x1="290" y1="20" x2="283" y2="13"/>
+  </g>
+  <!-- Clouds -->
+  <g fill="#FFFFFF" opacity="0.85">
+    <ellipse cx="80" cy="45" rx="35" ry="18"/>
+    <ellipse cx="55" cy="52" rx="22" ry="14"/>
+    <ellipse cx="105" cy="52" rx="28" ry="14"/>
+    <ellipse cx="200" cy="38" rx="28" ry="14"/>
+    <ellipse cx="178" cy="44" rx="18" ry="11"/>
+    <ellipse cx="222" cy="44" rx="20" ry="11"/>
+  </g>
+  <!-- Sea -->
+  <rect x="0" y="130" width="400" height="70" fill="url(#sea)"/>
+  <!-- Wave -->
+  <path d="M0 135 Q50 125 100 135 Q150 145 200 135 Q250 125 300 135 Q350 145 400 135 L400 200 L0 200Z" fill="#0B8EC8" opacity="0.5"/>
+  <path d="M0 145 Q40 138 80 145 Q120 152 160 145 Q200 138 240 145 Q280 152 320 145 Q360 138 400 145 L400 200 L0 200Z" fill="#0A7DB5" opacity="0.4"/>
+  <!-- Sand -->
+  <ellipse cx="200" cy="190" rx="250" ry="50" fill="url(#sand)"/>
+  <!-- Palm tree left -->
+  <rect x="58" y="90" width="6" height="55" rx="3" fill="#7B5E2A" transform="rotate(-5 60 145)"/>
+  <ellipse cx="52" cy="90" rx="28" ry="14" fill="#2D8B3A" transform="rotate(-15 52 90)"/>
+  <ellipse cx="68" cy="85" rx="25" ry="12" fill="#3AA048" transform="rotate(10 68 85)"/>
+  <ellipse cx="45" cy="95" rx="22" ry="10" fill="#258030" transform="rotate(-25 45 95)"/>
+</svg>

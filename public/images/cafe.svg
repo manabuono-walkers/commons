@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250">
+  <defs>
+    <linearGradient id="cafebg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2A1A0E"/>
+      <stop offset="100%" stop-color="#1A0E06"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#C87941"/>
+      <stop offset="100%" stop-color="#8B4513"/>
+    </linearGradient>
+    <radialGradient id="light1" cx="30%" cy="20%">
+      <stop offset="0%" stop-color="#FFD080" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#FFD080" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="light2" cx="70%" cy="15%">
+      <stop offset="0%" stop-color="#FFE0A0" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#FFE0A0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="250" fill="url(#cafebg)"/>
+  <!-- Warm lighting overlays -->
+  <ellipse cx="120" cy="40" rx="120" ry="100" fill="url(#light1)"/>
+  <ellipse cx="280" cy="30" rx="100" ry="90" fill="url(#light2)"/>
+  <!-- Bar counter -->
+  <rect x="0" y="180" width="400" height="12" rx="4" fill="#5C3A1E"/>
+  <rect x="0" y="192" width="400" height="58" fill="#3D2010"/>
+  <!-- Shelf with bottles -->
+  <rect x="20" y="60" width="360" height="6" rx="2" fill="#5C3A1E"/>
+  <rect x="20" y="100" width="360" height="6" rx="2" fill="#5C3A1E"/>
+  <!-- Bottles on top shelf -->
+  <rect x="40" y="35" width="14" height="28" rx="4" fill="#2D6A4F"/>
+  <rect x="64" y="38" width="12" height="24" rx="3" fill="#C0392B"/>
+  <rect x="86" y="32" width="16" height="30" rx="5" fill="#1A3A5C"/>
+  <rect x="112" y="36" width="13" height="26" rx="4" fill="#7D3C98"/>
+  <rect x="135" y="33" width="15" height="29" rx="4" fill="#2D6A4F"/>
+  <rect x="160" y="38" width="11" height="23" rx="3" fill="#C0392B"/>
+  <rect x="180" y="34" width="14" height="28" rx="4" fill="#1A5C3A"/>
+  <rect x="204" y="36" width="12" height="26" rx="3" fill="#8B4513"/>
+  <rect x="226" y="32" width="16" height="30" rx="5" fill="#2C3E50"/>
+  <rect x="252" y="37" width="13" height="25" rx="4" fill="#6C3483"/>
+  <rect x="275" y="34" width="14" height="28" rx="4" fill="#1A6B3A"/>
+  <rect x="299" y="36" width="12" height="26" rx="3" fill="#C0392B"/>
+  <rect x="321" y="33" width="15" height="29" rx="4" fill="#2C3E50"/>
+  <!-- Bottles on second shelf -->
+  <rect x="50" y="76" width="14" height="26" rx="4" fill="#8B4513"/>
+  <rect x="74" y="79" width="12" height="23" rx="3" fill="#2D6A4F"/>
+  <rect x="96" y="75" width="16" height="27" rx="5" fill="#C0392B"/>
+  <rect x="122" y="77" width="13" height="25" rx="4" fill="#1A3A5C"/>
+  <rect x="145" y="74" width="15" height="28" rx="4" fill="#7D3C98"/>
+  <rect x="170" y="78" width="11" height="24" rx="3" fill="#2D6A4F"/>
+  <rect x="191" y="75" width="14" height="27" rx="4" fill="#8B4513"/>
+  <!-- Coffee cups on counter -->
+  <g transform="translate(100,160)">
+    <rect x="0" y="5" width="36" height="20" rx="3" fill="#2C1A0A"/>
+    <ellipse cx="18" cy="5" rx="18" ry="5" fill="#3D2010"/>
+    <ellipse cx="18" cy="5" rx="14" ry="4" fill="#6B3A1F"/>
+    <path d="M36 12 Q44 12 44 18 Q44 24 36 24" stroke="#2C1A0A" stroke-width="3" fill="none"/>
+    <!-- Steam -->
+    <path d="M8 0 Q10 -8 8 -14" stroke="#888" stroke-width="1.5" fill="none" opacity="0.5" stroke-linecap="round"/>
+    <path d="M18 -2 Q20 -10 18 -16" stroke="#888" stroke-width="1.5" fill="none" opacity="0.5" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(220,162)">
+    <rect x="0" y="5" width="36" height="20" rx="3" fill="#2C1A0A"/>
+    <ellipse cx="18" cy="5" rx="18" ry="5" fill="#3D2010"/>
+    <ellipse cx="18" cy="5" rx="14" ry="4" fill="#6B3A1F"/>
+    <path d="M36 12 Q44 12 44 18 Q44 24 36 24" stroke="#2C1A0A" stroke-width="3" fill="none"/>
+  </g>
+  <!-- Pendant lights -->
+  <line x1="100" y1="0" x2="100" y2="28" stroke="#8B7355" stroke-width="1.5"/>
+  <ellipse cx="100" cy="30" rx="10" ry="6" fill="#C8A96E"/>
+  <ellipse cx="100" cy="30" rx="8" ry="5" fill="#FFE0A0" opacity="0.8"/>
+  <line x1="250" y1="0" x2="250" y2="22" stroke="#8B7355" stroke-width="1.5"/>
+  <ellipse cx="250" cy="24" rx="10" ry="6" fill="#C8A96E"/>
+  <ellipse cx="250" cy="24" rx="8" ry="5" fill="#FFE0A0" opacity="0.8"/>
+</svg>
