@@ -212,7 +212,10 @@ export default function MembersPage() {
                 return (
                   <tr key={m.no} onClick={()=>{ setSelected(selected===m.no?null:m.no); setDetailTab("basic"); }}
                     className={`cursor-pointer transition ${selected===m.no?"bg-[var(--color-accent)]/8":"hover:bg-[var(--color-bg-soft)]"}`}>
-                    <td className="py-3 pr-3 num text-xs">{m.no}</td>
+                    <td className="py-3 pr-3">
+                      <div className="num text-xs">{m.no}</div>
+                      <div className="font-display text-[10px] text-[var(--color-accent-deep)] mt-0.5">U-{m.no}</div>
+                    </td>
                     <td className="py-3 pr-3">
                       <div className="font-display flex items-center gap-1.5">
                         {m.name}{m.vip&&<span className="tag tag-accent text-[8px] !py-0">VIP</span>}
@@ -281,6 +284,7 @@ export default function MembersPage() {
               {detailTab==="basic"&&(
                 <>
                   {[
+                    {l:"ユーザーID",v:`U-${detail.no}`},
                     {l:"メール",v:detail.email},{l:"電話番号",v:detail.tel},
                     {l:"Instagram",v:"@"+detail.insta},
                     {l:"支部",v:detail.branch},
