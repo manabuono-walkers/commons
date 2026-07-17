@@ -112,8 +112,8 @@ function Field({ label, value, onChange, placeholder }: { label: string; value: 
       <input
         className="w-full bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-xl px-4 py-3 text-sm text-[var(--color-ink)] outline-none"
         style={{ transition: "border-color 0.2s" }}
-        onFocus={e => e.style.borderColor = "var(--color-accent)"}
-        onBlur={e => e.style.borderColor = "var(--color-line)"}
+        onFocus={e => e.currentTarget.style.borderColor = "var(--color-accent)"}
+        onBlur={e => e.currentTarget.style.borderColor = "var(--color-line)"}
         placeholder={placeholder}
         value={value}
         onChange={e => onChange(e.target.value)}

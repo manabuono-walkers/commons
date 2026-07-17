@@ -9,7 +9,7 @@ type EngageLevel = "高" | "中" | "低";
 interface Member {
   no:string; name:string; kana:string; branch:string; rank:string; vip:boolean;
   status:string; pay:string; joined:string; approvedDate:string; email:string; tel:string; insta:string;
-  univaPayId:string; xp:number; pt:number; job:string; industry:string; company:string; title:string;
+  univaPayId:string; pt:number; job:string; industry:string; company:string; title:string;
   pref:string; income:string; age:number; dob:string; gender:string; region:string;
   events:number; lotteryWins:number; referee:string; clubs:string[]; interests:string[];
   entryReasons:string[]; howFound:string; selfIntro:string; lifestyle:string; desired:string;
@@ -51,7 +51,7 @@ const engageBadge: Record<EngageLevel, string> = {
   "低": "bg-red-400/10 text-red-400 border-red-400/20",
 };
 
-type SortKey = "no"|"name"|"joined"|"approvedDate"|"events"|"xp"|"lastActivity";
+type SortKey = "no"|"name"|"joined"|"approvedDate"|"events"|"pt"|"lastActivity";
 type DetailTab = "basic"|"profile"|"docs"|"activity";
 
 export default function MembersPage() {
@@ -92,7 +92,7 @@ export default function MembersPage() {
     if(sortKey==="joined") return a.joined.localeCompare(b.joined);
     if(sortKey==="approvedDate") return a.approvedDate.localeCompare(b.approvedDate);
     if(sortKey==="events") return b.events-a.events;
-    if(sortKey==="xp") return b.xp-a.xp;
+    if(sortKey==="pt") return b.pt-a.pt;
     if(sortKey==="lastActivity") return b.lastActivity.localeCompare(a.lastActivity);
     return 0;
   });
@@ -296,7 +296,7 @@ export default function MembersPage() {
                     {l:"申込地域",v:detail.region},
                     {l:"参加回数",v:`${detail.events}回`},
                     {l:"抽選当選回数",v:`${detail.lotteryWins}回`},
-                    {l:"保有ポイント",v:`${detail.point.toLocaleString()} pt`},
+                    {l:"保有ポイント",v:`${detail.pt.toLocaleString()} pt`},
                     {l:"最終活動日",v:detail.lastActivity},
                   ].map(r=>(
                     <div key={r.l} className="flex items-start justify-between border-b border-[var(--color-line)] pb-2">
