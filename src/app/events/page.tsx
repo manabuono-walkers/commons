@@ -65,6 +65,11 @@ export const events = [
   },
 ];
 
+const reports = [
+  { href: "/event-report-2", img: "/images/eventrepo2.png", label: "COMMONS WINE NIGHT Vol.15", meta: "7月5日（土）· La Cave · 24名" },
+  { href: "/event-report",   img: "/images/eventrepo.png",  label: "AGE 26+ NIGHT 開催レポート",  meta: "6月26日（金）· THE THEATRE TABLE · 65名" },
+];
+
 export default function EventsPage() {
   const [tab, setTab] = useState<"all" | "available">("all");
   const shown = tab === "available"
@@ -77,26 +82,51 @@ export default function EventsPage() {
 
         <AppHeader />
 
-        <div className="px-5 pt-8 pb-5 text-center">
-          <p className="font-display text-xs tracking-[0.2em] text-[var(--color-accent-deep)] mb-2">Scheduled Events</p>
-          <h1 className="font-display text-3xl tracking-wide">開催イベント</h1>
+        {/* イベントレポート — COMMONS CLUB style 横スクロール */}
+        <div className="pt-5 pb-4">
+          <div className="px-5 flex items-baseline justify-between mb-3">
+            <h2 className="font-display text-base">イベントレポート</h2>
+            <Link href="/event-reports" className="font-display text-xs text-[var(--color-accent-deep)]">すべて見る →</Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-0 px-5 scrollbar-muted">
+            {reports.map((r) => (
+              <Link
+                key={r.href}
+                href={r.href}
+                className="flex-none w-[200px] rounded-2xl overflow-hidden border border-[var(--color-line)] hover:border-[var(--color-accent)]/60 transition"
+              >
+                <div
+                  className="h-[110px] bg-cover bg-center"
+                  style={{ backgroundImage: `url(${r.img})` }}
+                />
+                <div className="p-3 bg-[var(--color-bg-soft)]">
+                  <div className="font-display text-sm leading-snug">{r.label}</div>
+                  <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">{r.meta}</div>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
 
-        <div className="h-px bg-[var(--color-line)] mx-5 mb-6" />
+        <div className="h-px bg-[var(--color-line)] mx-5 mb-5" />
+
+        <div className="px-5 flex items-baseline justify-between mb-4">
+          <h2 className="font-display text-base">開催イベント</h2>
+        </div>
 
         {/* Tab switcher */}
-        <div className="flex mx-5 mb-2 rounded-full border border-[var(--color-line)] overflow-hidden bg-[var(--color-bg-soft)]">
+        <div className="flex mx-5 mb-4 rounded-full border border-[var(--color-line)] overflow-hidden bg-[var(--color-bg-soft)]">
           <button
             onClick={() => setTab("all")}
             className={`flex-1 py-3 font-display text-sm transition-all ${tab === "all" ? "bg-[var(--color-ink)] text-[var(--color-bg)]" : "text-[var(--color-mute)]"}`}
           >
-            すべてのイベント
+            すべて
           </button>
           <button
             onClick={() => setTab("available")}
             className={`flex-1 py-3 font-display text-sm transition-all ${tab === "available" ? "bg-[var(--color-ink)] text-[var(--color-bg)]" : "text-[var(--color-mute)]"}`}
           >
-            参加可能なイベント
+            参加可能
           </button>
         </div>
 
@@ -105,7 +135,6 @@ export default function EventsPage() {
           {shown.map((ev) => (
             <Link key={ev.id} href={`/events/${ev.id}`}>
               <article className="rounded-2xl overflow-hidden border border-[var(--color-line)] transition hover:border-[var(--color-accent)]/60">
-                {/* Hero image */}
                 <div
                   className="h-[220px] bg-cover bg-center"
                   style={ev.image.startsWith("/") ? { backgroundImage: `url(${ev.image})` } : { background: ev.image }}
