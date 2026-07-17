@@ -6,9 +6,31 @@ import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import { events, CommonsLogo } from "../page";
 
+const TERMS_TEXT = `【COMMONSイベント参加規約】
+
+第1条（参加条件）
+本イベントへの参加は、COMMONS会員に限ります。参加申込時点で有効な会員資格を有している必要があります。
+
+第2条（キャンセルポリシー）
+・募集期間中のキャンセルは参加費を全額返金いたします。
+・開催15日前までのキャンセルは参加費の半額を返金いたします。
+・開催14日前以降のキャンセルは返金対象外となります。
+
+第3条（禁止事項）
+・会員以外の方の同伴（許可なし）
+・会場内での撮影・録音（スタッフの指示に従ってください）
+・他の参加者への勧誘・営業行為
+
+第4条（免責事項）
+天災その他不可抗力により中止となった場合、参加費の返金対応を行います。会場への往復に関わる費用は参加者負担となります。
+
+第5条（個人情報の取り扱い）
+申込情報は本イベントの運営・連絡目的のみに使用します。第三者への提供は行いません。`;
+
 export default function EventDetailClient({ id }: { id: string }) {
   const ev = events.find(e => e.id === id) ?? events[0];
   const [cancelWait, setCancelWait] = useState(false);
+  const [agreedTerms, setAgreedTerms] = useState(false);
   const router = useRouter();
 
   const showMaleRemaining = ev.remaining_male < ev.alert_threshold;
@@ -119,14 +141,49 @@ export default function EventDetailClient({ id }: { id: string }) {
 
           <DetailRow label="お支払い方法">
             <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed">
-              以下の参加規約をご確認いただいた上で各URLにてお支払いをいただき、イベント参加とさせていただきます。
+              以下の参加規約をご確認の上、同意いただいた後にお支払いへ進んでください。
             </p>
-            <div className="mt-3 bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-xl p-4">
-              <p className="font-display text-xs text-[var(--color-mute)] mb-1">【参加規約】</p>
-              <a href={ev.terms_url} className="text-sm text-[var(--color-accent-deep)] underline underline-offset-4 break-all">
-                {ev.terms_url}
-              </a>
+
+            {/* Inline terms UI */}
+            <div className="mt-3 rounded-xl overflow-hidden border border-[var(--color-line)]">
+              <div className="bg-[var(--color-bg-soft)] px-4 py-2 border-b border-[var(--color-line)]">
+                <p className="font-display text-[10px] text-[var(--color-accent-deep)] tracking-wide">参加規約</p>
+              </div>
+              <div
+                className="h-[160px] overflow-y-auto px-4 py-3 text-xs text-[var(--color-mute)] leading-relaxed whitespace-pre-wrap"
+                style={{ background: "var(--color-bg)" }}
+              >
+                {TERMS_TEXT}
+              </div>
             </div>
+
+            {/* Agree checkbox */}
+            <label className="mt-4 flex items-start gap-3 cursor-pointer group">
+              <div className="relative flex-none mt-0.5">
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={agreedTerms}
+                  onChange={e => setAgreedTerms(e.target.checked)}
+                />
+                <div
+                  className="w-5 h-5 rounded flex items-center justify-center transition-all"
+                  style={{
+                    background: agreedTerms ? "linear-gradient(135deg, #CBAE74, #B8985A)" : "var(--color-bg-soft)",
+                    border: agreedTerms ? "none" : "1px solid var(--color-line)",
+                  }}
+                >
+                  {agreedTerms && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0B0F16" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <span className="font-display text-sm text-[var(--color-ink)] leading-snug group-hover:text-[var(--color-accent-deep)] transition">
+                上記の参加規約を確認し、同意します
+              </span>
+            </label>
           </DetailRow>
         </div>
 
@@ -164,20 +221,27 @@ export default function EventDetailClient({ id }: { id: string }) {
         {/* Payment */}
         <div className="px-5 py-8">
           <p className="font-display text-[10px] tracking-[0.2em] text-[var(--color-accent-deep)] text-center mb-1">Payment</p>
-          <h2 className="font-display text-2xl text-center mb-7">お支払い</h2>
+          <h2 className="font-display text-2xl text-center mb-3">お支払い</h2>
 
-          <div className="space-y-4">
+          {!agreedTerms && (
+            <p className="font-display text-xs text-[var(--color-mute)] text-center mb-5">
+              参加規約に同意するとお支払いボタンが有効になります
+            </p>
+          )}
+
+          <div className="space-y-4 mt-4">
             {maleSoldOut ? (
               <button disabled className="w-full py-4 rounded-full font-display text-base bg-[var(--color-bg-soft)] text-[var(--color-mute)] border border-[var(--color-line)] cursor-not-allowed">
                 男性 — 満席
               </button>
             ) : (
               <button
-                onClick={() => router.push(`/events/${ev.id}/payment?gender=male`)}
-                className="block w-full py-4 rounded-full font-display text-base text-center transition-all hover:opacity-90 active:scale-95"
-                style={{ background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" }}
+                onClick={() => agreedTerms && router.push(`/events/${ev.id}/payment?gender=male`)}
+                disabled={!agreedTerms}
+                className="block w-full py-4 rounded-full font-display text-base text-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={agreedTerms ? { background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" } : { background: "var(--color-bg-soft)", color: "var(--color-mute)", border: "1px solid var(--color-line)" }}
               >
-                男性はこちら{showMaleRemaining && <span className="ml-2 opacity-80">｜ 残り{ev.remaining_male}名</span>}
+                男性はこちら{showMaleRemaining && agreedTerms && <span className="ml-2 opacity-80">｜ 残り{ev.remaining_male}名</span>}
               </button>
             )}
 
@@ -187,11 +251,12 @@ export default function EventDetailClient({ id }: { id: string }) {
               </button>
             ) : (
               <button
-                onClick={() => router.push(`/events/${ev.id}/payment?gender=female`)}
-                className="block w-full py-4 rounded-full font-display text-base text-center transition-all hover:opacity-90 active:scale-95"
-                style={{ background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" }}
+                onClick={() => agreedTerms && router.push(`/events/${ev.id}/payment?gender=female`)}
+                disabled={!agreedTerms}
+                className="block w-full py-4 rounded-full font-display text-base text-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={agreedTerms ? { background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" } : { background: "var(--color-bg-soft)", color: "var(--color-mute)", border: "1px solid var(--color-line)" }}
               >
-                女性はこちら{showFemaleRemaining && <span className="ml-2 opacity-80">｜ 残り{ev.remaining_female}名</span>}
+                女性はこちら{showFemaleRemaining && agreedTerms && <span className="ml-2 opacity-80">｜ 残り{ev.remaining_female}名</span>}
               </button>
             )}
 

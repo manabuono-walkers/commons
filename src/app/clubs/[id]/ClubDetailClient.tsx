@@ -1,19 +1,21 @@
 "use client";
 import { useState, useRef } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import AppHeader from "@/components/AppHeader";
 
 const clubData: Record<string, {
-  name: string; icon: string; color: string; members: number;
-  memberList: { name: string; avatar: string; role?: string; join: string }[];
+  name: string; icon: string; color: string; members: number; joined: boolean;
+  memberList: { name: string; avatar: string; join: string }[];
   chat: { id: number; name: string; handle: string; avatar: string; body: string; time: string; likes: number; liked: boolean }[];
   events: { id: number; title: string; date: string; cap: string; fee: string; state: string }[];
   reports: { id: number; title: string; date: string; body: string; images: number }[];
 }> = {
   wine: {
-    name: "ワイン部", icon: "🍷", color: "#722F37", members: 38,
+    name: "ワイン部", icon: "🍷", color: "#722F37", members: 38, joined: true,
     memberList: [
-      { name: "田中 康介", avatar: "/images/tanaka.png", role: "モデレータ", join: "2025.04" },
+      { name: "田中 康介", avatar: "/images/tanaka.png", join: "2025.04" },
       { name: "山本 彩花", avatar: "/images/yamamoto.png", join: "2025.06" },
       { name: "伊藤 健", avatar: "/images/ito.png", join: "2026.05" },
       { name: "青山 陸", avatar: "/images/icon.png", join: "2025.11" },
@@ -40,9 +42,9 @@ const clubData: Record<string, {
     ],
   },
   coffee: {
-    name: "コーヒー部", icon: "☕", color: "#4A3728", members: 24,
+    name: "コーヒー部", icon: "☕", color: "#4A3728", members: 24, joined: false,
     memberList: [
-      { name: "佐藤 美咲", avatar: "佐", role: "モデレータ", join: "2025.05" },
+      { name: "佐藤 美咲", avatar: "佐", join: "2025.05" },
       { name: "高橋 大輔", avatar: "高", join: "2025.09" },
       { name: "田中 康介", avatar: "/images/tanaka.png", join: "2026.02" },
       { name: "青山 陸", avatar: "/images/icon.png", join: "2026.04" },
@@ -59,9 +61,9 @@ const clubData: Record<string, {
     ],
   },
   travel: {
-    name: "旅部", icon: "✈️", color: "#1A4A3A", members: 29,
+    name: "旅部", icon: "✈️", color: "#1A4A3A", members: 29, joined: true,
     memberList: [
-      { name: "加藤 恵子", avatar: "加", role: "モデレータ", join: "2025.03" },
+      { name: "加藤 恵子", avatar: "加", join: "2025.03" },
       { name: "田中 康介", avatar: "/images/tanaka.png", join: "2025.07" },
       { name: "伊藤 健", avatar: "/images/ito.png", join: "2026.01" },
       { name: "山本 彩花", avatar: "/images/yamamoto.png", join: "2026.04" },
@@ -91,19 +93,21 @@ function ChatAvatar({ src, name }: { src: string; name: string }) {
 }
 
 const fallback = clubData.wine;
-type TabType = "chat" | "events" | "reports" | "members";
+type TabType = "chat" | "events" | "members";
 
 export default function ClubDetailClient({ id }: { id: string }) {
   const club = clubData[id] ?? fallback;
+  const router = useRouter();
   const [tab, setTab] = useState<TabType>("chat");
+  const [joined, setJoined] = useState(club.joined);
   const [chatMessages, setChatMessages] = useState(club.chat);
   const [chatLiked, setChatLiked] = useState<Record<number, boolean>>({});
   const [draft, setDraft] = useState("");
   const [draftImages, setDraftImages] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  function toggleChatLike(id: number) {
-    setChatLiked(prev => ({ ...prev, [id]: !prev[id] }));
+  function toggleChatLike(msgId: number) {
+    setChatLiked(prev => ({ ...prev, [msgId]: !prev[msgId] }));
   }
 
   function sendMessage() {
@@ -127,7 +131,7 @@ export default function ClubDetailClient({ id }: { id: string }) {
 
   return (
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
-      <div className="w-full max-w-[430px]" style={{ paddingBottom: tab === "chat" ? 160 : 96 }}>
+      <div className="w-full max-w-[430px]" style={{ paddingBottom: (joined && tab === "chat") ? 160 : 96 }}>
         <AppHeader backHref="/clubs" rightSlot={
           <div className="text-right">
             <div className="font-display text-sm">{club.name}</div>
@@ -135,179 +139,237 @@ export default function ClubDetailClient({ id }: { id: string }) {
           </div>
         } />
 
-        <div className="flex border-b border-[var(--color-line)] sticky top-[57px] z-30 bg-[var(--color-bg)]/95 backdrop-blur-md">
-          {(["chat", "events", "reports", "members"] as TabType[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex-1 py-3.5 font-display text-[10px] transition ${tab === t ? "border-b-2 text-[var(--color-accent-deep)]" : "text-[var(--color-mute)]"}`}
-              style={tab === t ? { borderBottomColor: "var(--color-accent-deep)" } : {}}
+        {/* 活動レポート — 全員表示（外向けコンテンツ） */}
+        <div className="px-5 pt-5 pb-4 border-b border-[var(--color-line)]">
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-display text-xs text-[var(--color-accent-deep)]">活動レポート</p>
+            <Link
+              href={`/clubs/${id}/reports`}
+              className="font-display text-xs text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] transition flex items-center gap-1"
             >
-              {t === "chat" ? "チャット" : t === "events" ? "イベント" : t === "reports" ? "レポート" : "メンバー"}
-            </button>
-          ))}
+              すべて見る
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-muted">
+            {club.reports.map(r => (
+              <div
+                key={r.id}
+                className="flex-none w-[200px] rounded-2xl overflow-hidden border border-[var(--color-line)] hover:border-[var(--color-accent)]/60 transition cursor-pointer"
+              >
+                <div className="relative h-[100px] bg-[var(--color-bg-soft)] flex items-center justify-center">
+                  <div className="flex gap-1.5 p-2">
+                    {Array.from({ length: Math.min(r.images, 3) }).map((_, i) => (
+                      <div key={i} className="w-[54px] h-[70px] rounded-lg bg-[var(--color-line)] flex items-center justify-center text-base">📷</div>
+                    ))}
+                    {r.images > 3 && (
+                      <div className="w-[54px] h-[70px] rounded-lg bg-[var(--color-line)] flex items-center justify-center text-[10px] text-[var(--color-mute)]">+{r.images - 3}</div>
+                    )}
+                  </div>
+                </div>
+                <div className="p-3 bg-[var(--color-bg-soft)]">
+                  <div className="font-display text-[10px] text-[var(--color-mute)] mb-0.5">{r.date}</div>
+                  <div className="font-display text-sm leading-snug">{r.title}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {tab === "chat" && (
-          <div>
-            {/* Posts feed */}
-            <div>
-              {chatMessages.map(m => {
-                const isLiked = chatLiked[m.id] ?? m.liked;
-                return (
-                  <div key={m.id} className="px-4 py-4 border-b border-[var(--color-line)]">
-                    <div className="flex gap-3">
-                      <ChatAvatar src={m.avatar} name={m.name} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-baseline gap-1.5 flex-wrap">
-                          <span className="font-display text-sm font-semibold">{m.name}</span>
-                          <span className="font-display text-[10px] text-[var(--color-mute)]">{m.handle}</span>
-                          <span className="font-display text-[10px] text-[var(--color-mute)]">· {m.time}</span>
-                        </div>
-                        <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed mt-1.5">{m.body}</p>
-                        <div className="flex items-center gap-5 mt-3">
-                          {/* Reply */}
-                          <button className="flex items-center gap-1.5 text-xs text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] transition">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                            </svg>
-                          </button>
-                          {/* Like */}
-                          <button
-                            onClick={() => toggleChatLike(m.id)}
-                            className="flex items-center gap-1.5 text-xs transition"
-                            style={{ color: isLiked ? "var(--color-accent-deep)" : "var(--color-mute)" }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                            </svg>
-                            <span className="num">{m.likes + (isLiked !== m.liked ? (isLiked ? 1 : -1) : 0)}</span>
-                          </button>
+        {/* 未参加の場合: 参加するボタン + ここで終わり */}
+        {!joined && (
+          <div className="px-5 pt-6 pb-10">
+            <div className="card p-6 text-center">
+              <div className="font-display text-sm text-[var(--color-mute)] mb-1">このクラブのメンバーになりませんか？</div>
+              <div className="text-xs text-[var(--color-mute)] leading-relaxed mb-5">
+                参加するとチャット・イベント・メンバーリストにアクセスできます。
+              </div>
+              <button
+                onClick={() => setJoined(true)}
+                className="w-full py-3.5 rounded-full font-display text-sm tracking-[0.06em] transition hover:opacity-90 active:scale-95"
+                style={{ background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" }}
+              >
+                参加する
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 参加済みの場合: タブ + コンテンツ */}
+        {joined && (
+          <>
+            {/* Tab bar */}
+            <div className="flex border-b border-[var(--color-line)] sticky top-[57px] z-30 bg-[var(--color-bg)]/95 backdrop-blur-md">
+              {(["chat", "events", "members"] as TabType[]).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`flex-1 py-3.5 font-display text-[10px] transition ${tab === t ? "border-b-2 text-[var(--color-accent-deep)]" : "text-[var(--color-mute)]"}`}
+                  style={tab === t ? { borderBottomColor: "var(--color-accent-deep)" } : {}}
+                >
+                  {t === "chat" ? "チャット" : t === "events" ? "クラブ会" : "メンバー"}
+                </button>
+              ))}
+            </div>
+
+            {tab === "chat" && (
+              <div>
+                {chatMessages.map(m => {
+                  const isLiked = chatLiked[m.id] ?? m.liked;
+                  return (
+                    <div key={m.id} className="px-4 py-4 border-b border-[var(--color-line)]">
+                      <div className="flex gap-3">
+                        <ChatAvatar src={m.avatar} name={m.name} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline gap-1.5 flex-wrap">
+                            <span className="font-display text-sm font-semibold">{m.name}</span>
+                            <span className="font-display text-[10px] text-[var(--color-mute)]">{m.handle}</span>
+                            <span className="font-display text-[10px] text-[var(--color-mute)]">· {m.time}</span>
+                          </div>
+                          <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed mt-1.5">{m.body}</p>
+                          <div className="flex items-center gap-5 mt-3">
+                            <button className="flex items-center gap-1.5 text-xs text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] transition">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => toggleChatLike(m.id)}
+                              className="flex items-center gap-1.5 text-xs transition"
+                              style={{ color: isLiked ? "var(--color-accent-deep)" : "var(--color-mute)" }}
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                              </svg>
+                              <span className="num">{m.likes + (isLiked !== m.liked ? (isLiked ? 1 : -1) : 0)}</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+                  );
+                })}
+              </div>
+            )}
 
-        {tab === "events" && (
-          <div className="px-5 pt-5 space-y-4">
-            {club.events.map(ev => (
-              <div key={ev.id} className="card p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <span className="num text-3xl leading-none">{ev.date}</span>
-                  <span className={`tag ${ev.state === "受付中" ? "tag-accent" : ev.state === "抽選受付中" ? "tag-ink" : ""}`}>{ev.state}</span>
+            {tab === "events" && (
+              <div className="px-5 pt-5 space-y-4">
+                {/* イベント作成 / 活動レポート作成 */}
+                <div className="flex gap-3">
+                  <Link
+                    href={`/clubs/${id}/create-event`}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-display text-sm transition"
+                    style={{ background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    イベント作成
+                  </Link>
+                  <Link
+                    href={`/clubs/${id}/create-report`}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-display text-sm transition border"
+                    style={{ borderColor: "var(--color-accent)", color: "var(--color-accent-deep)" }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    活動レポート作成
+                  </Link>
                 </div>
-                <h3 className="font-display text-lg">{ev.title}</h3>
-                <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                  <dt className="font-display text-[var(--color-mute)]">定員</dt><dd className="num">{ev.cap}</dd>
-                  <dt className="font-display text-[var(--color-mute)]">参加費</dt><dd className="num">{ev.fee}</dd>
-                </dl>
-                {ev.state === "受付中" && (
-                  <button className="mt-4 w-full btn-primary justify-center text-xs">参加申込する</button>
+
+                {club.events.map(ev => (
+                  <div key={ev.id} className="card p-5">
+                    <div className="flex items-start justify-between mb-3">
+                      <span className="num text-3xl leading-none">{ev.date}</span>
+                      <span className={`tag ${ev.state === "受付中" ? "tag-accent" : ev.state === "抽選受付中" ? "tag-ink" : ""}`}>{ev.state}</span>
+                    </div>
+                    <h3 className="font-display text-lg">{ev.title}</h3>
+                    <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                      <dt className="font-display text-[var(--color-mute)]">定員</dt><dd className="num">{ev.cap}</dd>
+                      <dt className="font-display text-[var(--color-mute)]">参加費</dt><dd className="num">{ev.fee}</dd>
+                    </dl>
+                    {ev.state === "受付中" && (
+                      <button className="mt-4 w-full btn-primary justify-center text-xs">参加申込する</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {tab === "members" && (
+              <div className="px-5 pt-5 space-y-1">
+                <div className="font-display text-xs text-[var(--color-mute)] mb-4">{club.members}人参加中</div>
+                {club.memberList.map((m, i) => (
+                  <div key={i} className="flex items-center gap-3 py-3 border-b border-[var(--color-line)] last:border-0">
+                    <ChatAvatar src={m.avatar} name={m.name} />
+                    <div className="flex-1 min-w-0">
+                      <span className="font-display text-sm">{m.name}</span>
+                      <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">参加：{m.join}</div>
+                    </div>
+                  </div>
+                ))}
+                {club.members > club.memberList.length && (
+                  <div className="py-4 text-center font-display text-xs text-[var(--color-mute)]">他 {club.members - club.memberList.length}名参加中</div>
                 )}
               </div>
-            ))}
-          </div>
-        )}
-
-        {tab === "reports" && (
-          <div className="px-5 pt-5 space-y-4">
-            {club.reports.map(r => (
-              <div key={r.id} className="card p-5">
-                <div className="font-display text-xs text-[var(--color-mute)] mb-2">{r.date}</div>
-                <h3 className="font-display text-lg">{r.title}</h3>
-                <p className="mt-2 text-sm text-[var(--color-mute)] leading-relaxed">{r.body}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {Array.from({ length: Math.min(r.images, 4) }).map((_, i) => (
-                    <div key={i} className="w-[70px] h-[70px] rounded-lg bg-[var(--color-line)] flex items-center justify-center text-xs text-[var(--color-mute)]">📷</div>
-                  ))}
-                  {r.images > 4 && (
-                    <div className="w-[70px] h-[70px] rounded-lg bg-[var(--color-line)] flex items-center justify-center text-xs text-[var(--color-mute)]">+{r.images - 4}</div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {tab === "members" && (
-          <div className="px-5 pt-5 space-y-1">
-            <div className="font-display text-xs text-[var(--color-mute)] mb-4">{club.members}人参加中</div>
-            {club.memberList.map((m, i) => (
-              <div key={i} className="flex items-center gap-3 py-3 border-b border-[var(--color-line)] last:border-0">
-                <ChatAvatar src={m.avatar} name={m.name} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-display text-sm">{m.name}</span>
-                    {m.role && <span className="tag text-[9px]">{m.role}</span>}
-                  </div>
-                  <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">参加：{m.join}</div>
-                </div>
-              </div>
-            ))}
-            {club.members > club.memberList.length && (
-              <div className="py-4 text-center font-display text-xs text-[var(--color-mute)]">他 {club.members - club.memberList.length}名参加中</div>
             )}
-          </div>
-        )}
 
-        {/* Fixed compose bar (chat tab only) */}
-        {tab === "chat" && (
-          <div className="fixed bottom-[57px] left-0 right-0 z-40 flex justify-center pointer-events-none">
-            <div className="w-full max-w-[430px] pointer-events-auto bg-[var(--color-bg)]/95 backdrop-blur-md border-t border-[var(--color-line)] px-4 py-3">
-              <div className="flex gap-3">
-                <ChatAvatar src="/images/icon.png" name="青山 陸" />
-                <div className="flex-1 min-w-0">
-                  <textarea
-                    className="w-full bg-transparent text-sm text-[var(--color-ink)] placeholder-[var(--color-mute)] outline-none resize-none leading-relaxed"
-                    placeholder="COMMONS CLUBに投稿する…"
-                    rows={draft ? 3 : 1}
-                    value={draft}
-                    onChange={e => setDraft(e.target.value)}
-                  />
-                  {draftImages.length > 0 && (
-                    <div className="flex gap-2 mt-2 flex-wrap">
-                      {draftImages.map((img, i) => (
-                        <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={img} alt="" className="w-full h-full object-cover" />
-                          <button
-                            onClick={() => setDraftImages(prev => prev.filter((_, j) => j !== i))}
-                            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-[10px] flex items-center justify-center"
-                          >×</button>
+            {/* Fixed compose bar (chat tab only) */}
+            {tab === "chat" && (
+              <div className="fixed bottom-[57px] left-0 right-0 z-40 flex justify-center pointer-events-none">
+                <div className="w-full max-w-[430px] pointer-events-auto bg-[var(--color-bg)]/95 backdrop-blur-md border-t border-[var(--color-line)] px-4 py-3">
+                  <div className="flex gap-3">
+                    <ChatAvatar src="/images/icon.png" name="青山 陸" />
+                    <div className="flex-1 min-w-0">
+                      <textarea
+                        className="w-full bg-transparent text-sm text-[var(--color-ink)] placeholder-[var(--color-mute)] outline-none resize-none leading-relaxed"
+                        placeholder="COMMONS CLUBに投稿する…"
+                        rows={draft ? 3 : 1}
+                        value={draft}
+                        onChange={e => setDraft(e.target.value)}
+                      />
+                      {draftImages.length > 0 && (
+                        <div className="flex gap-2 mt-2 flex-wrap">
+                          {draftImages.map((img, i) => (
+                            <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={img} alt="" className="w-full h-full object-cover" />
+                              <button
+                                onClick={() => setDraftImages(prev => prev.filter((_, j) => j !== i))}
+                                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-[10px] flex items-center justify-center"
+                              >×</button>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
+                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-[var(--color-line)]">
+                        <button
+                          onClick={() => fileRef.current?.click()}
+                          disabled={draftImages.length >= 4}
+                          className="text-[var(--color-accent-deep)] disabled:opacity-30"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <polyline points="21 15 16 10 5 21" />
+                          </svg>
+                        </button>
+                        <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageAttach} />
+                        <button
+                          onClick={sendMessage}
+                          disabled={!draft.trim() && !draftImages.length}
+                          className="font-display text-xs px-4 py-2 rounded-full border border-[var(--color-accent)]/50 text-[var(--color-accent-deep)] tracking-[0.06em] hover:bg-[var(--color-accent)]/10 transition disabled:opacity-30"
+                        >
+                          投稿する
+                        </button>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-[var(--color-line)]">
-                    <button
-                      onClick={() => fileRef.current?.click()}
-                      disabled={draftImages.length >= 4}
-                      className="text-[var(--color-accent-deep)] disabled:opacity-30"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" />
-                        <circle cx="8.5" cy="8.5" r="1.5" />
-                        <polyline points="21 15 16 10 5 21" />
-                      </svg>
-                    </button>
-                    <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageAttach} />
-                    <button
-                      onClick={sendMessage}
-                      disabled={!draft.trim() && !draftImages.length}
-                      className="font-display text-xs px-4 py-2 rounded-full border border-[var(--color-accent)]/50 text-[var(--color-accent-deep)] tracking-[0.06em] hover:bg-[var(--color-accent)]/10 transition disabled:opacity-30"
-                    >
-                      投稿する
-                    </button>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            )}
+          </>
         )}
 
         <BottomNav />
