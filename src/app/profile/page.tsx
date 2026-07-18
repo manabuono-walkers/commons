@@ -44,6 +44,18 @@ export default function ProfilePage() {
             </p>
           </section>
 
+          {/* 職業・居住地 */}
+          <section className="flex gap-4">
+            <div className="flex items-center gap-1.5 text-xs text-[var(--color-mute)]">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+              <span className="font-display">戦略コンサルタント</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-[var(--color-mute)]">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span className="font-display">東京</span>
+            </div>
+          </section>
+
           {/* 参加クラブ */}
           <section>
             <div className="font-display text-xs text-[var(--color-mute)] mb-3">参加中のクラブ</div>
