@@ -42,7 +42,7 @@ export const events = [
     time: "19:00〜22:00",
     venue: "La Cave",
     station: "麻布十番駅",
-    state: "受付準備中",
+    state: "申込済み",
     image: "/images/event2.png",
     imageEmoji: "",
     desc: "ブルゴーニュ地方の名門生産者から選び抜いた6本を、ソムリエの解説とともに。",
@@ -62,6 +62,64 @@ export const events = [
     payment_url_female: "#",
     terms_url: "https://x.gd/R00Zm",
     conditions: ["GOLD以上"],
+  },
+  {
+    id: "autumn-night-0920",
+    title: "COMMONS AUTUMN NIGHT",
+    date: { month: "9月", day: "20", weekday: "土" },
+    time: "19:00〜22:00",
+    venue: "THE THEATRE TABLE",
+    station: "銀座駅",
+    state: "募集中",
+    image: "/images/event1.png",
+    imageEmoji: "",
+    desc: "秋の夜長を彩るスペシャルディナー。一流シェフによるコース料理と厳選ワインで、特別な夜をお楽しみください。",
+    datetime_detail: "9月20日（土）19:00〜22:00\n※18:45〜受付開始",
+    venue_map_url: "https://maps.google.com",
+    fee_male: "¥12,000",
+    fee_female: "¥10,000",
+    format: "着席式 / コース料理 + ワインペアリング",
+    capacity: "40名",
+    deadline: "9月15日（月）23時59分まで",
+    capacity_male: 20,
+    capacity_female: 20,
+    remaining_male: 0,
+    remaining_female: 6,
+    alert_threshold: 8,
+    payment_url_male: "#",
+    payment_url_female: "#",
+    terms_url: "https://x.gd/R00Zm",
+    conditions: [],
+    male_cancel_wait: true,
+  },
+  {
+    id: "winter-gala-1129",
+    title: "COMMONS WINTER GALA",
+    date: { month: "11月", day: "29", weekday: "土" },
+    time: "19:00〜22:00",
+    venue: "GRAND HYATT TOKYO",
+    station: "六本木駅",
+    state: "募集中",
+    image: "/images/event2.png",
+    imageEmoji: "",
+    desc: "年に一度の特別なガラディナー。ドレスアップした会員同士で、豪華なコース料理と音楽を楽しむCOMMONS最大のイベント。",
+    datetime_detail: "11月29日（土）19:00〜22:00\n※18:45〜受付開始",
+    venue_map_url: "https://maps.google.com",
+    fee_male: "¥18,000",
+    fee_female: "¥15,000",
+    format: "着席式 / フルコース + フリードリンク",
+    capacity: "60名",
+    deadline: "11月20日（木）23時59分まで",
+    capacity_male: 30,
+    capacity_female: 30,
+    remaining_male: 0,
+    remaining_female: 4,
+    alert_threshold: 8,
+    payment_url_male: "#",
+    payment_url_female: "#",
+    terms_url: "https://x.gd/R00Zm",
+    conditions: [],
+    male_cancel_wait_done: true,
   },
 ];
 
@@ -134,11 +192,20 @@ export default function EventsPage() {
         <div className="px-5 space-y-6">
           {shown.map((ev) => (
             <Link key={ev.id} href={`/events/${ev.id}`}>
-              <article className="rounded-2xl overflow-hidden border border-[var(--color-line)] transition hover:border-[var(--color-accent)]/60">
+              <article className="rounded-2xl overflow-hidden border border-[var(--color-line)] transition hover:border-[var(--color-accent)]/60 relative">
                 <div
                   className="h-[220px] bg-cover bg-center"
                   style={ev.image.startsWith("/") ? { backgroundImage: `url(${ev.image})` } : { background: ev.image }}
                 />
+                {ev.state === "申込済み" && (
+                  <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full font-display text-[11px]"
+                    style={{ background: "linear-gradient(135deg,#CBAE74,#B8985A)", color: "#0B0F16" }}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    申込済み
+                  </div>
+                )}
               </article>
             </Link>
           ))}

@@ -43,7 +43,7 @@ export default function PaymentPage() {
           <p className="text-xs text-[var(--color-mute)] leading-relaxed mb-8">
             参加登録が完了しました。<br />詳細は登録メールアドレスにお送りします。
           </p>
-          <Link href="/events" className="btn-primary justify-center">イベント一覧へ戻る</Link>
+          <button onClick={() => router.back()} className="btn-primary justify-center">イベント一覧へ戻る</button>
         </div>
       </div>
     );

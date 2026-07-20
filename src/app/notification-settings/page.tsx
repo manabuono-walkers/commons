@@ -1,6 +1,7 @@
 ﻿"use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
 type Section = {
@@ -51,6 +52,7 @@ const defaults: Record<string, boolean> = {
 };
 
 export default function NotificationSettingsPage() {
+  const router = useRouter();
   const [settings, setSettings] = useState(defaults);
   const [saved, setSaved] = useState(false);
 
@@ -68,7 +70,7 @@ export default function NotificationSettingsPage() {
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
       <div className="w-full max-w-[430px] pb-36">
         <header className="sticky top-0 z-40 bg-[var(--color-bg)]/95 backdrop-blur-md border-b border-[var(--color-line)] px-5 py-3 flex items-center justify-between">
-          <Link href="/mypage/settings" className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</Link>
+          <button onClick={() => router.back()} className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</button>
           <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", objectFit: "contain" }} />
           <span className="w-12" />
         </header>
@@ -113,9 +115,9 @@ export default function NotificationSettingsPage() {
             >
               {saved ? "保存しました ✓" : "設定を保存する"}
             </button>
-            <Link href="/mypage/settings" className="block w-full py-3 rounded-full font-display text-sm text-center text-[var(--color-mute)] border border-[var(--color-line)] hover:text-[var(--color-ink)] hover:border-[var(--color-ink)] transition">
+            <button onClick={() => router.back()} className="block w-full py-3 rounded-full font-display text-sm text-center text-[var(--color-mute)] border border-[var(--color-line)] hover:text-[var(--color-ink)] hover:border-[var(--color-ink)] transition">
               戻る
-            </Link>
+            </button>
           </div>
         </div>
 

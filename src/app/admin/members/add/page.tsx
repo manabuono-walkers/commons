@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const PREFS = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
 const JOBS = ["経営者・役員","会社員（総合職）","会社員（一般職）","契約社員・派遣社員","パート・アルバイト","公務員（教職員除く）","教職員","医療関係者","自営業","専業主婦・主夫","学生","士業（公認会計士・弁護士・税理士・司法書士）","無職","その他"];
@@ -46,6 +47,7 @@ function SectionHead({ title }: { title: string }) {
 }
 
 export default function MemberAddPage() {
+  const router = useRouter();
   const [entryReasons, setEntryReasons] = useState<string[]>([]);
 
   function toggleReason(r: string) {
@@ -59,7 +61,7 @@ export default function MemberAddPage() {
           <div className="font-display text-[10px] tracking-[0.12em] text-[var(--color-accent-deep)]">MEMBER</div>
           <h1 className="font-display text-2xl mt-0.5">会員追加</h1>
         </div>
-        <Link href="/admin/members" className="btn-outline !py-2 text-xs">← 一覧に戻る</Link>
+        <button onClick={() => router.back()} className="btn-outline !py-2 text-xs">← 一覧に戻る</button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-8 py-6">

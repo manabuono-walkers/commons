@@ -29,7 +29,7 @@ export default function ProfileEditPage() {
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
       <div className="w-full max-w-[430px] pb-32">
         <header className="sticky top-0 z-40 bg-[var(--color-bg)]/95 backdrop-blur-md border-b border-[var(--color-line)] px-5 py-3 flex items-center justify-between">
-          <Link href="/mypage" className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</Link>
+          <button onClick={() => router.back()} className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</button>
           <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", objectFit: "contain" }} />
           <span className="w-12" />
         </header>
@@ -112,8 +112,8 @@ function Field({ label, value, onChange, placeholder }: { label: string; value: 
       <input
         className="w-full bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-xl px-4 py-3 text-sm text-[var(--color-ink)] outline-none"
         style={{ transition: "border-color 0.2s" }}
-        onFocus={e => e.currentTarget.style.borderColor = "var(--color-accent)"}
-        onBlur={e => e.currentTarget.style.borderColor = "var(--color-line)"}
+        onFocus={e => e.style.borderColor = "var(--color-accent)"}
+        onBlur={e => e.style.borderColor = "var(--color-line)"}
         placeholder={placeholder}
         value={value}
         onChange={e => onChange(e.target.value)}

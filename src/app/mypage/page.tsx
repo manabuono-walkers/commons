@@ -27,7 +27,7 @@ const campaigns = [
 ];
 
 const mainMenuItems = [
-  { label: "クーポン",      badge: "3枚", href: "/mypage/coupons" },
+  { label: "クーポン",      badge: "2枚", href: "/mypage/coupons" },
   { label: "保存した投稿",  badge: "",    href: "/mypage/saved-posts" },
   { label: "使い方ガイド",  badge: "",    href: "/guide" },
 ];

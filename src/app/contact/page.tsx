@@ -1,6 +1,7 @@
 ﻿"use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
 const topics = [
@@ -12,6 +13,7 @@ const topics = [
 ];
 
 export default function ContactPage() {
+  const router = useRouter();
   const [topic, setTopic] = useState("");
   const [body, setBody] = useState("");
   const [sent, setSent] = useState(false);
@@ -27,7 +29,7 @@ export default function ContactPage() {
           </div>
           <h1 className="font-display text-xl font-semibold mb-2">お問い合わせを受け付けました</h1>
           <p className="text-sm text-[var(--color-mute)] leading-relaxed mb-8">内容を確認の上、2営業日以内にご連絡いたします。</p>
-          <Link href="/mypage" className="btn-primary justify-center">マイページへ戻る</Link>
+          <button onClick={() => router.back()} className="btn-primary justify-center">マイページへ戻る</button>
         </div>
       </div>
     );
@@ -37,7 +39,7 @@ export default function ContactPage() {
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
       <div className="w-full max-w-[430px] pb-24">
         <header className="sticky top-0 z-40 bg-[var(--color-bg)]/95 backdrop-blur-md border-b border-[var(--color-line)] px-5 py-3 flex items-center justify-between">
-          <Link href="/mypage" className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</Link>
+          <button onClick={() => router.back()} className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</button>
           <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", objectFit: "contain" }} />
           <span className="w-12" />
         </header>

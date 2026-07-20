@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
 const plans = [
@@ -25,6 +26,7 @@ const plans = [
 ];
 
 export default function PlanChangePage() {
+  const router = useRouter();
   const [selected, setSelected] = useState("yearly");
   const [done, setDone] = useState(false);
 
@@ -35,7 +37,7 @@ export default function PlanChangePage() {
           <div className="text-5xl">✓</div>
           <div className="font-display text-2xl">プランを変更しました</div>
           <p className="text-sm text-[var(--color-mute)]">次回請求日より新しいプランが適用されます。</p>
-          <Link href="/mypage" className="btn-primary px-8 py-3 rounded-full font-display text-sm mt-4">マイページへ戻る</Link>
+          <button onClick={() => router.back()} className="btn-primary px-8 py-3 rounded-full font-display text-sm mt-4">マイページへ戻る</button>
         </div>
       </div>
     );
@@ -45,7 +47,7 @@ export default function PlanChangePage() {
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
       <div className="w-full max-w-[430px] pb-24">
         <header className="sticky top-0 z-40 bg-[var(--color-bg)]/95 backdrop-blur-md border-b border-[var(--color-line)] px-5 py-3 flex items-center justify-between">
-          <Link href="/mypage" className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</Link>
+          <button onClick={() => router.back()} className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</button>
           <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", objectFit: "contain" }} />
           <span className="w-12" />
         </header>

@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
 export default function ClubApplyPage() {
+  const router = useRouter();
   const [form, setForm] = useState({
     category: "",
     name: "",
@@ -33,7 +35,7 @@ export default function ClubApplyPage() {
           <p className="text-sm text-[var(--color-mute)] leading-relaxed mb-8">
             内容を確認のうえ、3営業日以内にご連絡いたします。
           </p>
-          <Link href="/clubs" className="btn-primary justify-center">クラブ一覧へ戻る</Link>
+          <button onClick={() => router.back()} className="btn-primary justify-center">クラブ一覧へ戻る</button>
         </div>
       </div>
     );
@@ -44,7 +46,7 @@ export default function ClubApplyPage() {
       <div className="w-full max-w-[430px] pb-24">
 
         <header className="sticky top-0 z-40 bg-[var(--color-bg)]/95 backdrop-blur-md border-b border-[var(--color-line)] px-5 py-3 flex items-center justify-between">
-          <Link href="/clubs" className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</Link>
+          <button onClick={() => router.back()} className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", objectFit: "contain" }} />
           <span className="w-12" />

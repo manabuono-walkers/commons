@@ -1,6 +1,7 @@
 ﻿"use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
 const categories = [
@@ -11,6 +12,7 @@ const categories = [
 ];
 
 export default function FeedbackPage() {
+  const router = useRouter();
   const [cat, setCat] = useState("");
   const [body, setBody] = useState("");
   const [sent, setSent] = useState(false);
@@ -30,7 +32,7 @@ export default function FeedbackPage() {
           </p>
           <div className="flex flex-col gap-3 w-full">
             <button onClick={() => { setSent(false); setCat(""); setBody(""); }} className="w-full py-3.5 rounded-full font-display text-sm border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-ink)] hover:text-[var(--color-ink)] transition">別のご意見を送る</button>
-            <Link href="/mypage/settings" className="w-full py-3.5 rounded-full font-display text-sm text-center transition hover:opacity-90" style={{ background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" }}>各種設定へ戻る</Link>
+            <button onClick={() => router.back()} className="w-full py-3.5 rounded-full font-display text-sm text-center transition hover:opacity-90" style={{ background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" }}>各種設定へ戻る</button>
           </div>
         </div>
       </div>
@@ -41,7 +43,7 @@ export default function FeedbackPage() {
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
       <div className="w-full max-w-[430px] pb-24">
         <header className="sticky top-0 z-40 bg-[var(--color-bg)]/95 backdrop-blur-md border-b border-[var(--color-line)] px-5 py-3 flex items-center justify-between">
-          <Link href="/mypage/settings" className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</Link>
+          <button onClick={() => router.back()} className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</button>
           <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", objectFit: "contain" }} />
           <span className="w-12" />
         </header>
