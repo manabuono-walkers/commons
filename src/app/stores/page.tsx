@@ -410,6 +410,7 @@ function StoresContent() {
               {t === "map" ? "マップ" : "リスト"}
             </button>
           ))}
+          <div className="px-4 font-display text-[10px] text-[var(--color-mute)] whitespace-nowrap">{filtered.length}件</div>
         </div>
 
         {tab === "map"  && <MapView  stores={filtered} />}
