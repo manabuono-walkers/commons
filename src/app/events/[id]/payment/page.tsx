@@ -4,11 +4,10 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { events } from "../../page";
 
-const VALID_COUPONS: Record<string, number> = {
-  "COMMONS500": 500,
-  "WINE1000": 1000,
-  "SUMMER2026": 800,
-};
+const availableCoupons = [
+  { id: "cp001", shop: "La Cave", title: "イベント1000円オフ", discount: 1000, expiry: "2026.08.31" },
+  { id: "cp002", shop: "SOUND BAR HOWL", title: "入場料20% OFF", discount: 800, expiry: "2026.09.30" },
+];
 
 export default function PaymentPage() {
   const params = useParams();
@@ -22,25 +21,11 @@ export default function PaymentPage() {
   const feeNum = parseInt(fee.replace(/[^0-9]/g, ""));
   const genderLabel = gender === "male" ? "男性" : "女性";
 
-  const [coupon, setCoupon] = useState("");
-  const [appliedDiscount, setAppliedDiscount] = useState(0);
-  const [couponError, setCouponError] = useState("");
-  const [couponApplied, setCouponApplied] = useState("");
+  const [selectedCouponId, setSelectedCouponId] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
-  function applyCoupon() {
-    const code = coupon.trim().toUpperCase();
-    if (VALID_COUPONS[code]) {
-      setAppliedDiscount(VALID_COUPONS[code]);
-      setCouponApplied(code);
-      setCouponError("");
-    } else {
-      setCouponError("このクーポンは無効です");
-      setAppliedDiscount(0);
-      setCouponApplied("");
-    }
-  }
-
+  const selectedCoupon = availableCoupons.find(c => c.id === selectedCouponId) ?? null;
+  const appliedDiscount = selectedCoupon?.discount ?? 0;
   const total = Math.max(0, feeNum - appliedDiscount);
 
   if (done) {
@@ -58,7 +43,7 @@ export default function PaymentPage() {
           <p className="text-xs text-[var(--color-mute)] leading-relaxed mb-8">
             参加登録が完了しました。<br />詳細は登録メールアドレスにお送りします。
           </p>
-          <Link href="/events" className="btn-primary justify-center">イベント一覧へ戻る</Link>
+          <button onClick={() => router.back()} className="btn-primary justify-center">イベント一覧へ戻る</button>
         </div>
       </div>
     );
@@ -111,28 +96,44 @@ export default function PaymentPage() {
 
           {/* Coupon */}
           <div className="card p-5 mb-6">
-            <p className="font-display text-xs text-[var(--color-accent-deep)] mb-3">クーポンコード</p>
-            <div className="flex gap-2">
-              <input
-                className="input-field !py-2.5 text-sm flex-1"
-                placeholder="コードを入力"
-                value={coupon}
-                onChange={e => { setCoupon(e.target.value); setCouponError(""); }}
-                disabled={!!couponApplied}
-              />
-              <button
-                onClick={applyCoupon}
-                disabled={!!couponApplied || !coupon.trim()}
-                className="font-display text-xs px-4 py-2.5 rounded-xl border border-[var(--color-accent)] text-[var(--color-accent-deep)] hover:bg-[var(--color-accent)]/10 transition disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
-              >
-                適用
-              </button>
-            </div>
-            {couponError && <p className="text-xs text-red-400 mt-2">{couponError}</p>}
-            {couponApplied && (
-              <div className="mt-2 flex items-center justify-between text-xs">
-                <span className="text-[var(--color-accent-deep)]">✓ {couponApplied} 適用済み</span>
-                <span className="text-[var(--color-accent-deep)] num">−¥{appliedDiscount.toLocaleString()}</span>
+            <p className="font-display text-xs text-[var(--color-accent-deep)] mb-3">保有クーポン（1枚選択可）</p>
+            {availableCoupons.length === 0 ? (
+              <p className="text-xs text-[var(--color-mute)]">利用可能なクーポンがありません</p>
+            ) : (
+              <div className="space-y-2">
+                {availableCoupons.map(c => {
+                  const isSelected = selectedCouponId === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => setSelectedCouponId(isSelected ? null : c.id)}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl border transition text-left"
+                      style={{
+                        borderColor: isSelected ? "var(--color-accent)" : "var(--color-line)",
+                        background: isSelected ? "rgba(184,152,90,0.08)" : "var(--color-bg)",
+                      }}
+                    >
+                      <div
+                        className="flex-none w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                        style={{
+                          borderColor: isSelected ? "var(--color-accent-deep)" : "var(--color-line)",
+                          background: isSelected ? "var(--color-accent-deep)" : "transparent",
+                        }}
+                      >
+                        {isSelected && (
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0B0F16" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-display text-sm">{c.title}</div>
+                        <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">{c.shop} · 期限 {c.expiry}</div>
+                      </div>
+                      <div className="flex-none font-display text-sm text-[var(--color-accent-deep)]">−¥{c.discount.toLocaleString()}</div>
+                    </button>
+                  );
+                })}
               </div>
             )}
             <p className="mt-3 text-[10px] text-[var(--color-mute)]">※ クーポンは1枚のみ適用可能です</p>
@@ -165,7 +166,7 @@ export default function PaymentPage() {
               className="w-full py-4 rounded-full font-display text-base transition-all hover:opacity-90 active:scale-95"
               style={{ background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" }}
             >
-              決済する — ¥{total.toLocaleString()}
+              決済する
             </button>
             <button
               onClick={() => router.back()}
@@ -173,10 +174,6 @@ export default function PaymentPage() {
             >
               戻る
             </button>
-            <p className="text-[10px] text-[var(--color-mute)] text-center leading-relaxed">
-              決済ボタンを押すことで、参加規約に同意したものとみなされます。<br />
-              キャンセルの場合、開催7日前までは全額返金いたします。
-            </p>
           </div>
         </div>
       </div>

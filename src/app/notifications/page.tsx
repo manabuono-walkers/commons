@@ -3,7 +3,7 @@ import { useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import AppHeader from "@/components/AppHeader";
 
-const notifications = [
+const globalNotifications = [
   {
     id: 0,
     badge: "最初に必ず確認",
@@ -15,14 +15,6 @@ const notifications = [
   },
   {
     id: 1,
-    badge: "キャンペーン",
-    title: "【夏割】新規入会で初月会費無料キャンペーン",
-    body: "7月末までの新規入会で、初月会費が無料になります。お友達にもぜひシェアをお願いします。",
-    time: "2時間前",
-    read: false,
-  },
-  {
-    id: 2,
     badge: "新規イベント",
     title: "COMMONS WINE SALON 8月開催が決定",
     body: "ブルゴーニュ地方の名門生産者から選び抜いた6本を、ソムリエの解説とともにお楽しみいただけます。8月2日（土）19:00〜 La Cave 麻布十番。",
@@ -30,7 +22,7 @@ const notifications = [
     read: false,
   },
   {
-    id: 3,
+    id: 2,
     badge: "お知らせ",
     title: "7月のイベントスケジュールを公開しました",
     body: "先着・抽選あわせて計6件のイベントを公開しました。イベント一覧からご確認ください。",
@@ -38,7 +30,7 @@ const notifications = [
     read: true,
   },
   {
-    id: 4,
+    id: 3,
     badge: "提携店舗",
     title: "提携店舗 20%OFF週間のお知らせ",
     body: "7月1日〜7月7日の期間、全提携店舗で会員証提示により飲食代金が20%OFFになります。お得なこの機会をぜひご活用ください。",
@@ -46,7 +38,7 @@ const notifications = [
     read: true,
   },
   {
-    id: 5,
+    id: 4,
     badge: "システム",
     title: "アプリ v2.1.0 リリースのお知らせ",
     body: "COMMONS CLUBチャット・意見箱機能が追加されました。新機能についてのご意見はぜひ意見箱からお寄せください。",
@@ -55,23 +47,56 @@ const notifications = [
   },
 ];
 
+const personalNotifications = [
+  {
+    id: 10,
+    badge: "申込完了",
+    title: "COMMONS MUSIC BAR のお申込みが完了しました",
+    body: "7月15日（土）18:00〜 SOUND BAR HOWL でのご参加をお待ちしております。当日は17:45より受付開始です。",
+    time: "3日前",
+    read: false,
+  },
+  {
+    id: 11,
+    badge: "ポイント付与",
+    title: "イベント参加でポイントが付与されました",
+    body: "Coffee Cupping #6 へのご参加ありがとうございました。80ptを付与しました。現在の合計: 1,240pt",
+    time: "1週間前",
+    read: true,
+  },
+  {
+    id: 12,
+    badge: "お支払い",
+    title: "7月分の月額会費が確定しました",
+    body: "7月1日に月額会費 ¥5,000 が引き落とされました。領収書はマイページよりご確認いただけます。",
+    time: "2週間前",
+    read: true,
+  },
+];
+
 const badgeColors: Record<string, string> = {
   "最初に必ず確認": "tag-accent",
-  "キャンペーン": "tag-accent",
-  "新規イベント": "tag-ink",
-  "お知らせ": "",
-  "提携店舗": "",
-  "システム": "",
+  "新規イベント":   "tag-ink",
+  "申込完了":       "tag-accent",
+  "ポイント付与":   "tag-accent",
+  "キャンペーン":   "tag-accent",
+  "お知らせ":       "",
+  "提携店舗":       "",
+  "システム":       "",
+  "お支払い":       "",
 };
 
 export default function NotificationsPage() {
-  const unread = notifications.filter(n => !n.read).length;
+  const [tab, setTab] = useState<"global" | "personal">("global");
   const [expanded, setExpanded] = useState<number | null>(null);
+
+  const list = tab === "global" ? globalNotifications : personalNotifications;
+  const unread = list.filter(n => !n.read).length;
 
   return (
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
       <div className="w-full max-w-[430px] pb-24">
-        <AppHeader backHref="/home" />
+        <AppHeader backHref="/events" />
 
         <div className="px-5 pt-6 pb-3">
           <h1 className="font-display text-2xl">通知</h1>
@@ -80,8 +105,22 @@ export default function NotificationsPage() {
           )}
         </div>
 
+        {/* 個人 / 全体 タブ */}
+        <div className="flex border-b border-[var(--color-line)] mb-4">
+          {(["global", "personal"] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => { setTab(t); setExpanded(null); }}
+              className={`flex-1 py-3 font-display text-sm tracking-wide transition border-b-2 ${tab === t ? "text-[var(--color-accent-deep)]" : "text-[var(--color-mute)] border-transparent"}`}
+              style={tab === t ? { borderBottomColor: "var(--color-accent-deep)" } : {}}
+            >
+              {t === "global" ? "全体" : "個人"}
+            </button>
+          ))}
+        </div>
+
         <div className="px-5 space-y-2">
-          {notifications.map((n) => {
+          {list.map((n) => {
             const isOpen = expanded === n.id;
             return (
               <div
@@ -89,12 +128,9 @@ export default function NotificationsPage() {
                 className={`card relative transition-all cursor-pointer ${!n.read ? "border-[var(--color-accent)]/40" : ""}`}
                 onClick={() => setExpanded(isOpen ? null : n.id)}
               >
-                {/* Unread dot */}
                 {!n.read && (
                   <span className="absolute top-4 right-10 w-2 h-2 rounded-full bg-[var(--color-accent)]" />
                 )}
-
-                {/* Header row — always visible */}
                 <div className="flex items-start justify-between gap-3 p-5">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1.5">
@@ -103,7 +139,6 @@ export default function NotificationsPage() {
                     </div>
                     <h3 className="font-display text-sm leading-snug">{n.title}</h3>
                   </div>
-                  {/* Chevron */}
                   <span
                     className="flex-none mt-0.5 text-[var(--color-mute)] transition-transform duration-200"
                     style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", display: "inline-block" }}
@@ -113,11 +148,9 @@ export default function NotificationsPage() {
                     </svg>
                   </span>
                 </div>
-
-                {/* Expanded body */}
                 {isOpen && (
                   <div className="px-5 pb-5 border-t border-[var(--color-line)] pt-3">
-                    <p className="text-xs text-[var(--color-mute)] leading-relaxed">{n.body}</p>
+                    <p className="text-xs text-[var(--color-mute)] leading-relaxed whitespace-pre-line">{n.body}</p>
                   </div>
                 )}
               </div>

@@ -14,7 +14,7 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     setTimeout(() => {
-      router.push("/home");
+      router.push("/events");
     }, 600);
   }
 

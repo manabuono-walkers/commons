@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
 const ranks = [
@@ -100,11 +101,12 @@ const NEXT_XP = 5000;
 const PROGRESS = Math.min(Math.round((CURRENT_XP / NEXT_XP) * 100), 100);
 
 export default function RankDetailPage() {
+  const router = useRouter();
   return (
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
       <div className="w-full max-w-[430px] pb-24">
         <header className="sticky top-0 z-40 bg-[var(--color-bg)]/95 backdrop-blur-md border-b border-[var(--color-line)] px-5 py-3 flex items-center justify-between">
-          <Link href="/mypage" className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</Link>
+          <button onClick={() => router.back()} className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", objectFit: "contain" }} />
           <span className="w-12" />

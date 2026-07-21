@@ -2,16 +2,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-function IconHome({ active }: { active: boolean }) {
-  const c = active ? "var(--color-accent-deep)" : "var(--color-mute)";
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" />
-      <path d="M9 21V12h6v9" />
-    </svg>
-  );
-}
-
 function IconEvent({ active }: { active: boolean }) {
   const c = active ? "var(--color-accent-deep)" : "var(--color-mute)";
   return (
@@ -27,53 +17,41 @@ function IconEvent({ active }: { active: boolean }) {
   );
 }
 
+function IconTimeline({ active }: { active: boolean }) {
+  const c = active ? "var(--color-accent-deep)" : "var(--color-mute)";
+  return (
+    <svg width="22" height="22" viewBox="0 0 26 26" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="4" x2="5" y2="22" stroke={c} strokeWidth="1.6" />
+      <circle cx="5" cy="4" r="2.2" fill={c} />
+      <circle cx="5" cy="13" r="2.2" fill={c} />
+      <circle cx="5" cy="22" r="2.2" fill={c} />
+      <path d="M9 1.5h9l3 2.5-3 2.5H9z" fill="none" stroke={c} strokeWidth="1.5" />
+      <path d="M9 10.5h10l3 2.5-3 2.5H9z" fill="none" stroke={c} strokeWidth="1.5" />
+      <path d="M9 19.5h8l3 2.5-3 2.5H9z" fill="none" stroke={c} strokeWidth="1.5" />
+    </svg>
+  );
+}
+
 function IconClubs({ active }: { active: boolean }) {
   const c = active ? "var(--color-accent-deep)" : "var(--color-mute)";
   return (
     <svg width="22" height="22" viewBox="0 0 32 32" fill="none" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      {/* Top center person */}
       <circle cx="16" cy="5.5" r="2.8" />
       <path d="M10.5 13.5c0-3 2.5-5 5.5-5s5.5 2 5.5 5" />
-      {/* Bottom left person */}
       <circle cx="6.5" cy="19" r="2.8" />
       <path d="M1 27c0-3 2.5-5 5.5-5s5.5 2 5.5 5" />
-      {/* Bottom right person */}
       <circle cx="25.5" cy="19" r="2.8" />
       <path d="M20 27c0-3 2.5-5 5.5-5s5.5 2 5.5 5" />
     </svg>
   );
 }
 
-function IconStore({ active }: { active: boolean }) {
+function IconMap({ active }: { active: boolean }) {
   const c = active ? "var(--color-accent-deep)" : "var(--color-mute)";
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      {/* Martini glass */}
-      <path d="M5 4h14L12 14z" />
-      <line x1="12" y1="14" x2="12" y2="20" />
-      <line x1="8" y1="20" x2="16" y2="20" />
-      {/* Garnish circle */}
-      <circle cx="18" cy="6" r="2.2" />
-    </svg>
-  );
-}
-
-function IconTimeline({ active }: { active: boolean }) {
-  const c = active ? "var(--color-accent-deep)" : "var(--color-mute)";
-  return (
-    <svg width="22" height="22" viewBox="0 0 26 26" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      {/* Vertical connecting line */}
-      <line x1="5" y1="4" x2="5" y2="22" stroke={c} strokeWidth="1.6" />
-      {/* 3 timeline nodes */}
-      <circle cx="5" cy="4" r="2.2" fill={c} />
-      <circle cx="5" cy="13" r="2.2" fill={c} />
-      <circle cx="5" cy="22" r="2.2" fill={c} />
-      {/* Top label arrow */}
-      <path d="M9 1.5h9l3 2.5-3 2.5H9z" fill="none" stroke={c} strokeWidth="1.5" />
-      {/* Middle label arrow */}
-      <path d="M9 10.5h10l3 2.5-3 2.5H9z" fill="none" stroke={c} strokeWidth="1.5" />
-      {/* Bottom label arrow */}
-      <path d="M9 19.5h8l3 2.5-3 2.5H9z" fill="none" stroke={c} strokeWidth="1.5" />
+      <path d="M12 2C8.686 2 6 4.686 6 8c0 4.5 6 12 6 12s6-7.5 6-12c0-3.314-2.686-6-6-6z" />
+      <circle cx="12" cy="8" r="2" />
     </svg>
   );
 }
@@ -82,7 +60,6 @@ function IconMypage({ active }: { active: boolean }) {
   const c = active ? "var(--color-accent-deep)" : "var(--color-mute)";
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      {/* Person in circle (keyhole shape) */}
       <circle cx="12" cy="12" r="9.5" />
       <circle cx="12" cy="9" r="3" />
       <path d="M5.5 20.5a7 7 0 0 1 13 0" />
@@ -91,11 +68,10 @@ function IconMypage({ active }: { active: boolean }) {
 }
 
 const tabs = [
-  { href: "/home",      label: "ホーム",       Icon: IconHome },
   { href: "/events",    label: "イベント",     Icon: IconEvent },
   { href: "/community", label: "タイムライン", Icon: IconTimeline },
   { href: "/clubs",     label: "クラブ",       Icon: IconClubs },
-  { href: "/stores",    label: "店舗",         Icon: IconStore },
+  { href: "/stores",    label: "マップ",       Icon: IconMap },
   { href: "/mypage",    label: "マイページ",   Icon: IconMypage },
 ];
 

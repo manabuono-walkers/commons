@@ -10,26 +10,23 @@ interface Props {
 export default function AppHeader({ backHref, rightSlot }: Props) {
   return (
     <header className="sticky top-0 z-40 bg-[var(--color-bg)]/95 backdrop-blur-md border-b border-[var(--color-line)] px-5 py-3">
-      <div className="flex items-center justify-between gap-3">
-        {/* Left: back or logo */}
-        {backHref ? (
-          <Link href={backHref} className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition whitespace-nowrap">
-            ← 戻る
-          </Link>
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src="/images/logo.png" alt="COMMONS" style={{ height: 26, width: "auto", objectFit: "contain" }} />
-        )}
+      <div className="relative flex items-center justify-between">
+        {/* Left */}
+        <div className="flex-1">
+          {backHref && (
+            <Link href={backHref} className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition whitespace-nowrap">
+              ← 戻る
+            </Link>
+          )}
+        </div>
 
-        {/* Center slot (e.g. logo when back is shown) */}
-        {backHref && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", objectFit: "contain" }} />
-        )}
+        {/* Center: logo always */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", objectFit: "contain" }} className="absolute left-1/2 -translate-x-1/2" />
 
-        {/* Right: custom slot or default nav icons */}
-        <div className="flex items-center gap-3 ml-auto">
-          {rightSlot ?? <DefaultNavIcons />}
+        {/* Right */}
+        <div className="flex-1 flex items-center gap-3 justify-end">
+          {rightSlot ?? (backHref ? <span className="w-8" /> : <DefaultNavIcons />)}
         </div>
       </div>
     </header>

@@ -28,7 +28,7 @@ export default function WithdrawPage() {
             ご利用ありがとうございました。<br />
             またいつでも戻ってきてください。
           </p>
-          <button onClick={() => router.push("/home")} className="btn-outline justify-center">
+          <button onClick={() => router.back()} className="btn-outline justify-center">
             ホームへ
           </button>
         </div>

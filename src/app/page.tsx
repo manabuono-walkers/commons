@@ -13,11 +13,8 @@ const groups = [
     { href: "/events", n: "07", title: "イベント一覧", desc: "カテゴリ絞り込み／先着・抽選", tag: "既存" },
     { href: "/login", n: "08", title: "サインイン", desc: "会員ログイン画面", tag: "既存" },
     { href: "/register", n: "09", title: "新規登録", desc: "Apple/Googleソーシャル登録 + フォーム", tag: "既存" },
-    { href: "/apply", n: "10", title: "入会審査申込", desc: "5ステップフォーム", tag: "既存" },
     { href: "/admin", n: "11", title: "管理画面", desc: "KPI／会員一覧／対応キュー", tag: "既存" },
     { href: "/admin_login", n: "11b", title: "管理者ログイン画面", desc: "管理コンソール専用認証画面（二分割レイアウト）", tag: "既存" },
-    { href: "/dashboard", n: "12", title: "マイページ（旧版）", desc: "プラン・支払・ランク・ポイント・参加履歴", tag: "既存" },
-    { href: "/map", n: "13", title: "店舗マップ（旧版）", desc: "提携店舗のピン表示・会員特典", tag: "既存" },
   ]},
 ];
 

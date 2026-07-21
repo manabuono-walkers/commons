@@ -1,15 +1,18 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
 export default function ClubApplyPage() {
+  const router = useRouter();
   const [form, setForm] = useState({
-    name: "",
     category: "",
+    name: "",
     desc: "",
     reason: "",
     contact: "",
+    other: "",
   });
   const [done, setDone] = useState(false);
 
@@ -17,7 +20,7 @@ export default function ClubApplyPage() {
     setForm(prev => ({ ...prev, [field]: value }));
   }
 
-  const valid = form.name.trim() && form.category && form.desc.trim() && form.reason.trim();
+  const valid = form.category && form.name.trim() && form.desc.trim() && form.reason.trim();
 
   if (done) {
     return (
@@ -32,7 +35,7 @@ export default function ClubApplyPage() {
           <p className="text-sm text-[var(--color-mute)] leading-relaxed mb-8">
             内容を確認のうえ、3営業日以内にご連絡いたします。
           </p>
-          <Link href="/clubs" className="btn-primary justify-center">クラブ一覧へ戻る</Link>
+          <button onClick={() => router.back()} className="btn-primary justify-center">クラブ一覧へ戻る</button>
         </div>
       </div>
     );
@@ -42,9 +45,8 @@ export default function ClubApplyPage() {
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
       <div className="w-full max-w-[430px] pb-24">
 
-        {/* Header */}
         <header className="sticky top-0 z-40 bg-[var(--color-bg)]/95 backdrop-blur-md border-b border-[var(--color-line)] px-5 py-3 flex items-center justify-between">
-          <Link href="/clubs" className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</Link>
+          <button onClick={() => router.back()} className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", objectFit: "contain" }} />
           <span className="w-12" />
@@ -60,16 +62,7 @@ export default function ClubApplyPage() {
           </div>
 
           <section className="space-y-5">
-            <div>
-              <label className="font-display text-xs text-[var(--color-accent-deep)] block mb-2">クラブ名 <span className="text-[var(--color-mute)]">*</span></label>
-              <input
-                className="input-field w-full"
-                placeholder="例：サウナクラブ、映画クラブ"
-                value={form.name}
-                onChange={e => handleChange("name", e.target.value)}
-              />
-            </div>
-
+            {/* 1. カテゴリ */}
             <div>
               <label className="font-display text-xs text-[var(--color-accent-deep)] block mb-2">カテゴリ <span className="text-[var(--color-mute)]">*</span></label>
               <select
@@ -87,8 +80,20 @@ export default function ClubApplyPage() {
               </select>
             </div>
 
+            {/* 2. クラブ名 */}
             <div>
-              <label className="font-display text-xs text-[var(--color-accent-deep)] block mb-2">クラブの説明 <span className="text-[var(--color-mute)]">*</span></label>
+              <label className="font-display text-xs text-[var(--color-accent-deep)] block mb-2">クラブ名 <span className="text-[var(--color-mute)]">*</span></label>
+              <input
+                className="input-field w-full"
+                placeholder="例：サウナクラブ、映画クラブ"
+                value={form.name}
+                onChange={e => handleChange("name", e.target.value)}
+              />
+            </div>
+
+            {/* 3. クラブの概要 */}
+            <div>
+              <label className="font-display text-xs text-[var(--color-accent-deep)] block mb-2">クラブの概要 <span className="text-[var(--color-mute)]">*</span></label>
               <textarea
                 className="input-field w-full resize-none"
                 rows={3}
@@ -98,8 +103,9 @@ export default function ClubApplyPage() {
               />
             </div>
 
+            {/* 4. 開設理由 */}
             <div>
-              <label className="font-display text-xs text-[var(--color-accent-deep)] block mb-2">開設したい理由 <span className="text-[var(--color-mute)]">*</span></label>
+              <label className="font-display text-xs text-[var(--color-accent-deep)] block mb-2">開設理由 <span className="text-[var(--color-mute)]">*</span></label>
               <textarea
                 className="input-field w-full resize-none"
                 rows={3}
@@ -109,15 +115,6 @@ export default function ClubApplyPage() {
               />
             </div>
 
-            <div>
-              <label className="font-display text-xs text-[var(--color-accent-deep)] block mb-2">連絡先（任意）</label>
-              <input
-                className="input-field w-full"
-                placeholder="メールアドレスまたはSNS"
-                value={form.contact}
-                onChange={e => handleChange("contact", e.target.value)}
-              />
-            </div>
           </section>
 
           <button
@@ -129,6 +126,22 @@ export default function ClubApplyPage() {
             申請する
           </button>
         </main>
+
+        <style>{`
+          .input-field {
+            background: var(--color-bg-soft);
+            border: 1px solid var(--color-line);
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 14px;
+            color: var(--color-ink);
+            outline: none;
+            transition: border-color 0.2s;
+          }
+          .input-field:focus { border-color: rgba(184,152,90,0.6); }
+          .input-field::placeholder { color: var(--color-mute); }
+          select.input-field { appearance: none; -webkit-appearance: none; }
+        `}</style>
 
         <BottomNav />
       </div>

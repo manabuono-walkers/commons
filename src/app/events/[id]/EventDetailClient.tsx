@@ -6,9 +6,35 @@ import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import { events, CommonsLogo } from "../page";
 
+const TERMS_TEXT = `【COMMONSイベント参加規約】
+
+第1条（参加条件）
+本イベントへの参加は、COMMONS会員に限ります。参加申込時点で有効な会員資格を有している必要があります。
+
+第2条（キャンセルポリシー）
+・募集期間中のキャンセルは参加費を全額返金いたします。
+・開催15日前までのキャンセルは参加費の半額を返金いたします。
+・開催14日前以降のキャンセルは返金対象外となります。
+
+第3条（禁止事項）
+・会員以外の方の同伴（許可なし）
+・会場内での撮影・録音（スタッフの指示に従ってください）
+・他の参加者への勧誘・営業行為
+
+第4条（免責事項）
+天災その他不可抗力により中止となった場合、参加費の返金対応を行います。会場への往復に関わる費用は参加者負担となります。
+
+第5条（個人情報の取り扱い）
+申込情報は本イベントの運営・連絡目的のみに使用します。第三者への提供は行いません。`;
+
 export default function EventDetailClient({ id }: { id: string }) {
   const ev = events.find(e => e.id === id) ?? events[0];
-  const [cancelWait, setCancelWait] = useState(false);
+  const [cancelWait, setCancelWait] = useState(!!(ev as any).male_cancel_wait);
+  const [cancelWaitRegistered, setCancelWaitRegistered] = useState(false);
+  const [agreedTerms, setAgreedTerms] = useState(false);
+  const [showCancelSheet, setShowCancelSheet] = useState(false);
+  const [cancelled, setCancelled] = useState(false);
+  const [cancelWaitCancelled, setCancelWaitCancelled] = useState(false);
   const router = useRouter();
 
   const showMaleRemaining = ev.remaining_male < ev.alert_threshold;
@@ -119,14 +145,49 @@ export default function EventDetailClient({ id }: { id: string }) {
 
           <DetailRow label="お支払い方法">
             <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed">
-              以下の参加規約をご確認いただいた上で各URLにてお支払いをいただき、イベント参加とさせていただきます。
+              以下の参加規約をご確認の上、同意いただいた後にお支払いへ進んでください。
             </p>
-            <div className="mt-3 bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-xl p-4">
-              <p className="font-display text-xs text-[var(--color-mute)] mb-1">【参加規約】</p>
-              <a href={ev.terms_url} className="text-sm text-[var(--color-accent-deep)] underline underline-offset-4 break-all">
-                {ev.terms_url}
-              </a>
+
+            {/* Inline terms UI */}
+            <div className="mt-3 rounded-xl overflow-hidden border border-[var(--color-line)]">
+              <div className="bg-[var(--color-bg-soft)] px-4 py-2 border-b border-[var(--color-line)]">
+                <p className="font-display text-[10px] text-[var(--color-accent-deep)] tracking-wide">参加規約</p>
+              </div>
+              <div
+                className="h-[160px] overflow-y-auto px-4 py-3 text-xs text-[var(--color-mute)] leading-relaxed whitespace-pre-wrap"
+                style={{ background: "var(--color-bg)" }}
+              >
+                {TERMS_TEXT}
+              </div>
             </div>
+
+            {/* Agree checkbox */}
+            <label className="mt-4 flex items-start gap-3 cursor-pointer group">
+              <div className="relative flex-none mt-0.5">
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={agreedTerms}
+                  onChange={e => setAgreedTerms(e.target.checked)}
+                />
+                <div
+                  className="w-5 h-5 rounded flex items-center justify-center transition-all"
+                  style={{
+                    background: agreedTerms ? "linear-gradient(135deg, #CBAE74, #B8985A)" : "var(--color-bg-soft)",
+                    border: agreedTerms ? "none" : "1px solid var(--color-line)",
+                  }}
+                >
+                  {agreedTerms && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0B0F16" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <span className="font-display text-sm text-[var(--color-ink)] leading-snug group-hover:text-[var(--color-accent-deep)] transition">
+                上記の参加規約を確認し、同意します
+              </span>
+            </label>
           </DetailRow>
         </div>
 
@@ -164,52 +225,111 @@ export default function EventDetailClient({ id }: { id: string }) {
         {/* Payment */}
         <div className="px-5 py-8">
           <p className="font-display text-[10px] tracking-[0.2em] text-[var(--color-accent-deep)] text-center mb-1">Payment</p>
-          <h2 className="font-display text-2xl text-center mb-7">お支払い</h2>
+          <h2 className="font-display text-2xl text-center mb-3">お支払い</h2>
 
-          <div className="space-y-4">
-            {maleSoldOut ? (
-              <button disabled className="w-full py-4 rounded-full font-display text-base bg-[var(--color-bg-soft)] text-[var(--color-mute)] border border-[var(--color-line)] cursor-not-allowed">
-                男性 — 満席
-              </button>
-            ) : (
-              <button
-                onClick={() => router.push(`/events/${ev.id}/payment?gender=male`)}
-                className="block w-full py-4 rounded-full font-display text-base text-center transition-all hover:opacity-90 active:scale-95"
-                style={{ background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" }}
-              >
-                男性はこちら{showMaleRemaining && <span className="ml-2 opacity-80">｜ 残り{ev.remaining_male}名</span>}
-              </button>
-            )}
+          {ev.state === "申込済み" ? (
+            <div className="mt-4 space-y-3">
+              {cancelled ? (
+                <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-bg-soft)] px-5 py-5 text-center space-y-2">
+                  <div className="font-display text-sm text-[var(--color-mute)]">キャンセルが完了しました</div>
+                  <p className="font-display text-xs text-[var(--color-mute)] leading-relaxed">
+                    参加費の返金はキャンセルポリシーに基づき処理されます。
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <button disabled className="w-full py-4 rounded-full font-display text-base border border-[var(--color-accent)]/40 text-[var(--color-accent-deep)] opacity-60 cursor-not-allowed flex items-center justify-center gap-2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    申込済み
+                  </button>
+                  <button
+                    onClick={() => setShowCancelSheet(true)}
+                    className="w-full py-3 rounded-full font-display text-sm border border-red-400/50 text-red-400 hover:bg-red-400/8 transition"
+                  >
+                    キャンセルする
+                  </button>
+                </>
+              )}
+            </div>
+          ) : (
+            <>
+              {!agreedTerms && (
+                <p className="font-display text-xs text-[var(--color-mute)] text-center mb-5">
+                  参加規約に同意するとお支払いボタンが有効になります
+                </p>
+              )}
 
-            {femaleSoldOut ? (
-              <button disabled className="w-full py-4 rounded-full font-display text-base bg-[var(--color-bg-soft)] text-[var(--color-mute)] border border-[var(--color-line)] cursor-not-allowed">
-                女性 — 満席
-              </button>
-            ) : (
-              <button
-                onClick={() => router.push(`/events/${ev.id}/payment?gender=female`)}
-                className="block w-full py-4 rounded-full font-display text-base text-center transition-all hover:opacity-90 active:scale-95"
-                style={{ background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" }}
-              >
-                女性はこちら{showFemaleRemaining && <span className="ml-2 opacity-80">｜ 残り{ev.remaining_female}名</span>}
-              </button>
-            )}
+              <div className="space-y-4 mt-4">
+                {maleSoldOut ? (
+                  (ev as any).male_cancel_wait_done ? (
+                    cancelWaitCancelled ? (
+                      <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-bg-soft)] px-5 py-4 text-center">
+                        <div className="font-display text-sm text-[var(--color-mute)]">キャンセル待ちを解除しました</div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setCancelWaitCancelled(true)}
+                        className="w-full py-4 rounded-full font-display text-base border border-red-400/50 text-red-400 hover:bg-red-400/8 transition flex items-center justify-center gap-2"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                        キャンセル待ちを解除する（男性）
+                      </button>
+                    )
+                  ) : cancelWaitRegistered ? (
+                    <div className="rounded-2xl border border-[var(--color-accent)]/40 bg-[var(--color-accent)]/6 px-5 py-5 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-deep)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        <span className="font-display text-sm font-semibold" style={{ color: "var(--color-accent-deep)" }}>キャンセル待ちの登録が完了しました</span>
+                      </div>
+                      <p className="font-display text-xs text-[var(--color-mute)] leading-relaxed pl-6">
+                        空きが発生した際にプッシュ通知でお知らせします。通知を受け取ったらお早めにお申し込みください。
+                      </p>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { if (agreedTerms) setCancelWaitRegistered(true); }}
+                      disabled={!agreedTerms}
+                      className="block w-full py-4 rounded-full font-display text-base text-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={agreedTerms ? { background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" } : { background: "var(--color-bg-soft)", color: "var(--color-mute)", border: "1px solid var(--color-line)" }}
+                    >
+                      男性はこちら（キャンセル待ちを申し込む）
+                    </button>
+                  )
+                ) : (
+                  <button
+                    onClick={() => agreedTerms && router.push(`/events/${ev.id}/payment?gender=male`)}
+                    disabled={!agreedTerms}
+                    className="block w-full py-4 rounded-full font-display text-base text-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={agreedTerms ? { background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" } : { background: "var(--color-bg-soft)", color: "var(--color-mute)", border: "1px solid var(--color-line)" }}
+                  >
+                    男性はこちら{showMaleRemaining && agreedTerms && <span className="ml-2 opacity-80">｜ 残り{ev.remaining_male}名</span>}
+                  </button>
+                )}
 
-            {(maleSoldOut || femaleSoldOut) && !cancelWait && (
-              <button
-                onClick={() => setCancelWait(true)}
-                className="w-full py-3 rounded-full font-display text-sm border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent-deep)] transition mt-2"
-              >
-                キャンセル通知を希望する
-              </button>
-            )}
-            {cancelWait && (
-              <div className="text-center py-3">
-                <p className="font-display text-sm text-[var(--color-accent-deep)]">✓ キャンセル待ち登録しました</p>
-                <p className="text-xs text-[var(--color-mute)] mt-1">空きが出た際にお知らせします</p>
+                {femaleSoldOut ? (
+                  <button disabled className="w-full py-4 rounded-full font-display text-base bg-[var(--color-bg-soft)] text-[var(--color-mute)] border border-[var(--color-line)] cursor-not-allowed">
+                    女性 — 満席
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => agreedTerms && router.push(`/events/${ev.id}/payment?gender=female`)}
+                    disabled={!agreedTerms}
+                    className="block w-full py-4 rounded-full font-display text-base text-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={agreedTerms ? { background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" } : { background: "var(--color-bg-soft)", color: "var(--color-mute)", border: "1px solid var(--color-line)" }}
+                  >
+                    女性はこちら{showFemaleRemaining && agreedTerms && <span className="ml-2 opacity-80">｜ 残り{ev.remaining_female}名</span>}
+                  </button>
+                )}
+
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
 
         {/* Footer logo */}
@@ -219,6 +339,45 @@ export default function EventDetailClient({ id }: { id: string }) {
 
         <BottomNav />
       </div>
+
+      {/* ===== キャンセル確認シート ===== */}
+      {showCancelSheet && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60" onClick={() => setShowCancelSheet(false)}>
+          <div className="w-full max-w-[430px] bg-[var(--color-bg-soft)] rounded-t-3xl pt-4 pb-10" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-[var(--color-line)] rounded-full mx-auto mb-5" />
+            <div className="px-5 mb-5">
+              <div className="font-display text-base font-semibold mb-1">キャンセルの確認</div>
+              <div className="font-display text-xs text-[var(--color-mute)]">{ev.title}</div>
+            </div>
+            <div className="mx-5 mb-5 rounded-2xl border border-red-400/30 bg-red-400/5 px-4 py-4 space-y-2">
+              <div className="font-display text-xs font-semibold text-red-400 mb-2">キャンセルポリシー</div>
+              <div className="font-display text-xs text-[var(--color-ink)] leading-relaxed space-y-1.5">
+                <p>・募集期間中のキャンセル → <span className="text-[var(--color-accent-deep)]">全額返金</span></p>
+                <p>・開催15日前までのキャンセル → <span className="text-red-400">参加費の半額を返金</span></p>
+                <p>・開催14日前以降のキャンセル → <span className="text-red-400">返金対象外</span></p>
+              </div>
+              <p className="font-display text-[11px] text-[var(--color-mute)] pt-1 leading-relaxed">
+                上記のポリシーに基づきキャンセル料が発生する場合があります。キャンセルを実施しますか？
+              </p>
+            </div>
+            <div className="px-5 space-y-3">
+              <button
+                onClick={() => { setCancelled(true); setShowCancelSheet(false); }}
+                className="w-full py-3.5 rounded-full font-display text-sm transition hover:opacity-90"
+                style={{ background: "linear-gradient(135deg,#ef4444,#dc2626)", color: "white" }}
+              >
+                キャンセルを実施する
+              </button>
+              <button
+                onClick={() => setShowCancelSheet(false)}
+                className="w-full py-3.5 rounded-full font-display text-sm border border-[var(--color-line)] text-[var(--color-mute)] hover:text-[var(--color-ink)] transition"
+              >
+                戻る
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
