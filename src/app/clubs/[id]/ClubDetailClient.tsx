@@ -63,10 +63,10 @@ const clubData: Record<string, {
       { id: 4, name: "青山 陸", handle: "@aoyama_r", avatar: "/images/icon.png", body: "次回7/5のWhisky Nightと被ってる方いますか？どっち優先しようか…", time: "5分前", likes: 2, liked: false, rx: mkRx({"😭":1}), bookmarked: false, isOwn: true, deleted: false, replies: [] },
     ],
     events: [
+      { id: 4, title: "気軽な交流会", date: "07.25", time: "18:00", venue: "新宿", cap: "10", current: 6, fee: "男6,000/女4,000", desc: "気軽に話せる場を作りたくて、少人数の交流会を企画しました。形式ばった会ではなく、落ち着いて会話ができる時間にしたいと思っています。", state: "受付中" },
       { id: 1, title: "シャンパーニュ特集 Vol.3", date: "07.12", time: "19:00", venue: "La Cave 麻布十番", cap: "12", current: 4, fee: "¥8,500", desc: "銘醸シャンパーニュをヴィンテージ違いで飲み比べ。醸造家による特別解説付き。ドレスコードはスマートカジュアルでお越しください。", state: "受付中" },
       { id: 2, title: "ボルドー格付け比較会", date: "08.02", time: "18:30", venue: "Atelier du Vin 銀座", cap: "10", current: 10, fee: "¥11,000", desc: "1〜5級シャトーを縦断してテイスティング。格付けと価格の関係を体感できる贅沢な一夜。", state: "受付中" },
       { id: 3, title: "秋のブルゴーニュナイト Vol.13", date: "09.06", time: "19:00", venue: "La Cave 麻布十番", cap: "12", current: 12, fee: "¥9,500", desc: "ブルゴーニュの赤・白をヴィンテージ違いで楽しむ人気シリーズ第13弾。", state: "申込済み" },
-
     ],
     reports: [
       { id: 1, title: "ブルゴーニュナイト Vol.12 レポート", date: "2026.06.02", body: "12名が参加し、ポマール・ジュブレシャンベルタン・モレサンドニの3種を縦飲み。大盛況でした。", images: 6 },
@@ -117,6 +117,7 @@ const clubData: Record<string, {
 // ============ Sub-components ============
 function ChatAvatar({ src, name }: { src: string; name: string }) {
   const isPath = src.startsWith("/");
+  // eslint-disable-next-line @next/next/no-img-element
   if (isPath) return <img src={src} alt={name} className="w-10 h-10 rounded-full flex-none object-cover border border-[var(--color-line)]" />;
   return (
     <div className="w-10 h-10 rounded-full flex-none flex items-center justify-center bg-[var(--color-ink)] text-[var(--color-bg)] font-display text-sm border border-[var(--color-line)]">
@@ -127,6 +128,7 @@ function ChatAvatar({ src, name }: { src: string; name: string }) {
 
 function SmAvatar({ src, name }: { src: string; name: string }) {
   const isPath = src.startsWith("/");
+  // eslint-disable-next-line @next/next/no-img-element
   if (isPath) return <img src={src} alt={name} className="w-8 h-8 rounded-full flex-none object-cover border border-[var(--color-line)]" />;
   return (
     <div className="w-8 h-8 rounded-full flex-none flex items-center justify-center bg-[var(--color-ink)] text-[var(--color-bg)] font-display text-xs border border-[var(--color-line)]">
@@ -342,7 +344,7 @@ export default function ClubDetailClient({ id }: { id: string }) {
                         {/* Action bar */}
                         <div className="flex items-center gap-4 mt-3">
                           {/* Reply */}
-                          <button onClick={() => setOpenReplies(prev => { const n = new Set(prev); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n; })}
+                          <button onClick={() => setOpenReplies(prev => { const n = new Set(prev); if (n.has(m.id)) n.delete(m.id); else n.add(m.id); return n; })}
                             className="flex items-center gap-1.5 text-xs text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] transition">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -480,26 +482,22 @@ export default function ClubDetailClient({ id }: { id: string }) {
                   </Link>
                 </div>
 
-                {club.events.map(ev => (
-                  <div key={ev.id} className="card p-5">
-                    <div className="flex items-start justify-between mb-3">
-                      <span className="num text-3xl leading-none">{ev.date}</span>
-                    </div>
-                    <h3 className="font-display text-lg">{ev.title}</h3>
-                    <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                      <dt className="font-display text-[var(--color-mute)]">定員</dt>
-                      <dd className="num">{ev.current} / {ev.cap}</dd>
-                      <dt className="font-display text-[var(--color-mute)]">参加費</dt>
-                      <dd className="num">{ev.fee}</dd>
-                    </dl>
-                    {(ev.state === "受付中" || ev.state === "申込済み") && (
-                      <Link href={`/clubs/${id}/events/${ev.id}`}
-                        className="mt-4 w-full btn-primary justify-center text-xs flex items-center gap-1.5">
-                        {ev.state === "申込済み" ? "申込済み" : "参加申込する"}
-                      </Link>
-                    )}
-                  </div>
-                ))}
+                {/* イベント一覧（日時＋タイトル） */}
+                <div className="-mx-5 border-t border-[var(--color-line)]">
+                  {club.events.map(ev => (
+                    <Link key={ev.id} href={`/clubs/${id}/events/${ev.id}`}
+                      className="flex items-center gap-4 px-5 py-4 border-b border-[var(--color-line)] hover:bg-[var(--color-bg-soft)] transition">
+                      <div className="flex-none w-14 text-center">
+                        <div className="num text-2xl leading-none text-[var(--color-accent-deep)]">{ev.date}</div>
+                        <div className="font-display text-[10px] text-[var(--color-mute)] mt-1">{ev.time}〜</div>
+                      </div>
+                      <span className="font-display text-sm flex-1 min-w-0">{ev.title}</span>
+                      <svg className="flex-none text-[var(--color-mute)]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                      </svg>
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
 

@@ -1,25 +1,61 @@
 "use client";
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 
-export default function CreateClubEventPage({ params }: { params: { id: string } }) {
-  const router = useRouter();
-  const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    date: "",
-    time: "",
-    venue: "",
-    fee: "",
-    capacity: "",
-    desc: "",
-  });
-  const [images, setImages] = useState<string[]>([]);
-  const fileRef = useRef<HTMLInputElement>(null);
+type EventForm = {
+  title: string;
+  date: string;
+  time: string;
+  endTime: string;
+  venue: string;
+  fee: string;
+  capacity: string;
+  desc: string;
+};
 
-  function update(key: keyof typeof form, val: string) {
+const EMPTY_FORM: EventForm = {
+  title: "", date: "", time: "", endTime: "", venue: "", fee: "", capacity: "", desc: "",
+};
+
+// 編集時のプリフィル用データ（※内容は仮のモックデータ）
+const EDIT_DATA: Record<string, Record<string, EventForm>> = {
+  wine: {
+    "4": { title: "気軽な交流会", date: "2026-07-25", time: "18:00", endTime: "21:00", venue: "新宿", fee: "男性 6,000円 / 女性 4,000円", capacity: "10", desc: "気軽に話せる場を作りたくて、少人数の交流会を企画しました。形式ばった会ではなく、落ち着いて会話ができる時間にしたいと思っています。仕事以外のつながりを作りたい方や、新しい人と話してみたい方はぜひ。" },
+    "1": { title: "シャンパーニュ特集 Vol.3", date: "2026-07-12", time: "19:00", endTime: "21:00", venue: "La Cave 麻布十番", fee: "¥8,500", capacity: "12", desc: "銘醸シャンパーニュをヴィンテージ違いで飲み比べ。醸造家による特別解説付き。ドレスコードはスマートカジュアルでお越しください。" },
+    "2": { title: "ボルドー格付け比較会", date: "2026-08-02", time: "18:30", endTime: "21:00", venue: "Atelier du Vin 銀座", fee: "¥11,000", capacity: "10", desc: "1〜5級シャトーを縦断してテイスティング。格付けと価格の関係を体感できる贅沢な一夜。専門家の解説付き。" },
+    "3": { title: "秋のブルゴーニュナイト Vol.13", date: "2026-09-06", time: "19:00", endTime: "21:00", venue: "La Cave 麻布十番", fee: "¥9,500", capacity: "12", desc: "ブルゴーニュの赤・白をヴィンテージ違いで楽しむ人気シリーズ第13弾。ソムリエによる詳細解説もあります。" },
+  },
+  coffee: {
+    "1": { title: "Sunday Coffee Cupping #8", date: "2026-07-05", time: "11:00", endTime: "13:00", venue: "COFFEE LAB 渋谷", fee: "¥3,200", capacity: "8", desc: "シングルオリジン3種をスペシャルティコーヒー専門家とカッピング。香りと味わいの違いを丁寧に解説します。初心者歓迎。" },
+  },
+  travel: {
+    "1": { title: "金沢日帰りグルメ旅", date: "2026-08-23", time: "07:30", endTime: "19:30", venue: "東京駅（新幹線集合）", fee: "¥15,000", capacity: "10", desc: "北陸新幹線で金沢へ日帰り旅。近江町市場・ひがし茶屋街・21世紀美術館を巡り、夜は地元料理でディナー。現地解散可。" },
+  },
+};
+
+export default function CreateClubEventPage() {
+  return (
+    <Suspense fallback={null}>
+      <CreateEventForm />
+    </Suspense>
+  );
+}
+
+function CreateEventForm() {
+  const router = useRouter();
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const clubId = Array.isArray(params.id) ? params.id[0] : (params.id ?? "");
+  const editId = searchParams.get("edit") ?? "";
+  const editData = editId ? (EDIT_DATA[clubId] ?? {})[editId] : undefined;
+  const isEdit = !!editData;
+
+  const [submitted, setSubmitted] = useState(false);
+  const [form, setForm] = useState<EventForm>(editData ?? EMPTY_FORM);
+
+  function update(key: keyof EventForm, val: string) {
     setForm(prev => ({ ...prev, [key]: val }));
   }
 
@@ -39,10 +75,12 @@ export default function CreateClubEventPage({ params }: { params: { id: string }
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <h2 className="font-display text-2xl mb-2">イベントを作成しました</h2>
-            <p className="font-display text-xs text-[var(--color-mute)] mb-8">モデレーターが確認後、メンバーに公開されます。</p>
+            <h2 className="font-display text-2xl mb-2">{isEdit ? "イベントを更新しました" : "イベントを作成しました"}</h2>
+            <p className="font-display text-xs text-[var(--color-mute)] mb-8">
+              {isEdit ? "変更内容がメンバーに反映されます。" : "モデレーターが確認後、メンバーに公開されます。"}
+            </p>
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push(`/clubs/${clubId}`)}
               className="font-display text-sm px-8 py-3 rounded-full"
               style={{ background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" }}
             >
@@ -57,48 +95,13 @@ export default function CreateClubEventPage({ params }: { params: { id: string }
   return (
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
       <div className="w-full max-w-[430px] pb-24">
-        <AppHeader backHref={`/clubs/${params.id}`} />
+        <AppHeader backHref={`/clubs/${clubId}`} />
         <div className="px-5 pt-6 pb-4 border-b border-[var(--color-line)]">
           <p className="font-display text-[10px] tracking-[0.2em] text-[var(--color-accent-deep)] mb-1">クラブ会</p>
-          <h1 className="font-display text-2xl">イベントを作成</h1>
+          <h1 className="font-display text-2xl">{isEdit ? "イベントを編集" : "イベントを作成"}</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="px-5 pt-6 space-y-5">
-
-          {/* Image upload */}
-          <Field label="イベント画像">
-            <div className="space-y-3">
-              {images.length > 0 && (
-                <div className="flex gap-2 flex-wrap">
-                  {images.map((img, i) => (
-                    <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden border border-[var(--color-line)]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={img} alt="" className="w-full h-full object-cover" />
-                      <button type="button"
-                        onClick={() => setImages(prev => prev.filter((_, j) => j !== i))}
-                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-[10px] flex items-center justify-center">
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <button type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={images.length >= 4}
-                className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed transition disabled:opacity-30"
-                style={{ borderColor: "var(--color-accent)", color: "var(--color-accent-deep)", background: "rgba(184,152,90,0.06)" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-                </svg>
-                <span className="font-display text-sm">画像を追加（最大4枚）</span>
-              </button>
-              <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={e => {
-                const files = Array.from(e.target.files ?? []).slice(0, 4 - images.length);
-                files.forEach(f => { const url = URL.createObjectURL(f); setImages(prev => [...prev, url].slice(0, 4)); });
-              }} />
-            </div>
-          </Field>
 
           <Field label="イベント名 *">
             <input
@@ -111,16 +114,17 @@ export default function CreateClubEventPage({ params }: { params: { id: string }
             />
           </Field>
 
+          <Field label="開催日 *">
+            <input
+              required
+              type="date"
+              value={form.date}
+              onChange={e => update("date", e.target.value)}
+              className="input-field"
+            />
+          </Field>
+
           <div className="grid grid-cols-2 gap-3">
-            <Field label="開催日 *">
-              <input
-                required
-                type="date"
-                value={form.date}
-                onChange={e => update("date", e.target.value)}
-                className="input-field"
-              />
-            </Field>
             <Field label="開始時間 *">
               <input
                 required
@@ -130,13 +134,22 @@ export default function CreateClubEventPage({ params }: { params: { id: string }
                 className="input-field"
               />
             </Field>
+            <Field label="終了時間 *">
+              <input
+                required
+                type="time"
+                value={form.endTime}
+                onChange={e => update("endTime", e.target.value)}
+                className="input-field"
+              />
+            </Field>
           </div>
 
-          <Field label="会場 *">
+          <Field label="場所 *">
             <input
               required
               type="text"
-              placeholder="例：La Cave 麻布十番"
+              placeholder="例：La Cave 麻布十番 / 新宿"
               value={form.venue}
               onChange={e => update("venue", e.target.value)}
               className="input-field"
@@ -179,7 +192,7 @@ export default function CreateClubEventPage({ params }: { params: { id: string }
             className="w-full py-4 rounded-full font-display text-base"
             style={{ background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" }}
           >
-            イベントを作成する
+            {isEdit ? "変更を保存する" : "イベントを作成する"}
           </button>
         </form>
 
