@@ -41,9 +41,9 @@ export default function PaymentPage() {
           <p className="text-sm text-[var(--color-mute)] leading-relaxed mb-2">{ev.title}</p>
           <p className="text-sm text-[var(--color-mute)] leading-relaxed mb-8">{genderLabel} · ¥{total.toLocaleString()}</p>
           <p className="text-xs text-[var(--color-mute)] leading-relaxed mb-8">
-            参加登録が完了しました。<br />詳細は登録メールアドレスにお送りします。
+            参加登録が完了しました。
           </p>
-          <button onClick={() => router.back()} className="btn-primary justify-center">イベント一覧へ戻る</button>
+          <button onClick={() => router.push("/events")} className="btn-primary justify-center">イベント一覧へ戻る</button>
         </div>
       </div>
     );

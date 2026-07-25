@@ -215,10 +215,18 @@ export default function MyPage() {
           </Link>
 
           {/* 5. 保有ポイント */}
-          <div className="card p-4 flex items-center justify-between">
-            <div className="font-display text-sm text-[var(--color-mute)]">保有ポイント</div>
-            <div className="num text-2xl text-[var(--color-accent-deep)]">20<span className="num text-sm text-[var(--color-mute)] ml-1">pt</span></div>
-          </div>
+          <Link href="/point-rewards" className="card block p-4 hover:border-[var(--color-accent)]/60 transition">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-display text-sm text-[var(--color-mute)]">保有ポイント</div>
+                <div className="font-display text-[10px] text-[var(--color-accent-deep)] mt-1 flex items-center gap-1">
+                  ポイントで景品と交換
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </div>
+              <div className="num text-2xl text-[var(--color-accent-deep)]">20<span className="num text-sm text-[var(--color-mute)] ml-1">pt</span></div>
+            </div>
+          </Link>
 
           {/* 6. VIPにアップグレード */}
           <Link

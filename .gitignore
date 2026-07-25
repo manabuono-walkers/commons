@@ -3,3 +3,5 @@
 .vercel/
 *.log
 .env*
+tsconfig.tsbuildinfo
+.mock-fix/

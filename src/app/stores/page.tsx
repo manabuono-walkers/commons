@@ -153,8 +153,8 @@ function MapView({ stores }: { stores: Store[] }) {
   const storeMap = Object.fromEntries(stores.map(s => [s.id, s]));
 
   return (
-    <div className="relative" style={{ height: 380 }}>
-      <div ref={mapEl} style={{ height: 380, width: "100%" }} />
+    <div className="relative" style={{ height: 480 }}>
+      <div ref={mapEl} style={{ height: 480, width: "100%" }} />
 
       {/* React-rendered pins — fully outside Leaflet's event system */}
       {pinPositions.map(p => {
@@ -297,6 +297,9 @@ function StoresContent() {
   const [scene,  setScene]  = useState<Scene | "">("");
   const [time,   setTime]   = useState<TimeSlot | "">("");
   const [area,   setArea]   = useState("すべて");
+  const [showFilters, setShowFilters] = useState(false);
+
+  const hasFilter = genre !== "すべて" || scene !== "" || time !== "" || area !== "すべて";
 
   const filtered = stores.filter(s => {
     if (query.trim()) {
@@ -345,6 +348,25 @@ function StoresContent() {
             )}
           </div>
 
+          {/* 絞り込みトグル */}
+          <button
+            onClick={() => setShowFilters(v => !v)}
+            className="flex items-center gap-2 font-display text-[11px] border px-3.5 py-2 rounded-full transition"
+            style={showFilters
+              ? { background: "rgba(184,152,90,0.12)", color: "var(--color-accent-deep)", borderColor: "var(--color-accent)" }
+              : { borderColor: "var(--color-line)", color: "var(--color-mute)" }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+            絞り込み条件{hasFilter ? "（適用中）" : ""}
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+              style={{ transform: showFilters ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          {showFilters && (<>
           {/* GENRE */}
           <div>
             <div className="font-display text-[9px] text-[var(--color-mute)] mb-1.5 tracking-widest">GENRE ／ ジャンル</div>
@@ -396,6 +418,7 @@ function StoresContent() {
               {AREAS.map(a => <option key={a} value={a}>{a}</option>)}
             </select>
           </div>
+          </>)}
         </div>
 
         {/* タブ + 件数 */}

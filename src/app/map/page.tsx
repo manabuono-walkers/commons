@@ -115,6 +115,7 @@ export default function MapPage() {
   const [selected, setSelected] = useState<number | null>(null);
   const [ready, setReady] = useState(false);
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
+  const [showFilters, setShowFilters] = useState(false);
 
   const mapEl = useRef<HTMLDivElement | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -253,6 +254,25 @@ export default function MapPage() {
             )}
           </div>
 
+          {/* 絞り込みトグル */}
+          <button
+            onClick={() => setShowFilters(v => !v)}
+            className="flex items-center gap-2 font-display text-xs border px-4 py-2 rounded-full transition"
+            style={showFilters
+              ? { background: "rgba(184,152,90,0.12)", color: "var(--color-accent-deep)", borderColor: "var(--color-accent)" }
+              : { borderColor: "var(--color-line)", color: "var(--color-mute)" }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+            絞り込み条件{hasFilter ? "（適用中）" : ""}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+              style={{ transform: showFilters ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          {showFilters && (<>
           {/* ② ジャンル */}
           <div>
             <div className="font-display text-[10px] text-[var(--color-mute)] mb-2 tracking-widest">GENRE ／ ジャンル</div>
@@ -312,6 +332,7 @@ export default function MapPage() {
               </select>
             </div>
           </div>
+          </>)}
 
           {/* 検索結果カウンター + リセット */}
           <div className="flex items-center justify-between pt-1">

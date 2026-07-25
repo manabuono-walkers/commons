@@ -1,8 +1,8 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import AppHeader from "@/components/AppHeader";
-import Link from "next/link";
 
 // ============ Types ============
 type TabKey = "intro" | "official" | "all" | "following";
@@ -53,19 +53,9 @@ interface DmConv {
 interface DmMsg {
   id: number; fromMe: boolean; body: string; time: string; bookmarked: boolean;
   sender?: string; // handle without @, for group chat
+  rx?: RxMap;
+  replyTo?: { name: string; body: string }; // 返信元メッセージ
 }
-
-// ============ Profiles (for DM overlay) ============
-interface ProfileData {
-  name: string; handle: string; avatar: string;
-  rank: string; job: string; location: string; bio: string;
-  clubs: { id: string; name: string; icon: string }[];
-}
-const PROFILES: Record<string, ProfileData> = {
-  tanaka_k: { name:"田中 康介", handle:"@tanaka_k", avatar:"/images/tanaka.png", rank:"GOLD", job:"不動産会社 代表", location:"東京", bio:"不動産会社を経営しています。ワインとフォトグラフィーが趣味。Leica M11で街の光と影を追いかけています。ビジネス外の豊かな繋がりを求めてCOMMONSへ。", clubs:[{id:"wine",name:"ワインクラブ",icon:"🍷"},{id:"photo",name:"フォトクラブ",icon:"📷"}] },
-  yamamoto_a: { name:"山本 彩花", handle:"@yamamoto_a", avatar:"/images/yamamoto.png", rank:"PLATINUM", job:"フリーランスデザイナー", location:"東京", bio:"UI/UXデザインを中心に活動しています。旅と写真が大好きで、週末はどこかへ出かけています。箱根や軽井沢が特に好き。COMMONSでは素敵な出会いを楽しんでいます。", clubs:[{id:"travel",name:"旅クラブ",icon:"✈️"},{id:"photo",name:"フォトクラブ",icon:"📷"},{id:"wine",name:"ワインクラブ",icon:"🍷"}] },
-  ito_k: { name:"伊藤 健", handle:"@ito_k", avatar:"/images/ito.png", rank:"SILVER", job:"ソフトウェアエンジニア", location:"東京", bio:"都内のスタートアップでエンジニアをしています。登山とコーヒーが趣味。百名山制覇を目標に週末は山へ。雲取山から望む富士山が忘れられません。", clubs:[{id:"outdoor",name:"アウトドアクラブ",icon:"🏔"},{id:"coffee",name:"コーヒークラブ",icon:"☕"}] },
-};
 
 // ============ Constants ============
 const MY_HANDLE = "@aoyama_r";
@@ -200,6 +190,7 @@ function PostImages({ images, onView }: { images: string[]; onView: (img: string
 
 // ============ Main Page ============
 export default function CommunityPage() {
+  const router = useRouter();
   const [tab, setTab] = useState<TabKey>("all");
   const [posts, setPosts] = useState<Post[]>(INIT_POSTS);
   const [showDm, setShowDm] = useState(false);
@@ -209,7 +200,9 @@ export default function CommunityPage() {
   const [dmInput, setDmInput] = useState("");
   const [openReplies, setOpenReplies] = useState<Set<number>>(new Set());
   const [replyDraft, setReplyDraft] = useState<Record<number,string>>({});
-  const [rxPicker, setRxPicker] = useState<number|null>(null);
+  const [dmRxPicker, setDmRxPicker] = useState<number|null>(null);
+  const [dmMsgMenu, setDmMsgMenu] = useState<number|null>(null);
+  const [dmReplyTo, setDmReplyTo] = useState<DmMsg|null>(null);
   const [menuOpen, setMenuOpen] = useState<number|null>(null);
   const [shareSheet, setShareSheet] = useState<Post|null>(null);
   const [showCompose, setShowCompose] = useState(false);
@@ -217,7 +210,6 @@ export default function CommunityPage() {
   const [draftImages, setDraftImages] = useState<string[]>([]);
   const [photoView, setPhotoView] = useState<string|null>(null);
   const [dmSearch, setDmSearch] = useState("");
-  const [profileSheet, setProfileSheet] = useState<DmConv|null>(null);
   const [dmMenuTarget, setDmMenuTarget] = useState<DmConv|null>(null);
   const [reportedDms, setReportedDms] = useState<Set<number>>(new Set());
   const [reportSheet, setReportSheet] = useState<DmConv|null>(null);
@@ -246,19 +238,29 @@ export default function CommunityPage() {
     return [...v.filter(p => p.isOwn), ...v.filter(p => !p.isOwn)];
   }
 
-  function toggleRx(postId: number, emoji: RxEmoji) {
-    setPosts(prev => prev.map(p => {
-      if (p.id !== postId) return p;
-      const rx = { ...p.rx } as RxMap;
-      const cur = rx[emoji];
-      // unset any other mine reaction
-      (Object.keys(rx) as RxEmoji[]).forEach(e => {
-        if (e !== emoji && rx[e].mine) rx[e] = { count: rx[e].count - 1, mine: false };
-      });
-      rx[emoji] = { count: cur.mine ? cur.count - 1 : cur.count + 1, mine: !cur.mine };
-      return { ...p, rx };
+  // メンバーのハンドルからフルページのプロフィールへ遷移（自分・プロフィール未整備は遷移しない）
+  function goToProfile(handle: string) {
+    const key = handle.replace("@", "");
+    if (!key || key === MY_HANDLE.replace("@", "")) return;
+    router.push(`/profile/${key}`);
+  }
+
+  function toggleDmRx(msgId: number, emoji: RxEmoji) {
+    if (!activeDm) return;
+    setDmMsgs(prev => ({
+      ...prev,
+      [activeDm.id]: (prev[activeDm.id] ?? []).map(m => {
+        if (m.id !== msgId) return m;
+        const rx = { ...(m.rx ?? mkRx()) } as RxMap;
+        const cur = rx[emoji];
+        (Object.keys(rx) as RxEmoji[]).forEach(e => {
+          if (e !== emoji && rx[e].mine) rx[e] = { count: rx[e].count - 1, mine: false };
+        });
+        rx[emoji] = { count: cur.mine ? cur.count - 1 : cur.count + 1, mine: !cur.mine };
+        return { ...m, rx };
+      }),
     }));
-    setRxPicker(null);
+    setDmRxPicker(null);
   }
 
   function submitReply(postId: number) {
@@ -282,10 +284,30 @@ export default function CommunityPage() {
 
   function sendDm() {
     if (!dmInput.trim() || !activeDm) return;
-    const msg: DmMsg = { id: Date.now(), fromMe: true, body: dmInput.trim(), time: "たった今", bookmarked: false };
+    const msg: DmMsg = {
+      id: Date.now(), fromMe: true, body: dmInput.trim(), time: "たった今", bookmarked: false,
+      ...(dmReplyTo ? { replyTo: { name: dmReplyTo.fromMe ? MY_NAME : activeDm.name, body: dmReplyTo.body } } : {}),
+    };
     setDmMsgs(prev => ({ ...prev, [activeDm.id]: [...(prev[activeDm.id] ?? []), msg] }));
     setDms(prev => prev.map(d => d.id === activeDm.id ? { ...d, lastMsg: dmInput.trim(), time: "たった今" } : d));
     setDmInput("");
+    setDmReplyTo(null);
+  }
+
+  // DMメッセージのテキストをコピー
+  function copyDmMsg(body: string) {
+    navigator.clipboard?.writeText(body).catch(() => {});
+    setDmMsgMenu(null);
+  }
+
+  // DMメッセージの送信取消（自分の送信分のみ）
+  function deleteDmMsg(msgId: number) {
+    if (!activeDm) return;
+    setDmMsgs(prev => ({
+      ...prev,
+      [activeDm.id]: (prev[activeDm.id] ?? []).filter(m => m.id !== msgId),
+    }));
+    setDmMsgMenu(null);
   }
 
   const shown = getShown();
@@ -321,7 +343,7 @@ export default function CommunityPage() {
 
   return (
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen"
-      onClick={() => { setMenuOpen(null); setRxPicker(null); }}>
+      onClick={() => { setMenuOpen(null); setDmRxPicker(null); setDmMsgMenu(null); }}>
       <div className="w-full max-w-[430px] pb-20">
         <AppHeader rightSlot={dmIconSlot} />
 
@@ -414,7 +436,7 @@ export default function CommunityPage() {
                         <polyline points="15 18 9 12 15 6" />
                       </svg>
                     </button>
-                    <button onClick={() => !activeDm.isGroup && setProfileSheet(activeDm)}>
+                    <button onClick={() => !activeDm.isGroup && goToProfile(activeDm.handle)}>
                       <Avatar src={activeDm.avatar} name={activeDm.name} size={9} />
                     </button>
                     <div className="flex-1 min-w-0">
@@ -449,7 +471,7 @@ export default function CommunityPage() {
                           return (
                             <button key={i}
                               className="flex items-center gap-2.5 w-full text-left hover:opacity-70 transition"
-                              onClick={() => { if (!isMe) setProfileSheet({ id: 0, name: m.name, handle: handleKey, avatar: m.avatar, lastMsg: "", time: "", unread: 0 }); }}>
+                              onClick={() => { if (!isMe) goToProfile(handleKey); }}>
                               <Avatar src={m.avatar} name={m.name} size={8} />
                               <div>
                                 <div className="font-display text-xs">{m.name}{isMe && <span className="text-[var(--color-mute)] ml-1">(自分)</span>}</div>
@@ -486,12 +508,12 @@ export default function CommunityPage() {
                     return (
                       <div key={msg.id} ref={idx === arr.length - 1 ? msgBottomRef : null}>
                         {showSenderLabel && senderName && (
-                          <div className="font-display text-[10px] text-[var(--color-mute)] mb-1 ml-11">{senderName}</div>
+                          <div className="font-display text-[10px] text-[var(--color-mute)] mb-1 ml-[50px]">{senderName}</div>
                         )}
                         <div className={`flex gap-2.5 items-end ${msg.fromMe ? "flex-row-reverse" : ""}`}>
                           {!msg.fromMe && (
-                            <button onClick={() => setProfileSheet({ id: 0, name: senderName, handle: senderHandle, avatar: senderAvatar, lastMsg: "", time: "", unread: 0 })}>
-                              <Avatar src={senderAvatar} name={senderName} size={8} />
+                            <button onClick={() => goToProfile(senderHandle)}>
+                              <Avatar src={senderAvatar} name={senderName} size={10} />
                             </button>
                           )}
                           <div className="max-w-[240px]">
@@ -499,22 +521,77 @@ export default function CommunityPage() {
                               style={msg.fromMe
                                 ? { background: "linear-gradient(135deg,#CBAE74,#B8985A)", color: "#0B0F16" }
                                 : { background: "var(--color-bg-soft)", color: "var(--color-ink)", border: "1px solid var(--color-line)" }}>
+                              {msg.replyTo && (
+                                <div className="mb-1.5 pl-2 border-l-2 rounded-sm"
+                                  style={{ borderColor: msg.fromMe ? "rgba(11,15,22,0.4)" : "var(--color-accent)", opacity: 0.85 }}>
+                                  <div className="font-display text-[10px] font-semibold leading-tight">{msg.replyTo.name}</div>
+                                  <div className="text-[11px] leading-snug line-clamp-2 opacity-80">{msg.replyTo.body}</div>
+                                </div>
+                              )}
                               {msg.body}
                             </div>
-                            <div className={`flex items-center gap-1.5 mt-1 ${msg.fromMe ? "justify-end" : ""}`}>
+                            <div className={`flex items-center gap-1.5 mt-1 flex-wrap ${msg.fromMe ? "justify-end" : ""}`}>
                               <span className="font-display text-[10px] text-[var(--color-mute)]">{msg.time}</span>
-                              <button
-                                onClick={() => setDmMsgs(prev => ({
-                                  ...prev,
-                                  [activeDm.id]: (prev[activeDm.id] ?? []).map(m => m.id === msg.id ? { ...m, bookmarked: !m.bookmarked } : m)
-                                }))}
-                                className="transition"
-                                style={{ color: msg.bookmarked ? "var(--color-accent-deep)" : "var(--color-mute)" }}
-                              >
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill={msg.bookmarked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                                </svg>
-                              </button>
+                              {/* リアクションチップ */}
+                              {msg.rx && REACTIONS.filter(r => msg.rx![r.emoji].count > 0).map(r => (
+                                <button key={r.emoji} onClick={() => toggleDmRx(msg.id, r.emoji)}
+                                  className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full border text-[11px] leading-none transition"
+                                  style={msg.rx![r.emoji].mine
+                                    ? { background: "rgba(184,152,90,0.15)", borderColor: "var(--color-accent)" }
+                                    : { borderColor: "var(--color-line)" }}>
+                                  <span>{r.emoji}</span>
+                                  <span className="num text-[10px] text-[var(--color-mute)]">{msg.rx![r.emoji].count}</span>
+                                </button>
+                              ))}
+                              {/* リアクション追加ボタン */}
+                              <div className="relative">
+                                <button onClick={e => { e.stopPropagation(); setDmRxPicker(dmRxPicker === msg.id ? null : msg.id); }}
+                                  className="text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] transition flex items-center">
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10" /><path d="M8 13s1.5 2 4 2 4-2 4-2" />
+                                    <line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" />
+                                  </svg>
+                                </button>
+                                {dmRxPicker === msg.id && (
+                                  <div className={`absolute bottom-6 z-50 flex gap-0.5 p-1.5 bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-2xl shadow-xl ${msg.fromMe ? "right-0" : "left-0"}`} onClick={e => e.stopPropagation()}>
+                                    {REACTIONS.map(r => (
+                                      <button key={r.emoji} onClick={() => toggleDmRx(msg.id, r.emoji)}
+                                        title={r.label}
+                                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--color-line)] transition text-base"
+                                        style={msg.rx?.[r.emoji].mine ? { background: "var(--color-accent)" } : {}}>
+                                        {r.emoji}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              {/* メッセージ操作メニュー（返信・コピー・送信取消） */}
+                              <div className="relative">
+                                <button onClick={e => { e.stopPropagation(); setDmMsgMenu(dmMsgMenu === msg.id ? null : msg.id); setDmRxPicker(null); }}
+                                  className="text-[var(--color-mute)] hover:text-[var(--color-ink)] transition flex items-center">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" />
+                                  </svg>
+                                </button>
+                                {dmMsgMenu === msg.id && (
+                                  <div className={`absolute bottom-6 z-50 w-32 bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-xl shadow-xl overflow-hidden ${msg.fromMe ? "right-0" : "left-0"}`} onClick={e => e.stopPropagation()}>
+                                    <button onClick={() => { setDmReplyTo(msg); setDmMsgMenu(null); }}
+                                      className="w-full text-left px-4 py-2.5 font-display text-xs hover:bg-[var(--color-line)] transition">
+                                      返信
+                                    </button>
+                                    <button onClick={() => copyDmMsg(msg.body)}
+                                      className="w-full text-left px-4 py-2.5 font-display text-xs hover:bg-[var(--color-line)] transition">
+                                      コピー
+                                    </button>
+                                    {msg.fromMe && (
+                                      <button onClick={() => deleteDmMsg(msg.id)}
+                                        className="w-full text-left px-4 py-2.5 font-display text-xs text-red-400 hover:bg-[var(--color-line)] transition">
+                                        送信取消
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -525,7 +602,22 @@ export default function CommunityPage() {
 
                 {/* DM input - fixed */}
                 <div className="fixed bottom-[57px] left-0 right-0 z-40 flex justify-center pointer-events-none">
-                  <div className="w-full max-w-[430px] pointer-events-auto px-4 py-3 border-t border-[var(--color-line)] bg-[var(--color-bg)] flex gap-2 items-end">
+                  <div className="w-full max-w-[430px] pointer-events-auto border-t border-[var(--color-line)] bg-[var(--color-bg)]">
+                  {/* 返信プレビュー */}
+                  {dmReplyTo && (
+                    <div className="px-4 pt-2.5 flex items-start gap-2">
+                      <div className="flex-1 min-w-0 pl-2 border-l-2 border-[var(--color-accent)]">
+                        <div className="font-display text-[10px] text-[var(--color-accent-deep)]">{dmReplyTo.fromMe ? MY_NAME : activeDm.name} に返信</div>
+                        <div className="text-[11px] text-[var(--color-mute)] truncate">{dmReplyTo.body}</div>
+                      </div>
+                      <button onClick={() => setDmReplyTo(null)} className="flex-none text-[var(--color-mute)] hover:text-[var(--color-ink)] transition mt-0.5">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                  <div className="px-4 py-3 flex gap-2 items-end">
                     <div className="flex-1 bg-[var(--color-bg-soft)] rounded-2xl px-4 py-2.5 border border-[var(--color-line)]">
                       <input className="w-full bg-transparent text-sm outline-none placeholder-[var(--color-mute)]"
                         placeholder="メッセージを入力..." value={dmInput}
@@ -539,6 +631,7 @@ export default function CommunityPage() {
                         <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
                       </svg>
                     </button>
+                  </div>
                   </div>
                 </div>
               </div>
@@ -569,7 +662,9 @@ export default function CommunityPage() {
               {shown.map(p => (
                 <div key={p.id} className="px-4 py-4 border-b border-[var(--color-line)] relative">
                   <div className="flex gap-3">
-                    <Avatar src={p.avatar} name={p.name} size={10} />
+                    <button onClick={() => goToProfile(p.handle)} className="flex-none self-start">
+                      <Avatar src={p.avatar} name={p.name} size={10} />
+                    </button>
                     <div className="flex-1 min-w-0">
 
                       {/* Header */}
@@ -595,7 +690,7 @@ export default function CommunityPage() {
                           )}
                           {/* ⋮ menu */}
                           <div className="relative">
-                            <button onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === p.id ? null : p.id); setRxPicker(null); }}
+                            <button onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === p.id ? null : p.id); }}
                               className="text-[var(--color-mute)] hover:text-[var(--color-ink)] transition w-6 h-6 flex items-center justify-center">
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                                 <circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" />
@@ -629,46 +724,13 @@ export default function CommunityPage() {
                       <div className="flex items-center gap-4 mt-3">
                         {/* Reply */}
                         <button
-                          onClick={() => setOpenReplies(prev => { const n = new Set(prev); n.has(p.id) ? n.delete(p.id) : n.add(p.id); return n; })}
+                          onClick={() => setOpenReplies(prev => { const n = new Set(prev); if (n.has(p.id)) n.delete(p.id); else n.add(p.id); return n; })}
                           className="flex items-center gap-1.5 text-xs text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] transition">
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                           </svg>
                           <span className="num">{p.replies.length}</span>
                         </button>
-
-                        {/* Reaction picker */}
-                        <div className="relative">
-                          <button onClick={e => { e.stopPropagation(); setRxPicker(rxPicker === p.id ? null : p.id); setMenuOpen(null); }}
-                            className="flex items-center gap-1 text-xs transition"
-                            style={{ color: REACTIONS.some(r => p.rx[r.emoji].mine) ? "var(--color-accent-deep)" : "var(--color-mute)" }}>
-                            {(() => {
-                              const myRx = REACTIONS.find(r => p.rx[r.emoji].mine);
-                              const total = REACTIONS.reduce((s, r) => s + p.rx[r.emoji].count, 0);
-                              return myRx
-                                ? <><span className="text-base leading-none">{myRx.emoji}</span><span className="num ml-0.5">{total}</span></>
-                                : <>
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                      <circle cx="12" cy="12" r="10" /><path d="M8 13s1.5 2 4 2 4-2 4-2" />
-                                      <line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" />
-                                    </svg>
-                                    {total > 0 && <span className="num">{total}</span>}
-                                  </>;
-                            })()}
-                          </button>
-                          {rxPicker === p.id && (
-                            <div className="absolute bottom-8 left-0 z-50 flex gap-0.5 p-1.5 bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-2xl shadow-xl" onClick={e => e.stopPropagation()}>
-                              {REACTIONS.map(r => (
-                                <button key={r.emoji} onClick={() => toggleRx(p.id, r.emoji)}
-                                  title={r.label}
-                                  className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[var(--color-line)] transition text-lg"
-                                  style={p.rx[r.emoji].mine ? { background: "var(--color-accent)", borderRadius: "50%" } : {}}>
-                                  {r.emoji}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
 
                         {/* Heart like — independent from reactions */}
                         {p.isOwn ? (
@@ -904,63 +966,6 @@ export default function CommunityPage() {
             </div>
           </div>
         )}
-
-        {/* ===== DM Profile Sheet ===== */}
-        {profileSheet && (() => {
-          const prof = PROFILES[profileSheet.handle];
-          return (
-            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60" onClick={() => setProfileSheet(null)}>
-              <div className="w-full max-w-[430px] bg-[var(--color-bg-soft)] rounded-t-3xl pt-4 pb-24 overflow-y-auto max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                <div className="w-10 h-1 bg-[var(--color-line)] rounded-full mx-auto mb-4" />
-                {prof ? (
-                  <div className="px-5 space-y-5">
-                    <div className="flex items-start gap-4">
-                      <Avatar src={prof.avatar} name={prof.name} size={20} />
-                      <div className="flex-1 min-w-0 pt-1">
-                        <div className="font-display text-base font-semibold text-[var(--color-ink)]">{prof.name}</div>
-                        <div className="font-display text-sm text-[var(--color-mute)] mt-0.5">{prof.handle}</div>
-                        <span className="tag text-[9px] px-2 py-0.5 mt-1 inline-block">{prof.rank}</span>
-                      </div>
-                    </div>
-                    <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed">{prof.bio}</p>
-                    <div className="flex gap-4">
-                      <div className="flex items-center gap-1.5 text-xs text-[var(--color-mute)]">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-                        </svg>
-                        <span className="font-display">{prof.job}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-[var(--color-mute)]">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                        </svg>
-                        <span className="font-display">{prof.location}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-display text-xs text-[var(--color-mute)] mb-3">参加中のクラブ</div>
-                      <div className="flex gap-2 flex-wrap">
-                        {prof.clubs.map(c => (
-                          <Link key={c.id} href={`/clubs/${c.id}`}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--color-line)] bg-[var(--color-bg)] hover:border-[var(--color-accent)]/50 transition">
-                            <span className="text-base leading-none">{c.icon}</span>
-                            <span className="font-display text-xs">{c.name}</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="px-5 py-8 text-center font-display text-sm text-[var(--color-mute)]">プロフィールが見つかりません</div>
-                )}
-                <button onClick={() => setProfileSheet(null)}
-                  className="mx-5 mt-5 w-[calc(100%-40px)] py-3.5 rounded-full font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] border border-[var(--color-line)] transition">
-                  閉じる
-                </button>
-              </div>
-            </div>
-          );
-        })()}
 
         {/* ===== いいね一覧モーダル ===== */}
         {likersPost && (

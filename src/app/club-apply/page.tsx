@@ -35,7 +35,7 @@ export default function ClubApplyPage() {
           <p className="text-sm text-[var(--color-mute)] leading-relaxed mb-8">
             内容を確認のうえ、3営業日以内にご連絡いたします。
           </p>
-          <button onClick={() => router.back()} className="btn-primary justify-center">クラブ一覧へ戻る</button>
+          <button onClick={() => router.push("/clubs")} className="btn-primary justify-center">クラブ一覧へ戻る</button>
         </div>
       </div>
     );

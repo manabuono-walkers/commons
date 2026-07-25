@@ -1,6 +1,5 @@
 ﻿"use client";
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
@@ -34,6 +33,21 @@ const sections: Section[] = [
     ],
   },
   {
+    heading: "メッセージ",
+    items: [
+      { key: "dm",         label: "ダイレクトメッセージ",   desc: "新しいDMを受信したとき" },
+      { key: "group_dm",   label: "グループメッセージ",     desc: "参加中のグループDMに新しいメッセージがあったとき" },
+      { key: "dm_reaction",label: "リアクション通知",       desc: "自分のメッセージにリアクションがあったとき" },
+    ],
+  },
+  {
+    heading: "タイムライン",
+    items: [
+      { key: "tl_new",     label: "フォロー中の新規投稿", desc: "フォロー中のメンバーが新しく投稿したとき" },
+      { key: "tl_mention", label: "メンション",           desc: "投稿で自分がメンションされたとき" },
+    ],
+  },
+  {
     heading: "コミュニティ",
     items: [
       { key: "follow",  label: "フォロー通知",            desc: "誰かにフォローされたとき" },
@@ -48,6 +62,8 @@ const defaults: Record<string, boolean> = {
   push: true, email: true,
   ev_new: true, ev_remind: true, ev_cancel: true,
   campaign: false, system: true, store: false,
+  dm: true, group_dm: true, dm_reaction: true,
+  tl_new: true, tl_mention: true,
   follow: true, reply: true, like: false, club: true,
 };
 
@@ -71,6 +87,7 @@ export default function NotificationSettingsPage() {
       <div className="w-full max-w-[430px] pb-36">
         <header className="sticky top-0 z-40 bg-[var(--color-bg)]/95 backdrop-blur-md border-b border-[var(--color-line)] px-5 py-3 flex items-center justify-between">
           <button onClick={() => router.back()} className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", objectFit: "contain" }} />
           <span className="w-12" />
         </header>

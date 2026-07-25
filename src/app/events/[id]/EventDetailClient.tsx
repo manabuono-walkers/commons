@@ -27,9 +27,15 @@ const TERMS_TEXT = `【COMMONSイベント参加規約】
 第5条（個人情報の取り扱い）
 申込情報は本イベントの運営・連絡目的のみに使用します。第三者への提供は行いません。`;
 
+// events配列の一部項目のみ持つ任意フィールドを型で明示（as any回避）
+type EventItem = (typeof events)[number] & {
+  male_cancel_wait?: boolean;
+  detailImage?: string;
+  male_cancel_wait_done?: boolean;
+};
+
 export default function EventDetailClient({ id }: { id: string }) {
-  const ev = events.find(e => e.id === id) ?? events[0];
-  const [cancelWait, setCancelWait] = useState(!!(ev as any).male_cancel_wait);
+  const ev = (events.find(e => e.id === id) ?? events[0]) as EventItem;
   const [cancelWaitRegistered, setCancelWaitRegistered] = useState(false);
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [showCancelSheet, setShowCancelSheet] = useState(false);
@@ -42,7 +48,7 @@ export default function EventDetailClient({ id }: { id: string }) {
   const maleSoldOut = ev.remaining_male <= 0;
   const femaleSoldOut = ev.remaining_female <= 0;
 
-  const heroImg = (ev as any).detailImage ?? ev.image;
+  const heroImg = ev.detailImage ?? ev.image;
 
   return (
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
@@ -107,34 +113,20 @@ export default function EventDetailClient({ id }: { id: string }) {
           </DetailRow>
 
           <DetailRow label="募集人数">
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between text-sm">
                 <span>男性</span>
                 <span className="num">
                   {ev.capacity_male}名定員
-                  {ev.remaining_male <= 0
-                    ? <span className="ml-2 text-xs text-[var(--color-mute)]">（満席）</span>
-                    : ev.remaining_male < ev.alert_threshold
-                      ? <span className="ml-2 text-xs text-[var(--color-accent-deep)]">（残り{ev.remaining_male}名）</span>
-                      : null}
+                  {ev.remaining_male <= 0 && <span className="ml-2 text-xs text-[var(--color-mute)]">（満席）</span>}
                 </span>
               </div>
-              <div className="h-1.5 bg-[var(--color-line)] rounded-full">
-                <div className="h-1.5 rounded-full bg-[var(--color-accent)]" style={{ width: `${Math.round((1 - ev.remaining_male / ev.capacity_male) * 100)}%` }} />
-              </div>
-              <div className="flex items-center justify-between text-sm mt-2">
+              <div className="flex items-center justify-between text-sm">
                 <span>女性</span>
                 <span className="num">
                   {ev.capacity_female}名定員
-                  {ev.remaining_female <= 0
-                    ? <span className="ml-2 text-xs text-[var(--color-mute)]">（満席）</span>
-                    : ev.remaining_female < ev.alert_threshold
-                      ? <span className="ml-2 text-xs text-[var(--color-accent-deep)]">（残り{ev.remaining_female}名）</span>
-                      : null}
+                  {ev.remaining_female <= 0 && <span className="ml-2 text-xs text-[var(--color-mute)]">（満席）</span>}
                 </span>
-              </div>
-              <div className="h-1.5 bg-[var(--color-line)] rounded-full">
-                <div className="h-1.5 rounded-full bg-[var(--color-accent)]" style={{ width: `${Math.round((1 - ev.remaining_female / ev.capacity_female) * 100)}%` }} />
               </div>
             </div>
           </DetailRow>
@@ -191,37 +183,6 @@ export default function EventDetailClient({ id }: { id: string }) {
           </DetailRow>
         </div>
 
-        {/* 参加メンバーリスト */}
-        <div className="px-5 py-6 border-b border-[var(--color-line)]">
-          <p className="font-display text-[11px] text-[var(--color-accent-deep)] mb-4 flex items-center gap-1.5">
-            <span className="text-[var(--color-accent)]">■</span> 参加メンバー
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {[
-              { name: "田中 康介", avatar: "/images/tanaka.png" },
-              { name: "山本 彩花", avatar: "/images/yamamoto.png" },
-              { name: "伊藤 健", avatar: "/images/ito.png" },
-              { name: "中村 優一", avatar: "中" },
-              { name: "鈴木 花", avatar: "鈴" },
-              { name: "渡辺 直人", avatar: "渡" },
-            ].map((m, i) => (
-              <div key={i} className="flex flex-col items-center gap-1.5">
-                {m.avatar.startsWith("/") ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={m.avatar} alt={m.name} className="w-12 h-12 rounded-full object-cover border border-[var(--color-line)]" />
-                ) : (
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[var(--color-ink)] text-[var(--color-bg)] font-display text-sm border border-[var(--color-line)]">{m.avatar}</div>
-                )}
-                <span className="font-display text-[9px] text-[var(--color-mute)] text-center max-w-[56px] leading-tight">{m.name.split(" ")[0]}</span>
-              </div>
-            ))}
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[var(--color-line)] font-display text-xs text-[var(--color-mute)] border border-[var(--color-line)]">他8名</div>
-              <span className="font-display text-[9px] text-[var(--color-mute)]"> </span>
-            </div>
-          </div>
-        </div>
-
         {/* Payment */}
         <div className="px-5 py-8">
           <p className="font-display text-[10px] tracking-[0.2em] text-[var(--color-accent-deep)] text-center mb-1">Payment</p>
@@ -261,9 +222,32 @@ export default function EventDetailClient({ id }: { id: string }) {
                 </p>
               )}
 
+              {/* 残り人数（男女別） */}
+              {(showMaleRemaining || showFemaleRemaining || maleSoldOut || femaleSoldOut) && (
+                <div className="flex items-center justify-center gap-5 mb-3">
+                  <span className="font-display text-xs">
+                    <span className="text-[var(--color-mute)]">男性</span>{" "}
+                    {maleSoldOut
+                      ? <span className="text-[var(--color-mute)]">満席</span>
+                      : showMaleRemaining
+                        ? <span className="text-[var(--color-accent-deep)]">残り{ev.remaining_male}名</span>
+                        : <span className="text-[var(--color-mute)]">受付中</span>}
+                  </span>
+                  <span className="w-px h-3 bg-[var(--color-line)]" />
+                  <span className="font-display text-xs">
+                    <span className="text-[var(--color-mute)]">女性</span>{" "}
+                    {femaleSoldOut
+                      ? <span className="text-[var(--color-mute)]">満席</span>
+                      : showFemaleRemaining
+                        ? <span className="text-[var(--color-accent-deep)]">残り{ev.remaining_female}名</span>
+                        : <span className="text-[var(--color-mute)]">受付中</span>}
+                  </span>
+                </div>
+              )}
+
               <div className="space-y-4 mt-4">
                 {maleSoldOut ? (
-                  (ev as any).male_cancel_wait_done ? (
+                  ev.male_cancel_wait_done ? (
                     cancelWaitCancelled ? (
                       <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-bg-soft)] px-5 py-4 text-center">
                         <div className="font-display text-sm text-[var(--color-mute)]">キャンセル待ちを解除しました</div>
@@ -308,7 +292,7 @@ export default function EventDetailClient({ id }: { id: string }) {
                     className="block w-full py-4 rounded-full font-display text-base text-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                     style={agreedTerms ? { background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" } : { background: "var(--color-bg-soft)", color: "var(--color-mute)", border: "1px solid var(--color-line)" }}
                   >
-                    男性はこちら{showMaleRemaining && agreedTerms && <span className="ml-2 opacity-80">｜ 残り{ev.remaining_male}名</span>}
+                    男性はこちら
                   </button>
                 )}
 
@@ -323,7 +307,7 @@ export default function EventDetailClient({ id }: { id: string }) {
                     className="block w-full py-4 rounded-full font-display text-base text-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                     style={agreedTerms ? { background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" } : { background: "var(--color-bg-soft)", color: "var(--color-mute)", border: "1px solid var(--color-line)" }}
                   >
-                    女性はこちら{showFemaleRemaining && agreedTerms && <span className="ml-2 opacity-80">｜ 残り{ev.remaining_female}名</span>}
+                    女性はこちら
                   </button>
                 )}
 
