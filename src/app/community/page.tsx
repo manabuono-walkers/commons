@@ -317,10 +317,10 @@ export default function CommunityPage() {
     <div className="flex items-center gap-2">
       <button
         onClick={() => { setShowDm(v => !v); setActiveDm(null); }}
-        className="relative w-8 h-8 flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-ink)] transition"
+        className="relative w-9 h-9 flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-ink)] transition"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/icondm.png" alt="DM" className="w-5 h-5 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/images/icondm.png" alt="DM" className="w-9 h-9 object-contain opacity-60 hover:opacity-100 transition" />
         {dmUnread > 0 && (
           <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[9px] font-display flex items-center justify-center leading-none"
             style={{ background: "var(--color-accent)", color: "#0B0F16" }}>
