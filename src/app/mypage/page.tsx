@@ -228,7 +228,7 @@ export default function MyPage() {
             </div>
           </Link>
 
-          {/* 6. VIPにアップグレード */}
+          {/* 6. PRIMEにアップグレード */}
           <Link
             href="/vip"
             className="block rounded-2xl overflow-hidden relative"
@@ -244,8 +244,8 @@ export default function MyPage() {
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-display text-[10px] tracking-[0.1em]" style={{ color: "#c084fc" }}>EXCLUSIVE · VIP</div>
-                <div className="font-display text-base font-semibold mt-0.5" style={{ color: "#f3e8ff" }}>VIPにアップグレード</div>
+                <div className="font-display text-[10px] tracking-[0.1em]" style={{ color: "#c084fc" }}>EXCLUSIVE · PRIME</div>
+                <div className="font-display text-base font-semibold mt-0.5" style={{ color: "#f3e8ff" }}>PRIMEにアップグレード</div>
                 <div className="font-display text-xs mt-0.5" style={{ color: "#a78bfa" }}>限定特典・優先予約・コンシェルジュサービス</div>
               </div>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c084fc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-none">

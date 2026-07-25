@@ -67,6 +67,14 @@ const TAB_LABELS: Record<TabKey, string> = {
 };
 const TAB_UNREAD: Partial<Record<TabKey, number>> = { intro: 2, official: 1 };
 
+const INTRO_TEMPLATE = `はじめまして！○○と申します。
+お仕事は○○をしています。
+趣味は○○です。
+
+COMMONSでは仕事以外の繋がりを広げたいと思い入会しました。
+イベントやクラブ活動を通して、皆さんと交流できるのを楽しみにしています。
+よろしくお願いします！`;
+
 // gradient strings for landscape photo placeholders
 const GRAD = [
   "linear-gradient(160deg,#FF6B6B,#FFA040 40%,#FFD700 70%,#87CEEB)",
@@ -832,6 +840,18 @@ export default function CommunityPage() {
           <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60" onClick={() => setShowCompose(false)}>
             <div className="w-full max-w-[430px] bg-[var(--color-bg-soft)] rounded-t-3xl px-5 pt-4 pb-24" onClick={e => e.stopPropagation()}>
               <div className="w-10 h-1 bg-[var(--color-line)] rounded-full mx-auto mb-4" />
+              {tab === "intro" && (
+                <button
+                  onClick={() => setDraft(INTRO_TEMPLATE)}
+                  className="flex items-center gap-1.5 mb-3 px-3.5 py-2 rounded-full border font-display text-xs transition hover:bg-[var(--color-accent)]/6"
+                  style={{ borderColor: "var(--color-accent)", color: "var(--color-accent-deep)" }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+                  </svg>
+                  自己紹介テンプレートを使う
+                </button>
+              )}
               <div className="flex gap-3 mb-4">
                 <Avatar src={MY_AVATAR} name={MY_NAME} size={10} />
                 <div className="flex-1">

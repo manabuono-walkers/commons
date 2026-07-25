@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
@@ -26,6 +27,14 @@ const HELD_POINT = 20;
 
 export default function PointRewardsPage() {
   const router = useRouter();
+  const [redeemed, setRedeemed] = useState<Set<string>>(new Set(["r1"]));
+  const [toast, setToast] = useState<string | null>(null);
+
+  function redeem(r: Reward) {
+    setRedeemed(prev => new Set(prev).add(r.id));
+    setToast(`${r.title}と交換しました`);
+    setTimeout(() => setToast(null), 2500);
+  }
 
   return (
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
@@ -55,9 +64,10 @@ export default function PointRewardsPage() {
           {/* 景品リスト */}
           <div className="space-y-3">
             {rewards.map(r => {
-              const canRedeem = HELD_POINT >= r.point;
+              const isRedeemed = redeemed.has(r.id);
+              const canRedeem = HELD_POINT >= r.point && !isRedeemed;
               return (
-                <div key={r.id} className="card p-4 flex items-center gap-4">
+                <div key={r.id} className="card p-4 flex items-center gap-4" style={isRedeemed ? { opacity: 0.5 } : undefined}>
                   <div className="flex-1 min-w-0">
                     <div className="font-display text-[11px] text-[var(--color-mute)] mb-1">累計 {r.point}pt</div>
                     <div className="font-display text-sm leading-snug">{r.title}</div>
@@ -66,18 +76,44 @@ export default function PointRewardsPage() {
                     <div className="num text-base text-[var(--color-accent-deep)]">{r.point}<span className="text-[10px] text-[var(--color-mute)] ml-0.5">pt</span></div>
                     <button
                       disabled={!canRedeem}
-                      className="font-display text-[11px] px-3 py-1.5 rounded-full transition disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={canRedeem
-                        ? { background: "linear-gradient(135deg,#CBAE74,#B8985A)", color: "#0B0F16" }
-                        : { border: "1px solid var(--color-line)", color: "var(--color-mute)" }}>
-                      {canRedeem ? "交換する" : "ポイント不足"}
+                      onClick={() => redeem(r)}
+                      className="font-display text-[11px] px-3 py-1.5 rounded-full transition disabled:cursor-not-allowed"
+                      style={isRedeemed
+                        ? { border: "1px solid var(--color-accent)", color: "var(--color-accent-deep)" }
+                        : canRedeem
+                          ? { background: "linear-gradient(135deg,#CBAE74,#B8985A)", color: "#0B0F16" }
+                          : { border: "1px solid var(--color-line)", color: "var(--color-mute)", opacity: 0.4 }}>
+                      {isRedeemed ? "交換済み" : canRedeem ? "交換する" : "ポイント不足"}
                     </button>
                   </div>
                 </div>
               );
             })}
           </div>
+
+          {/* 注記 */}
+          <div className="space-y-1.5 pt-1">
+            <p className="text-[11px] text-[var(--color-mute)] leading-relaxed">
+              ※ ポイントは景品と交換しても減少せず、累積されます。
+            </p>
+            <p className="text-[11px] text-[var(--color-mute)] leading-relaxed">
+              ※ 20ポイントまでのすべての景品と交換すると、ポイントは0になります。
+            </p>
+          </div>
         </main>
+
+        {/* 交換完了トースト */}
+        {toast && (
+          <div className="fixed bottom-[80px] left-0 right-0 z-50 flex justify-center pointer-events-none">
+            <div className="px-5 py-3 rounded-full font-display text-xs shadow-lg flex items-center gap-2"
+              style={{ background: "linear-gradient(135deg,#CBAE74,#B8985A)", color: "#0B0F16" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0B0F16" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              {toast}
+            </div>
+          </div>
+        )}
 
         <BottomNav />
       </div>

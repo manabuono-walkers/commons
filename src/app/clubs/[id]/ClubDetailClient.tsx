@@ -141,6 +141,13 @@ const MY_AVATAR = "/images/icon.png";
 const MY_NAME = "青山 陸";
 const MY_HANDLE = "@aoyama_r";
 
+const INTRO_TEMPLATE = `はじめまして！○○と申します。
+お仕事は○○をしています。
+趣味は○○です。
+
+このクラブでは皆さんと交流を深められるのを楽しみにしています。
+よろしくお願いします！`;
+
 const fallback = clubData.wine;
 type TabType = "chat" | "events" | "members";
 
@@ -550,6 +557,16 @@ export default function ClubDetailClient({ id }: { id: string }) {
           <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60" onClick={() => setShowCompose(false)}>
             <div className="w-full max-w-[430px] bg-[var(--color-bg-soft)] rounded-t-3xl px-5 pt-4 pb-24" onClick={e => e.stopPropagation()}>
               <div className="w-10 h-1 bg-[var(--color-line)] rounded-full mx-auto mb-4" />
+              <button
+                onClick={() => setDraft(INTRO_TEMPLATE)}
+                className="flex items-center gap-1.5 mb-3 px-3.5 py-2 rounded-full border font-display text-xs transition hover:bg-[var(--color-accent)]/6"
+                style={{ borderColor: "var(--color-accent)", color: "var(--color-accent-deep)" }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+                自己紹介テンプレートを使う
+              </button>
               <div className="flex gap-3 mb-4">
                 <ChatAvatar src={MY_AVATAR} name={MY_NAME} />
                 <div className="flex-1">

@@ -144,6 +144,7 @@ export default function ClubEventChatPage() {
   const [input, setInput] = useState("");
   const [showInfo, setShowInfo] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCompose, setShowCompose] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -164,12 +165,18 @@ export default function ClubEventChatPage() {
     if (!input.trim()) return;
     setMessages(prev => [...prev, { id: Date.now(), name: MY_NAME, avatar: MY_AVATAR, body: input.trim(), time: "たった今", fromMe: true }]);
     setInput("");
+    setShowCompose(false);
     setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   }
 
+  const eventTemplate = `${ev.title}にご参加いただきありがとうございます！
+${ev.info.date}に${ev.info.place}で開催予定です。
+当日は初めましての方も多いと思うので、みなさん気軽にお声掛けください。
+何かご質問があれば遠慮なくコメントしてください！`;
+
   return (
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
-      <div className="w-full max-w-[430px] pb-40">
+      <div className="w-full max-w-[430px] pb-24">
         <AppHeader backHref={`/clubs/${id}`} rightSlot={
           <div className="text-right">
             <div className="font-display text-sm truncate max-w-[180px]">{ev.emoji} {ev.title}</div>
@@ -289,26 +296,51 @@ export default function ClubEventChatPage() {
           <div ref={bottomRef} />
         </div>
 
-        {/* ===== 入力欄（固定） ===== */}
-        <div className="fixed bottom-[57px] left-0 right-0 z-40 flex justify-center pointer-events-none">
-          <div className="w-full max-w-[430px] pointer-events-auto px-4 py-3 border-t border-[var(--color-line)] bg-[var(--color-bg)] flex gap-2 items-end">
-            <div className="flex-1 bg-[var(--color-bg-soft)] rounded-2xl px-4 py-2.5 border border-[var(--color-line)]">
-              <input className="w-full bg-transparent text-sm outline-none placeholder-[var(--color-mute)]"
-                placeholder="メッセージを入力..." value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }} />
-            </div>
-            <button onClick={send} disabled={!input.trim()}
-              className="flex-none w-10 h-10 rounded-full flex items-center justify-center transition disabled:opacity-40"
-              style={{ background: "linear-gradient(135deg,#CBAE74,#B8985A)" }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B0F16" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
-              </svg>
-            </button>
-          </div>
-        </div>
+        {/* ===== 投稿ボタン（FAB） ===== */}
+        <button onClick={() => setShowCompose(true)}
+          className="fixed z-40 w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform"
+          style={{ background: "linear-gradient(135deg,#CBAE74,#B8985A)", bottom: "calc(57px + 12px)", right: 12 }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0B0F16" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
 
         <BottomNav />
+
+        {/* ===== Compose Modal ===== */}
+        {showCompose && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60" onClick={() => setShowCompose(false)}>
+            <div className="w-full max-w-[430px] bg-[var(--color-bg-soft)] rounded-t-3xl px-5 pt-4 pb-24" onClick={e => e.stopPropagation()}>
+              <div className="w-10 h-1 bg-[var(--color-line)] rounded-full mx-auto mb-4" />
+              <button
+                onClick={() => setInput(eventTemplate)}
+                className="flex items-center gap-1.5 mb-3 px-3.5 py-2 rounded-full border font-display text-xs transition hover:bg-[var(--color-accent)]/6"
+                style={{ borderColor: "var(--color-accent)", color: "var(--color-accent-deep)" }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+                クラブ会開催テンプレートを使う
+              </button>
+              <div className="flex gap-3 mb-4">
+                <Avatar src={MY_AVATAR} name={MY_NAME} size={10} />
+                <div className="flex-1">
+                  <textarea
+                    className="w-full bg-transparent text-sm text-[var(--color-ink)] placeholder-[var(--color-mute)] outline-none resize-none leading-relaxed"
+                    placeholder="メッセージを入力..." rows={4} value={input}
+                    onChange={e => setInput(e.target.value)} autoFocus />
+                </div>
+              </div>
+              <div className="flex items-center justify-end border-t border-[var(--color-line)] pt-3">
+                <button onClick={send} disabled={!input.trim()}
+                  className="font-display text-sm px-6 py-2.5 rounded-full transition disabled:opacity-40"
+                  style={{ background: "linear-gradient(135deg,#CBAE74,#B8985A)", color: "#0B0F16" }}>
+                  送信する
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ===== 削除確認 ===== */}
         {showDeleteConfirm && (
