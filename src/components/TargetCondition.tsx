@@ -46,6 +46,23 @@ function RangeInput({ label, unitLabel }: { label: string; unitLabel: string }) 
   );
 }
 
+function DateRangeInput({ label }: { label: string }) {
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  return (
+    <div>
+      <div className="font-display text-xs text-[var(--color-mute)] mb-2">{label}</div>
+      <div className="flex items-center gap-2">
+        <input type="date" value={from} onChange={e => setFrom(e.target.value)}
+          className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+        <span className="font-display text-xs text-[var(--color-mute)]">〜</span>
+        <input type="date" value={to} onChange={e => setTo(e.target.value)}
+          className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+      </div>
+    </div>
+  );
+}
+
 export default function TargetCondition({ label = "配布対象" }: Props) {
   const [mode, setMode] = useState<Mode>("all");
   const [genders, setGenders] = useState<string[]>([]);
@@ -140,6 +157,9 @@ export default function TargetCondition({ label = "配布対象" }: Props) {
               ))}
             </div>
           </div>
+
+          {/* 入会時期 */}
+          <DateRangeInput label="入会時期" />
 
           {/* イベント参加回数 */}
           <RangeInput label="イベント参加回数" unitLabel="回" />

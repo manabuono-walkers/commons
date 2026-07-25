@@ -52,7 +52,7 @@ const engageBadge: Record<EngageLevel, string> = {
 };
 
 type SortKey = "no"|"name"|"joined"|"approvedDate"|"events"|"xp"|"pt"|"lastActivity";
-type DetailTab = "basic"|"profile"|"docs"|"activity";
+type DetailTab = "basic"|"profile"|"activity";
 
 export default function MembersPage() {
   const [search, setSearch] = useState("");
@@ -261,7 +261,7 @@ export default function MembersPage() {
               <button onClick={()=>setSelected(null)} className="text-[var(--color-mute)] hover:text-[var(--color-ink)]">✕</button>
             </div>
             <div className="flex border-b border-[var(--color-line)] overflow-x-auto">
-              {([["basic","基本情報"],["profile","申込情報"],["docs","書類・決済"],["activity","行動サマリー"]] as const).map(([k,l])=>(
+              {([["basic","基本情報"],["profile","申込情報"],["activity","行動サマリー"]] as const).map(([k,l])=>(
                 <button key={k} onClick={()=>setDetailTab(k)}
                   className={`flex-none font-display text-xs py-3 px-4 border-b-2 transition whitespace-nowrap ${detailTab===k?"border-[var(--color-accent)] text-[var(--color-accent-deep)]":"border-transparent text-[var(--color-mute)]"}`}>
                   {l}
@@ -284,6 +284,22 @@ export default function MembersPage() {
 
               {detailTab==="basic"&&(
                 <>
+                  <div className="flex items-center gap-4 rounded-xl border border-[var(--color-line)] p-4">
+                    <div className="w-16 h-16 rounded-full flex-none bg-[var(--color-line)] flex items-center justify-center font-display text-xs text-[var(--color-mute)] overflow-hidden">
+                      顔写真
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-display text-[10px] text-[var(--color-mute)] mb-0.5">UnivaPayID</div>
+                      <div className="num text-sm">{detail.univaPayId}</div>
+                    </div>
+                  </div>
+                  <a href={`/profile/${detail.insta}`} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full border border-[var(--color-accent)]/40 font-display text-xs text-[var(--color-accent-deep)] hover:bg-[var(--color-accent)]/8 transition">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                    アプリのプロフィールを見る
+                  </a>
                   {[
                     {l:"ユーザーID",v:`U-${detail.no}`},
                     {l:"メール",v:detail.email},{l:"電話番号",v:detail.tel},
@@ -342,26 +358,6 @@ export default function MembersPage() {
                   <div><div className="font-display text-xs text-[var(--color-accent-deep)] mb-1">自己紹介</div><p className="text-xs text-[var(--color-mute)] leading-relaxed">{detail.selfIntro}</p></div>
                   <div><div className="font-display text-xs text-[var(--color-accent-deep)] mb-1">物足りなさ</div><p className="text-xs text-[var(--color-mute)] leading-relaxed">{detail.lifestyle}</p></div>
                   <div><div className="font-display text-xs text-[var(--color-accent-deep)] mb-1">実現したいつながり・日常</div><p className="text-xs text-[var(--color-mute)] leading-relaxed">{detail.desired}</p></div>
-                </>
-              )}
-
-              {detailTab==="docs"&&(
-                <>
-                  <div className="rounded-xl border border-[var(--color-line)] p-4 space-y-3">
-                    <div className="font-display text-xs text-[var(--color-accent-deep)] mb-2">審査書類</div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-display text-xs">身分証明書</span>
-                      <div className="w-24 h-16 rounded-lg bg-[var(--color-line)] flex items-center justify-center text-xs text-[var(--color-mute)]">確認済</div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-display text-xs">顔写真</span>
-                      <div className="w-24 h-16 rounded-lg bg-[var(--color-line)] flex items-center justify-center text-xs text-[var(--color-mute)]">確認済</div>
-                    </div>
-                  </div>
-                  <div className="border-b border-[var(--color-line)] pb-2 flex items-start justify-between">
-                    <span className="font-display text-xs text-[var(--color-mute)] w-28">UnivaPayID</span>
-                    <span className="num text-xs">{detail.univaPayId}</span>
-                  </div>
                 </>
               )}
 

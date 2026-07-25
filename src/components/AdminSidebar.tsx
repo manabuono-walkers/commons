@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AREAS, useAdminArea } from "@/components/AdminAreaContext";
 
 const nav = [
   {
@@ -56,6 +57,7 @@ const nav = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const { area, setArea } = useAdminArea();
 
   function isActive(href: string) {
     if (href === "/admin") return pathname === "/admin";
@@ -67,7 +69,20 @@ export default function AdminSidebar() {
       <div className="px-5 py-5 border-b border-[var(--color-line)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/images/logo.png" alt="COMMONS" style={{ height: 22, width: "auto", objectFit: "contain" }} />
-        <div className="font-display text-[10px] tracking-[0.15em] text-[var(--color-mute)] mt-1.5">管理コンソール</div>
+        <div className="font-display text-[10px] tracking-[0.15em] text-[var(--color-mute)] mt-1.5 mb-2.5">管理コンソール</div>
+        <div className="relative">
+          <select
+            value={area}
+            onChange={e => setArea(e.target.value as typeof AREAS[number])}
+            className="w-full appearance-none font-display text-xs rounded-lg pl-3 pr-7 py-2 border transition outline-none"
+            style={{ background: "var(--color-bg)", borderColor: "var(--color-line)", color: "var(--color-ink)" }}
+          >
+            {AREAS.map(a => <option key={a} value={a}>{a}</option>)}
+          </select>
+          <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-mute)]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
       </div>
       <nav className="flex-1 overflow-y-auto py-3 px-3">
         {nav.map((group) => (

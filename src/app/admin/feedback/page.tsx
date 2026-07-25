@@ -48,6 +48,17 @@ export default function FeedbackAdminPage() {
 
   const item = filtered.find(f => f.id === selected) ?? filtered[0];
 
+  function downloadFeedbackCSV() {
+    const header = "投稿ID,投稿者,投稿内容,投稿日時";
+    const rows = feedbacks.map(f => `${f.id},匿名,"${f.text.replace(/"/g, '""')}",${f.date}`);
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "feedback.csv"; a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <div className="px-8 py-6 border-b border-[var(--color-line)] flex items-center justify-between flex-none">
@@ -57,7 +68,7 @@ export default function FeedbackAdminPage() {
         </div>
         <div className="flex items-center gap-3">
           <div className="font-display text-xs text-[var(--color-mute)]">新着 <span className="num text-[var(--color-accent-deep)]">2</span> 件</div>
-          <button className="btn-outline !py-2 text-xs">CSV出力</button>
+          <button onClick={downloadFeedbackCSV} className="btn-outline !py-2 text-xs">CSV出力</button>
         </div>
       </div>
 

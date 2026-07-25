@@ -14,14 +14,21 @@ interface Application {
 }
 
 const initialApplications: Application[] = [
-  { id:"A-0871", name:"松本 弦", kana:"マツモト ゲン", age:28, gender:"男性", job:"ITエンジニア", industry:"IT・ソフトウェア", company:"株式会社テックA", title:"エンジニア", area:"東京都渋谷区", pref:"東京", region:"東京", income:"800〜1000万", referee:"田中 康介（#0880）", applied:"2026.07.01", docs:true, interests:["ワイン","写真"], insta:"gen_matsumoto", entryReasons:["趣味や興味が合う人との交流","新しい体験・イベントを楽しみたい"], howFound:"COMMONS Instagram", selfIntro:"エンジニアとして都内のスタートアップに勤務しています。週末はワインと写真が趣味で、気の合う仲間と過ごしたいです。", lifestyle:"エンジニア仲間以外の交流機会が少なく、多様なバックグラウンドを持つ人と話す場所が欲しいと感じています。", desired:"ワインや写真を通じて、異業種・異世代の友人を作り、充実した週末を過ごしたいと思っています。" },
-  { id:"A-0867", name:"藤井 結菜", kana:"フジイ ユイナ", age:31, gender:"女性", job:"マーケター", industry:"広告・マーケティング", company:"株式会社○○アド", title:"シニアマーケター", area:"東京都港区", pref:"東京", region:"東京", income:"600〜800万", referee:"なし", applied:"2026.07.03", docs:true, interests:["アート","コーヒー"], insta:"yuina_fujii", entryReasons:["趣味や興味が合う人との交流","職場・既存コミュニティ以外の居場所づくり"], howFound:"COMMONS TikTok", selfIntro:"マーケターとして広告代理店に勤務しています。グルメとアートのイベントが大好きで、仕事以外での充実した交流を求めています。", lifestyle:"仕事で忙しい日々の中で、職場以外のリフレッシュできるコミュニティが欲しいと感じています。", desired:"アートやコーヒーを通じた感性豊かな仲間と出会い、週末を豊かに過ごしたいです。" },
-  { id:"A-0868", name:"橋本 涼", kana:"ハシモト リョウ", age:25, gender:"男性", job:"デザイナー", industry:"デザイン・クリエイティブ", company:"フリーランス", title:"", area:"神奈川県横浜市", pref:"神奈川", region:"東京", income:"400〜600万", referee:"山本 彩花（#0885）", applied:"2026.07.05", docs:false, interests:["アート","写真"], insta:"ryo_hshmt", entryReasons:["異性・同性問わず新しい友人づくり","趣味や興味が合う人との交流"], howFound:"COMMONS Instagram", selfIntro:"フリーランスのデザイナーです。アートや写真が好きで、クリエイティブなコミュニティを長年探していました。", lifestyle:"フリーランスゆえに孤独を感じることがあり、同じクリエイティブ系の仲間と交流したいです。", desired:"アートや写真を通じて刺激し合えるクリエイター仲間と、定期的に交流できる場所を作りたいです。" },
+  { id:"A-0871", name:"松本 弦", kana:"マツモト ゲン", age:28, gender:"男性", job:"ITエンジニア", industry:"IT・ソフトウェア", company:"株式会社テックA", title:"エンジニア", area:"東京都渋谷区", pref:"東京", region:"東京", income:"800〜1000万", referee:"田中 康介（#0880）", applied:"2026.07.01 14:32", docs:true, interests:["ワイン","写真"], insta:"gen_matsumoto", entryReasons:["趣味や興味が合う人との交流","新しい体験・イベントを楽しみたい"], howFound:"COMMONS Instagram", selfIntro:"エンジニアとして都内のスタートアップに勤務しています。週末はワインと写真が趣味で、気の合う仲間と過ごしたいです。", lifestyle:"エンジニア仲間以外の交流機会が少なく、多様なバックグラウンドを持つ人と話す場所が欲しいと感じています。", desired:"ワインや写真を通じて、異業種・異世代の友人を作り、充実した週末を過ごしたいと思っています。" },
+  { id:"A-0867", name:"藤井 結菜", kana:"フジイ ユイナ", age:31, gender:"女性", job:"マーケター", industry:"広告・マーケティング", company:"株式会社○○アド", title:"シニアマーケター", area:"東京都港区", pref:"東京", region:"東京", income:"600〜800万", referee:"なし", applied:"2026.07.03 09:18", docs:true, interests:["アート","コーヒー"], insta:"yuina_fujii", entryReasons:["趣味や興味が合う人との交流","職場・既存コミュニティ以外の居場所づくり"], howFound:"COMMONS TikTok", selfIntro:"マーケターとして広告代理店に勤務しています。グルメとアートのイベントが大好きで、仕事以外での充実した交流を求めています。", lifestyle:"仕事で忙しい日々の中で、職場以外のリフレッシュできるコミュニティが欲しいと感じています。", desired:"アートやコーヒーを通じた感性豊かな仲間と出会い、週末を豊かに過ごしたいです。" },
+  { id:"A-0868", name:"橋本 涼", kana:"ハシモト リョウ", age:25, gender:"男性", job:"デザイナー", industry:"デザイン・クリエイティブ", company:"フリーランス", title:"", area:"神奈川県横浜市", pref:"神奈川", region:"東京", income:"400〜600万", referee:"山本 彩花（#0885）", applied:"2026.07.05 21:47", docs:false, interests:["アート","写真"], insta:"ryo_hshmt", entryReasons:["異性・同性問わず新しい友人づくり","趣味や興味が合う人との交流"], howFound:"COMMONS Instagram", selfIntro:"フリーランスのデザイナーです。アートや写真が好きで、クリエイティブなコミュニティを長年探していました。", lifestyle:"フリーランスゆえに孤独を感じることがあり、同じクリエイティブ系の仲間と交流したいです。", desired:"アートや写真を通じて刺激し合えるクリエイター仲間と、定期的に交流できる場所を作りたいです。" },
+  // 再入会判定の検証用：退会済み会員（村瀬 史奈 #0873）と同姓同名で再申込
+  { id:"A-0902", name:"村瀬 史奈", kana:"ムラセ フミナ", age:27, gender:"女性", job:"フリーランス", industry:"デザイン・クリエイティブ", company:"", title:"", area:"大阪府大阪市", pref:"大阪", region:"大阪", income:"600〜800万", referee:"森田 桂（#0851）", applied:"2026.07.10 11:05", docs:true, interests:["アート","コーヒー"], insta:"fumina_mrsw2", entryReasons:["趣味や興味が合う人との交流"], howFound:"COMMONS Instagram", selfIntro:"以前会員だったのですが再度申し込みたいと思い応募しました。", lifestyle:"クリエイター仲間との交流をまた再開したいです。", desired:"アートやデザインが好きな仲間と再び交流したいです。" },
+];
+
+// 退会済み会員データ（再入会判定の照合用・admin/membersの退会済みレコードと連動想定）
+const withdrawnMembers = [
+  { name:"村瀬 史奈", kana:"ムラセ フミナ", memberNo:"0873", withdrawnDate:"2026.03.20", reason:"料金が高いと感じた。他のコミュニティと掛け持ちが難しくなった。" },
 ];
 
 const rejectedHistory: (Application & { rejectedAt: string; reason: string })[] = [
-  { id:"A-0755", name:"村上 一浩", kana:"ムラカミ カズヒロ", age:22, gender:"男性", job:"学生", industry:"学生", company:"", title:"", area:"東京都八王子市", pref:"東京", region:"東京", income:"400万未満", referee:"なし", applied:"2025.12.10", docs:false, interests:[], insta:"kazuhiro_m", entryReasons:["異性・同性問わず新しい友人づくり"], howFound:"COMMONS Instagram", selfIntro:"友達が多い場所が好きで気軽に参加したいです。", lifestyle:"友達が少ない。", desired:"たくさんの人と仲良くなりたい。", rejectedAt:"2025.12.15", reason:"在籍コミュニティとの価値観ミスマッチ" },
-  { id:"A-0801", name:"石田 明", kana:"イシダ アキラ", age:35, gender:"男性", job:"会社員", industry:"製造業", company:"△△製造", title:"", area:"埼玉県さいたま市", pref:"埼玉", region:"東京", income:"400〜600万", referee:"なし", applied:"2026.02.20", docs:true, interests:["コーヒー"], insta:"akira_ishida", entryReasons:["異性・同性問わず新しい友人づくり"], howFound:"COMMONS X", selfIntro:"近所だから入ってみたい。特にこれといった趣味はないですが交流を楽しみたいです。", lifestyle:"近所で気軽に行ける場所を探していた。", desired:"近くに友人を作りたい。", rejectedAt:"2026.02.26", reason:"申請動機が不十分" },
+  { id:"A-0755", name:"村上 一浩", kana:"ムラカミ カズヒロ", age:22, gender:"男性", job:"学生", industry:"学生", company:"", title:"", area:"東京都八王子市", pref:"東京", region:"東京", income:"400万未満", referee:"なし", applied:"2025.12.10 16:20", docs:false, interests:[], insta:"kazuhiro_m", entryReasons:["異性・同性問わず新しい友人づくり"], howFound:"COMMONS Instagram", selfIntro:"友達が多い場所が好きで気軽に参加したいです。", lifestyle:"友達が少ない。", desired:"たくさんの人と仲良くなりたい。", rejectedAt:"2025.12.15", reason:"在籍コミュニティとの価値観ミスマッチ" },
+  { id:"A-0801", name:"石田 明", kana:"イシダ アキラ", age:35, gender:"男性", job:"会社員", industry:"製造業", company:"△△製造", title:"", area:"埼玉県さいたま市", pref:"埼玉", region:"東京", income:"400〜600万", referee:"なし", applied:"2026.02.20 10:03", docs:true, interests:["コーヒー"], insta:"akira_ishida", entryReasons:["異性・同性問わず新しい友人づくり"], howFound:"COMMONS X", selfIntro:"近所だから入ってみたい。特にこれといった趣味はないですが交流を楽しみたいです。", lifestyle:"近所で気軽に行ける場所を探していた。", desired:"近くに友人を作りたい。", rejectedAt:"2026.02.26", reason:"申請動機が不十分" },
 ];
 
 type Tab = "list" | "rejected";
@@ -32,7 +39,10 @@ export default function ScreeningPage() {
   const [done, setDone] = useState<Record<string, AppStatus>>({});
   const [selected, setSelected] = useState<string>(apps[0].id);
   const [rejectedSelected, setRejectedSelected] = useState<string | null>(null);
-  const [pastCheckResult, setPastCheckResult] = useState<Record<string, boolean | null>>({});
+  const [pastCheckResult, setPastCheckResult] = useState<Record<string, {
+    rejections: (Application & { rejectedAt: string; reason: string })[];
+    withdrawal: (typeof withdrawnMembers)[number] | null;
+  } | null>>({});
   const [rejectModal, setRejectModal] = useState<string | null>(null);
   const [rejectComment, setRejectComment] = useState("");
 
@@ -45,8 +55,17 @@ export default function ScreeningPage() {
     setRejectComment("");
   }
   function checkPastRejection(app: Application) {
-    const matched = rejectedHistory.some(r => r.name === app.name || r.kana === app.kana);
-    setPastCheckResult(prev => ({ ...prev, [app.id]: matched }));
+    const rejections = rejectedHistory.filter(r => r.name === app.name || r.kana === app.kana);
+    const withdrawal = withdrawnMembers.find(w => w.name === app.name || w.kana === app.kana) ?? null;
+    setPastCheckResult(prev => ({ ...prev, [app.id]: { rejections, withdrawal } }));
+  }
+
+  // 退会後1年以内の再入会は要注意（申込日と退会日の差分で判定）
+  function isWithinOneYear(withdrawnDate: string, appliedDate: string): boolean {
+    const w = new Date(withdrawnDate.replace(/\./g, "-"));
+    const a = new Date(appliedDate.slice(0, 10).replace(/\./g, "-"));
+    const diffDays = (a.getTime() - w.getTime()) / 86400000;
+    return diffDays < 365;
   }
   function downloadCSV() {
     const header = ["申込ID","氏名","フリガナ","性別","年齢","職業","エリア","申込日","否決日","理由"];
@@ -113,28 +132,71 @@ export default function ScreeningPage() {
                     <div className="font-display text-xs text-[var(--color-mute)] mt-1">{detail.kana} · {detail.applied} 申込</div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    {!done[detail.id] ? (
-                      <div className="flex gap-2">
-                        <button onClick={() => setRejectModal(detail.id)} className="btn-outline !py-2 text-xs border-red-400/40 text-red-400 hover:bg-red-400/8">否決</button>
-                        <button onClick={() => approve(detail.id)} className="btn-primary !py-2 text-xs">承認</button>
-                      </div>
-                    ) : (
+                    {!done[detail.id] ? (() => {
+                      const r = pastCheckResult[detail.id];
+                      const reentryBlocked = !!r?.withdrawal && isWithinOneYear(r.withdrawal.withdrawnDate, detail.applied);
+                      return (
+                        <div className="flex gap-2">
+                          <button onClick={() => setRejectModal(detail.id)} className="btn-outline !py-2 text-xs border-red-400/40 text-red-400 hover:bg-red-400/8">否決</button>
+                          <button onClick={() => !reentryBlocked && approve(detail.id)} disabled={reentryBlocked}
+                            title={reentryBlocked ? "退会後1年以内のため承認できません" : undefined}
+                            className="btn-primary !py-2 text-xs disabled:opacity-40 disabled:cursor-not-allowed">
+                            承認{reentryBlocked ? "不可" : ""}
+                          </button>
+                        </div>
+                      );
+                    })() : (
                       <span className={`tag ${done[detail.id]==="approved"?"tag-accent":""}`}>{done[detail.id]==="approved"?"✓ 承認済み":"✗ 否決済み"}</span>
                     )}
                     <button onClick={() => checkPastRejection(detail)}
                       className="font-display text-[11px] px-3 py-1.5 rounded-full border border-[var(--color-accent)]/40 text-[var(--color-accent-deep)] hover:bg-[var(--color-accent)]/8 transition">
                       過去否決チェック
                     </button>
-                    {pastCheckResult[detail.id] !== undefined && (
-                      <div className={`font-display text-xs px-3 py-1.5 rounded-full ${pastCheckResult[detail.id]?"bg-red-400/10 text-red-400 border border-red-400/30":"bg-green-500/10 text-green-400 border border-green-500/30"}`}>
-                        {pastCheckResult[detail.id]?"⚠ 過去に否決歴あり":"✓ 否決歴なし"}
-                      </div>
-                    )}
+                    {pastCheckResult[detail.id] !== undefined && (() => {
+                      const r = pastCheckResult[detail.id];
+                      const hasIssue = !!r && (r.rejections.length > 0 || !!r.withdrawal);
+                      return (
+                        <div className={`font-display text-xs px-3 py-1.5 rounded-full ${hasIssue?"bg-red-400/10 text-red-400 border border-red-400/30":"bg-green-500/10 text-green-400 border border-green-500/30"}`}>
+                          {hasIssue?"⚠ 過去履歴あり":"✓ 過去履歴なし"}
+                        </div>
+                      );
+                    })()}
                     {done[detail.id]==="rejected" && (
                       <button className="font-display text-[11px] px-3 py-1.5 rounded-full border border-red-400/40 text-red-400 hover:bg-red-400/8 transition">CCキャンセル</button>
                     )}
                   </div>
                 </div>
+
+                {pastCheckResult[detail.id] && (() => {
+                  const r = pastCheckResult[detail.id]!;
+                  const reentryFlag = r.withdrawal ? isWithinOneYear(r.withdrawal.withdrawnDate, detail.applied) : false;
+                  if (r.rejections.length === 0 && !r.withdrawal) return null;
+                  return (
+                    <div className="mb-5 space-y-3">
+                      {r.withdrawal && (
+                        <div className={`card p-4 ${reentryFlag ? "border-red-400/30" : "border-[var(--color-accent)]/30"}`}>
+                          <div className={`font-display text-[10px] mb-2 ${reentryFlag ? "text-red-400" : "text-[var(--color-accent-deep)]"}`}>
+                            {reentryFlag ? "⚠ 退会後1年以内のため再入会不可" : "再入会申請（退会後1年以上経過・承認可）"}
+                          </div>
+                          <div className="text-sm">会員番号 #{r.withdrawal.memberNo} として在籍 → {r.withdrawal.withdrawnDate} 退会</div>
+                          <div className="font-display text-xs text-[var(--color-mute)] mt-1.5">退会理由: {r.withdrawal.reason}</div>
+                          {reentryFlag && (
+                            <div className="font-display text-xs text-red-400 mt-2 pt-2 border-t border-red-400/20">
+                              退会後1年以内の再入会は規定により承認できません。承認ボタンは無効化されています。
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {r.rejections.map(rej => (
+                        <div key={rej.id} className="card p-4 border-red-400/20">
+                          <div className="font-display text-[10px] text-red-400 mb-1">過去の否決履歴（{rej.id}）</div>
+                          <div className="text-sm">{rej.reason}</div>
+                          <div className="font-display text-xs text-[var(--color-mute)] mt-1.5">申込 {rej.applied} → 否決 {rej.rejectedAt}</div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
 
                 <div className="grid grid-cols-3 gap-3 mb-5">
                   {[

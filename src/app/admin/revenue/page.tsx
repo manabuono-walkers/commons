@@ -32,12 +32,16 @@ const revenueItems = [
   { id:"R0708-002", date:"2026.07.08", category:"返金対応", plan:"Wine Salon キャンセル", name:"森田 桂", no:"0851", amount:-9800, status:"返金済" },
 ];
 
+// 直近8週間の純売上推移（※仮データ）
+const weeklyNet = [1780000, 1820000, 1795000, 1860000, 1910000, 1875000, 1940000, 1980000];
+const weekLabels = ["6/1週","6/8週","6/15週","6/22週","6/29週","7/6週","7/13週","7/20週"];
+
 function net(d: typeof monthlyData[0]) { return d.memberFee + d.eventSales - d.couponDiscount; }
 
 const current = monthlyData[monthlyData.length - 1];
 const prev = monthlyData[monthlyData.length - 2];
 
-function fmtY(v: number) { return `¥${(v / 10000).toFixed(0)}万`; }
+function fmtY(v: number) { return `¥${Math.round(v).toLocaleString()}`; }
 
 function LineChart({ data, max, color }: { data: number[]; max: number; color: string }) {
   const w = 500, h = 80;
@@ -64,18 +68,38 @@ function LineChart({ data, max, color }: { data: number[]; max: number; color: s
   );
 }
 
-type Tab = "overview" | "member" | "event" | "list";
+type Tab = "overview" | "member" | "event" | "profit" | "list";
+
+// イベント利益管理用データ（※仮データ。経費・会場費は編集可能）
+interface EventProfitRow {
+  id: string; name: string; date: string; revenue: number; expense: number; venueFee: number;
+}
+const initialEventProfits: EventProfitRow[] = [
+  { id: "ev-0712", name: "Coffee Cupping #7", date: "2026.07.12", revenue: 148000, expense: 42000, venueFee: 25000 },
+  { id: "ev-0711", name: "COMMONS MUSIC BAR", date: "2026.07.11", revenue: 273000, expense: 68000, venueFee: 60000 },
+  { id: "ev-0705", name: "Coffee Cupping #7（回2）", date: "2026.07.05", revenue: 148000, expense: 40000, venueFee: 25000 },
+  { id: "ev-0628", name: "Wine Salon", date: "2026.06.28", revenue: 313600, expense: 95000, venueFee: 80000 },
+];
 
 export default function RevenuePage() {
   const [tab, setTab] = useState<Tab>("overview");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [filterCats, setFilterCats] = useState<Set<string>>(new Set());
+  const [overviewGranularity, setOverviewGranularity] = useState<"weekly" | "monthly">("monthly");
+  const [eventSearch, setEventSearch] = useState("");
+  const [memberSearch, setMemberSearch] = useState("");
+  const [planFilter, setPlanFilter] = useState<"" | "月払い" | "年払い">("");
+  const [eventProfits, setEventProfits] = useState<EventProfitRow[]>(initialEventProfits);
+
+  function updateEventProfit(id: string, field: "expense" | "venueFee", value: number) {
+    setEventProfits(prev => prev.map(e => e.id === id ? { ...e, [field]: value } : e));
+  }
 
   function toggleCat(cat: string) {
     setFilterCats(prev => {
       const next = new Set(prev);
-      next.has(cat) ? next.delete(cat) : next.add(cat);
+      if (next.has(cat)) next.delete(cat); else next.add(cat);
       return next;
     });
   }
@@ -84,24 +108,30 @@ export default function RevenuePage() {
   const eventMax = Math.max(...monthlyData.map(d => d.eventSales)) * 1.05;
   const netMax = Math.max(...monthlyData.map(d => net(d))) * 1.05;
 
-  const annualFeeArr = monthlyData.map(d => d.annualMembers * 500);
-  const monthlyFeeArr = monthlyData.map(d => d.monthlyMembers * 980);
-
   const currentAnnualFee = current.annualMembers * 500;
   const currentMonthlyFee = current.monthlyMembers * 980;
-  const prevAnnualFee = prev.annualMembers * 500;
 
   const filteredItems = revenueItems.filter(r => {
     if (filterCats.size > 0 && !filterCats.has(r.category)) return false;
     if (dateFrom && r.date.replace(/\./g,"-") < dateFrom.replace(/\./g,"-")) return false;
     if (dateTo && r.date.replace(/\./g,"-") > dateTo.replace(/\./g,"-")) return false;
+    if (eventSearch && !r.plan.toLowerCase().includes(eventSearch.toLowerCase())) return false;
+    if (memberSearch && !r.name.includes(memberSearch) && !r.no.includes(memberSearch)) return false;
+    if (planFilter && r.plan !== planFilter) return false;
     return true;
   });
 
+  function momChange(curVal: number, prevVal: number) {
+    const diff = curVal - prevVal;
+    const pct = (diff / prevVal * 100).toFixed(1);
+    const sign = diff >= 0 ? "+" : "−";
+    return `前月比 ${sign}${fmtY(Math.abs(diff))}（${sign}${Math.abs(Number(pct))}%）`;
+  }
+
   const kpiCards = [
-    { label: "純売上（7月）", value: fmtY(net(current)), sub: `前月比 +${((net(current) - net(prev)) / net(prev) * 100).toFixed(1)}%`, up: true },
-    { label: "会員費収入", value: fmtY(current.memberFee), sub: `前月比 +${((current.memberFee - prev.memberFee) / prev.memberFee * 100).toFixed(1)}%`, up: true },
-    { label: "イベント売上", value: fmtY(current.eventSales), sub: `前月比 +${((current.eventSales - prev.eventSales) / prev.eventSales * 100).toFixed(1)}%`, up: true },
+    { label: "純売上（7月）", value: fmtY(net(current)), sub: momChange(net(current), net(prev)), up: true },
+    { label: "会員費収入", value: fmtY(current.memberFee), sub: momChange(current.memberFee, prev.memberFee), up: true },
+    { label: "イベント売上", value: fmtY(current.eventSales), sub: momChange(current.eventSales, prev.eventSales), up: true },
     { label: "クーポン割引", value: fmtY(current.couponDiscount), sub: "利用促進", up: false },
   ];
 
@@ -114,7 +144,7 @@ export default function RevenuePage() {
 
       {/* Tabs */}
       <div className="px-8 border-b border-[var(--color-line)] flex gap-6 flex-none">
-        {([["overview","全体推移"],["member","会員費推移"],["event","イベント売上"],["list","売上一覧"]] as const).map(([k,l])=>(
+        {([["overview","全体推移"],["member","会員費推移"],["event","イベント売上"],["profit","イベント利益管理"],["list","売上一覧"]] as const).map(([k,l])=>(
           <button key={k} onClick={()=>setTab(k)}
             className={`font-display text-sm py-4 border-b-2 transition ${tab===k?"border-[var(--color-accent)] text-[var(--color-accent-deep)]":"border-transparent text-[var(--color-mute)]"}`}>{l}</button>
         ))}
@@ -136,19 +166,48 @@ export default function RevenuePage() {
           {tab === "overview" && (
             <>
               <div className="card p-6">
-                <div className="font-display text-[10px] text-[var(--color-mute)] mb-3">純売上推移（万円）</div>
-                <LineChart data={monthlyData.map(d => net(d))} max={netMax} color="var(--color-accent)" />
-                <div className="flex justify-between font-display text-[9px] text-[var(--color-mute)] mt-1">
-                  {months.map(m => <span key={m}>{m}</span>)}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="font-display text-[10px] text-[var(--color-mute)]">純売上推移</div>
+                  <div className="flex gap-1.5">
+                    {([["weekly","週次"],["monthly","月次"]] as const).map(([k,l]) => (
+                      <button key={k} onClick={() => setOverviewGranularity(k)}
+                        className={`font-display text-[10px] px-3 py-1 rounded-full border transition ${overviewGranularity===k?"bg-[var(--color-accent)]/15 border-[var(--color-accent)] text-[var(--color-accent-deep)]":"border-[var(--color-line)] text-[var(--color-mute)]"}`}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-6 gap-2 mt-4">
-                  {monthlyData.map(d => (
-                    <div key={d.month} className="text-center">
-                      <div className="num text-sm">{fmtY(net(d))}</div>
-                      <div className="font-display text-[9px] text-[var(--color-mute)]">{d.month.slice(5)}</div>
+                {overviewGranularity === "monthly" ? (
+                  <>
+                    <LineChart data={monthlyData.map(d => net(d))} max={netMax} color="var(--color-accent)" />
+                    <div className="flex justify-between font-display text-[9px] text-[var(--color-mute)] mt-1">
+                      {months.map(m => <span key={m}>{m}</span>)}
                     </div>
-                  ))}
-                </div>
+                    <div className="grid grid-cols-6 gap-2 mt-4">
+                      {monthlyData.map(d => (
+                        <div key={d.month} className="text-center">
+                          <div className="num text-sm">{fmtY(net(d))}</div>
+                          <div className="font-display text-[9px] text-[var(--color-mute)]">{d.month.slice(5)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <LineChart data={weeklyNet} max={Math.max(...weeklyNet) * 1.05} color="var(--color-accent)" />
+                    <div className="flex justify-between font-display text-[9px] text-[var(--color-mute)] mt-1">
+                      {weekLabels.map(w => <span key={w}>{w}</span>)}
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 mt-4">
+                      {weeklyNet.map((v, i) => (
+                        <div key={weekLabels[i]} className="text-center">
+                          <div className="num text-sm">{fmtY(v)}</div>
+                          <div className="font-display text-[9px] text-[var(--color-mute)]">{weekLabels[i]}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
               {/* 会員費内訳 */}
               <div className="card p-6">
@@ -212,6 +271,64 @@ export default function RevenuePage() {
             </div>
           )}
 
+          {tab === "profit" && (
+            <div className="card overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--color-line)]">
+                <div className="font-display text-sm">イベント利益管理</div>
+                <p className="font-display text-[10px] text-[var(--color-mute)] mt-1">イベントごとの経費・会場費を入力して利益・利益率を管理します</p>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="font-display text-[9px] text-[var(--color-mute)] text-left border-b border-[var(--color-line)]">
+                    <th className="px-5 py-3">イベント</th>
+                    <th className="px-5 py-3 text-right">売上</th>
+                    <th className="px-5 py-3 text-right">経費</th>
+                    <th className="px-5 py-3 text-right">会場費</th>
+                    <th className="px-5 py-3 text-right">利益</th>
+                    <th className="px-5 py-3 text-right">利益率</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--color-line)]">
+                  {eventProfits.map(e => {
+                    const profit = e.revenue - e.expense - e.venueFee;
+                    const margin = e.revenue > 0 ? (profit / e.revenue * 100) : 0;
+                    return (
+                      <tr key={e.id} className="hover:bg-[var(--color-bg-soft)] transition">
+                        <td className="px-5 py-3">
+                          <div className="font-display text-xs">{e.name}</div>
+                          <div className="font-display text-[10px] text-[var(--color-mute)]">{e.date}</div>
+                        </td>
+                        <td className="px-5 py-3 num text-sm text-right">{fmtY(e.revenue)}</td>
+                        <td className="px-5 py-3 text-right">
+                          <input type="number" value={e.expense}
+                            onChange={ev => updateEventProfit(e.id, "expense", Number(ev.target.value))}
+                            className="num w-24 bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-2 py-1 text-xs text-right outline-none focus:border-[var(--color-accent)]/50" />
+                        </td>
+                        <td className="px-5 py-3 text-right">
+                          <input type="number" value={e.venueFee}
+                            onChange={ev => updateEventProfit(e.id, "venueFee", Number(ev.target.value))}
+                            className="num w-24 bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-2 py-1 text-xs text-right outline-none focus:border-[var(--color-accent)]/50" />
+                        </td>
+                        <td className={`px-5 py-3 num text-sm text-right ${profit >= 0 ? "text-green-400" : "text-red-400"}`}>{fmtY(profit)}</td>
+                        <td className={`px-5 py-3 num text-sm text-right ${margin >= 0 ? "text-green-400" : "text-red-400"}`}>{margin.toFixed(1)}%</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t border-[var(--color-line)] bg-[var(--color-bg-soft)]">
+                    <td className="px-5 py-3 font-display text-xs text-[var(--color-mute)]">合計</td>
+                    <td className="px-5 py-3 num text-sm text-right font-bold">{fmtY(eventProfits.reduce((s,e)=>s+e.revenue,0))}</td>
+                    <td className="px-5 py-3 num text-sm text-right">{fmtY(eventProfits.reduce((s,e)=>s+e.expense,0))}</td>
+                    <td className="px-5 py-3 num text-sm text-right">{fmtY(eventProfits.reduce((s,e)=>s+e.venueFee,0))}</td>
+                    <td className="px-5 py-3 num text-sm text-right font-bold">{fmtY(eventProfits.reduce((s,e)=>s+(e.revenue-e.expense-e.venueFee),0))}</td>
+                    <td className="px-5 py-3"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+
           {tab === "list" && (
             <div className="card overflow-hidden">
               {/* Search bar */}
@@ -249,6 +366,32 @@ export default function RevenuePage() {
                   ))}
                   {filterCats.size > 0 && (
                     <button onClick={() => setFilterCats(new Set())} className="font-display text-[10px] text-[var(--color-mute)] hover:text-[var(--color-ink)]">クリア</button>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <span className="font-display text-[10px] text-[var(--color-mute)] flex-none">イベント名</span>
+                    <input type="text" value={eventSearch} onChange={e=>setEventSearch(e.target.value)}
+                      placeholder="例: Coffee Cupping"
+                      className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[var(--color-accent)]/50 text-[var(--color-ink)] placeholder-[var(--color-mute)] w-48" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-display text-[10px] text-[var(--color-mute)] flex-none">会員</span>
+                    <input type="text" value={memberSearch} onChange={e=>setMemberSearch(e.target.value)}
+                      placeholder="氏名・会員番号"
+                      className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[var(--color-accent)]/50 text-[var(--color-ink)] placeholder-[var(--color-mute)] w-36" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-display text-[10px] text-[var(--color-mute)] flex-none">支払方法</span>
+                    {(["月払い","年払い"] as const).map(p => (
+                      <button key={p} onClick={() => setPlanFilter(planFilter===p ? "" : p)}
+                        className={`font-display text-[10px] px-3 py-1 rounded-full border transition ${planFilter===p?"bg-[var(--color-accent)]/15 border-[var(--color-accent)] text-[var(--color-accent-deep)]":"border-[var(--color-line)] text-[var(--color-mute)]"}`}>
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                  {(eventSearch||memberSearch||planFilter) && (
+                    <button onClick={() => { setEventSearch(""); setMemberSearch(""); setPlanFilter(""); }} className="font-display text-[10px] text-[var(--color-mute)] hover:text-[var(--color-ink)]">クリア</button>
                   )}
                 </div>
               </div>

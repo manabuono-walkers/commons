@@ -9,12 +9,23 @@ interface Coupon {
 }
 
 const initialCoupons: Coupon[] = [
-  { id: "C001", name: "SOUND BAR HOWLドリンク1杯無料", store: "SOUND BAR HOWL", uses: 38, active: true, usageHistory: [{ user: "佐藤 美咲 #0827", date: "2026.07.08" }, { user: "青山 陸 #0824", date: "2026.07.06" }, { user: "田中 康介 #0880", date: "2026.07.05" }] },
-  { id: "C002", name: "La Cave ワイン1本10%OFF", store: "La Cave", uses: 12, active: true, usageHistory: [{ user: "山本 彩花 #0885", date: "2026.07.07" }, { user: "森田 桂 #0851", date: "2026.07.03" }] },
-  { id: "C003", name: "Coffee Commons ドリップコーヒー無料", store: "Coffee Commons", uses: 71, active: true, usageHistory: [{ user: "村瀬 史奈 #0873", date: "2026.07.09" }, { user: "田中 康介 #0880", date: "2026.07.08" }, { user: "佐藤 美咲 #0827", date: "2026.07.07" }] },
-  { id: "C004", name: "初回入会月会費無料（新規限定）", store: "システム", uses: 23, active: true, usageHistory: [{ user: "橋本 涼 #0868", date: "2026.07.05" }] },
+  { id: "C001", name: "SOUND BAR HOWLドリンク1杯無料", store: "SOUND BAR HOWL", uses: 38, active: true, usageHistory: [{ user: "佐藤 美咲 #0827", date: "2026.07.08 21:15" }, { user: "青山 陸 #0824", date: "2026.07.06 20:40" }, { user: "田中 康介 #0880", date: "2026.07.05 22:05" }] },
+  { id: "C002", name: "La Cave ワイン1本10%OFF", store: "La Cave", uses: 12, active: true, usageHistory: [{ user: "山本 彩花 #0885", date: "2026.07.07 19:30" }, { user: "森田 桂 #0851", date: "2026.07.03 18:50" }] },
+  { id: "C003", name: "Coffee Commons ドリップコーヒー無料", store: "Coffee Commons", uses: 71, active: true, usageHistory: [{ user: "村瀬 史奈 #0873", date: "2026.07.09 10:20" }, { user: "田中 康介 #0880", date: "2026.07.08 08:45" }, { user: "佐藤 美咲 #0827", date: "2026.07.07 14:10" }] },
+  { id: "C004", name: "初回入会月会費無料（新規限定）", store: "システム", uses: 23, active: true, usageHistory: [{ user: "橋本 涼 #0868", date: "2026.07.05 12:00" }] },
   { id: "C005", name: "夏祭りスペシャルクーポン", store: "全店舗", uses: 0, active: false, usageHistory: [] },
 ];
+
+const WEEKDAY_JA = ["日", "月", "火", "水", "木", "金", "土"];
+function weekdayOf(dateStr: string): string {
+  const [datePart] = dateStr.split(" ");
+  const d = new Date(datePart.replace(/\./g, "-"));
+  return WEEKDAY_JA[d.getDay()];
+}
+function timeOf(dateStr: string): string {
+  const parts = dateStr.split(" ");
+  return parts[1] ?? "—";
+}
 
 type ModalType = "create" | "edit" | "history" | null;
 type PageTab = "list" | "usage";
@@ -92,6 +103,17 @@ export default function CouponsPage() {
     if (uUserQ && !h.user.includes(uUserQ)) return false;
     return true;
   });
+
+  function downloadUsageCSV() {
+    const header = "使用者,クーポン,使用日時,曜日,時間";
+    const rows = filteredUsage.map(h => `${h.user},${h.couponName},${h.date},${weekdayOf(h.date)},${timeOf(h.date)}`);
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "coupon_usage.csv"; a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -173,7 +195,12 @@ export default function CouponsPage() {
                   className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)] flex-1" />
               </div>
             </div>
-            <div className="font-display text-xs text-[var(--color-mute)] mb-3">{filteredUsage.length}件</div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="font-display text-xs text-[var(--color-mute)]">{filteredUsage.length}件</div>
+              <button onClick={downloadUsageCSV} className="font-display text-[10px] px-4 py-2 rounded-full border border-[var(--color-accent)]/60 text-[var(--color-accent-deep)] hover:bg-[var(--color-accent)]/8 transition">
+                CSV出力
+              </button>
+            </div>
             {filteredUsage.length > 0 ? (
               <div className="card overflow-hidden">
                 <table className="w-full text-sm">
@@ -182,6 +209,8 @@ export default function CouponsPage() {
                       <th className="px-6 py-3">使用者</th>
                       <th className="px-6 py-3">クーポン</th>
                       <th className="px-6 py-3">使用日時</th>
+                      <th className="px-6 py-3 text-center">曜日</th>
+                      <th className="px-6 py-3 text-center">時間</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--color-line)]">
@@ -190,6 +219,8 @@ export default function CouponsPage() {
                         <td className="px-6 py-3 font-display">{h.user}</td>
                         <td className="px-6 py-3 font-display text-xs text-[var(--color-mute)]">{h.couponName}</td>
                         <td className="px-6 py-3 num text-xs text-[var(--color-mute)]">{h.date}</td>
+                        <td className="px-6 py-3 num text-xs text-center">{weekdayOf(h.date)}</td>
+                        <td className="px-6 py-3 num text-xs text-center">{timeOf(h.date)}</td>
                       </tr>
                     ))}
                   </tbody>

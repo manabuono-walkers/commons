@@ -3,7 +3,7 @@ import { useState } from "react";
 import ImageUpload from "@/components/ImageUpload";
 
 interface Campaign { id: number; title: string; desc: string; }
-interface Report { id: number; title: string; published: string; views: number; body: string; }
+interface Report { id: number; title: string; published: string; views: number; body: string; scheduledAt?: string; }
 
 const initialCampaigns: Campaign[] = [
   { id:1, title:"夏の紹介キャンペーン", desc:"友人・知人を紹介するとポイントが2倍になるキャンペーンです。紹介された方が入会した場合、紹介者にも特典ポイントが付与されます。" },
@@ -34,6 +34,8 @@ export default function ContentPage() {
   const [cDesc, setCDesc] = useState("");
   const [rTitle, setRTitle] = useState("");
   const [rBody, setRBody] = useState("");
+  const [rScheduled, setRScheduled] = useState(false);
+  const [rScheduledAt, setRScheduledAt] = useState("");
 
   const selCampaign = campaigns.find(c => c.id === selectedCampaignId);
   const selReport = reports.find(r => r.id === selectedReportId);
@@ -48,11 +50,14 @@ export default function ContentPage() {
     setCTitle(c.title); setCDesc(c.desc); setRightMode("edit");
   }
   function openEditReport(r: Report) {
-    setRTitle(r.title); setRBody(r.body); setRightMode("edit");
+    setRTitle(r.title); setRBody(r.body);
+    setRScheduled(!!r.scheduledAt); setRScheduledAt(r.scheduledAt ?? "");
+    setRightMode("edit");
   }
   function openCreate() {
     setSelectedCampaignId(null); setSelectedReportId(null);
     setCTitle(""); setCDesc(""); setRTitle(""); setRBody("");
+    setRScheduled(false); setRScheduledAt("");
     setRightMode("create"); setDraftMsg(false);
   }
   function closePanel() { setRightMode("none"); setSelectedCampaignId(null); setSelectedReportId(null); }
@@ -151,9 +156,14 @@ export default function ContentPage() {
                 <>
                   <div className="flex items-start justify-between mb-5">
                     <div>
-                      <div className="tag text-[9px] mb-2">活動レポート</div>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <span className="tag text-[9px]">活動レポート</span>
+                        {selReport.scheduledAt && <span className="tag tag-accent text-[9px]">予約投稿中</span>}
+                      </div>
                       <h2 className="font-display text-xl">{selReport.title}</h2>
-                      <div className="num text-sm text-[var(--color-mute)] mt-1">{selReport.published} · {selReport.views} views</div>
+                      <div className="num text-sm text-[var(--color-mute)] mt-1">
+                        {selReport.scheduledAt ? `${selReport.scheduledAt.replace("T"," ")} 公開予定` : selReport.published} · {selReport.views} views
+                      </div>
                     </div>
                     <div className="flex gap-2 flex-none">
                       <button onClick={() => openEditReport(selReport)} className="btn-outline !py-1.5 text-xs">編集</button>
@@ -209,13 +219,23 @@ export default function ContentPage() {
                     <ImageUpload label="レポートカバー画像" hint="推奨: 16:9 / JPG・PNG / 最大5MB" />
                     <Field label="タイトル"><Inp value={rTitle} onChange={e=>setRTitle(e.target.value)} placeholder="例: 6月イベントレポート｜Wine Salon" /></Field>
                     <Field label="本文"><Txt rows={8} value={rBody} onChange={e=>setRBody(e.target.value)} placeholder="レポート本文を入力..." /></Field>
+                    <div className="rounded-xl border border-[var(--color-line)] p-4">
+                      <label className="flex items-center gap-2.5 cursor-pointer mb-3">
+                        <input type="checkbox" checked={rScheduled} onChange={e=>setRScheduled(e.target.checked)} className="accent-[var(--color-accent)]" />
+                        <span className="font-display text-xs text-[var(--color-mute)]">予約投稿する（指定日時に自動公開）</span>
+                      </label>
+                      {rScheduled && (
+                        <input type="datetime-local" value={rScheduledAt} onChange={e=>setRScheduledAt(e.target.value)}
+                          className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+                      )}
+                    </div>
                     <div className="flex gap-2 pt-2">
                       <button onClick={() => setShowPreview(true)} className="btn-outline !py-2 text-xs">プレビュー</button>
                       <button onClick={() => { setDraftMsg(true); setRightMode("detail"); }} className="btn-outline !py-2 text-xs">下書き保存</button>
                       <button onClick={() => {
-                        setReports(prev => prev.map(r => r.id===selReport.id?{...r,title:rTitle,body:rBody}:r));
+                        setReports(prev => prev.map(r => r.id===selReport.id?{...r,title:rTitle,body:rBody,scheduledAt: rScheduled ? rScheduledAt : undefined}:r));
                         setRightMode("detail");
-                      }} className="btn-primary !py-2 text-xs flex-1 justify-center">公開する</button>
+                      }} className="btn-primary !py-2 text-xs flex-1 justify-center">{rScheduled ? "予約投稿する" : "公開する"}</button>
                       <button onClick={() => setRightMode("detail")} className="btn-outline !py-2 text-xs">キャンセル</button>
                     </div>
                   </div>
@@ -249,13 +269,23 @@ export default function ContentPage() {
                       <ImageUpload label="レポートカバー画像" hint="推奨: 16:9 / JPG・PNG / 最大5MB" />
                       <Field label="タイトル"><Inp value={rTitle} onChange={e=>setRTitle(e.target.value)} placeholder="例: 6月イベントレポート｜Wine Salon" /></Field>
                       <Field label="本文"><Txt rows={8} value={rBody} onChange={e=>setRBody(e.target.value)} placeholder="レポート本文を入力..." /></Field>
+                      <div className="rounded-xl border border-[var(--color-line)] p-4">
+                        <label className="flex items-center gap-2.5 cursor-pointer mb-3">
+                          <input type="checkbox" checked={rScheduled} onChange={e=>setRScheduled(e.target.checked)} className="accent-[var(--color-accent)]" />
+                          <span className="font-display text-xs text-[var(--color-mute)]">予約投稿する（指定日時に自動公開）</span>
+                        </label>
+                        {rScheduled && (
+                          <input type="datetime-local" value={rScheduledAt} onChange={e=>setRScheduledAt(e.target.value)}
+                            className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+                        )}
+                      </div>
                       <div className="flex gap-2 pt-2">
                         <button onClick={() => setShowPreview(true)} className="btn-outline !py-2 text-xs">プレビュー</button>
                         <button onClick={() => setDraftMsg(true)} className="btn-outline !py-2 text-xs">下書き保存</button>
                         <button onClick={() => {
-                          if(rTitle) setReports(prev=>[...prev,{id:Date.now(),title:rTitle,published:"2026.07.12",views:0,body:rBody}]);
+                          if(rTitle) setReports(prev=>[...prev,{id:Date.now(),title:rTitle,published: rScheduled ? rScheduledAt.slice(0,10).replace(/-/g,".") : "2026.07.12",views:0,body:rBody,scheduledAt: rScheduled ? rScheduledAt : undefined}]);
                           closePanel();
-                        }} className="btn-primary !py-2 text-xs flex-1 justify-center">公開する</button>
+                        }} className="btn-primary !py-2 text-xs flex-1 justify-center">{rScheduled ? "予約投稿する" : "公開する"}</button>
                         <button onClick={closePanel} className="btn-outline !py-2 text-xs">キャンセル</button>
                       </div>
                     </div>

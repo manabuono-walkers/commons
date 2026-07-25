@@ -21,6 +21,21 @@ const kpiTable = [
   { month:"2026.02", newMembers:38, churned:10, churnRate:"0.79%", revenue:"¥6.3M", avgPoint:1520, couponUse:233 },
 ];
 
+// 会員数サマリー（※仮の内訳データ）
+const memberSummary = {
+  newThisMonth: 51,
+  cumulativeTotal: 1570, // 累計会員数（退会者含む、これまでの入会総数）
+  activeTotal: 1412,     // 在籍会員数（現在アクティブ）
+  withdrawnTotal: 158,   // 退会済み累計
+};
+
+// 男女比（入会・退会・在籍）（※仮のデータ）
+const genderBreakdown = {
+  joined:    { male: 27, female: 24 },
+  withdrawn: { male: 5,  female: 3 },
+  active:    { male: 780, female: 632 },
+};
+
 const segments = [
   { level:"高", label:"エンゲージ高", description:"直近3ヶ月以内に活動・イベント参加8回以上", count:287, pct:20.3, churnRate:"0.2%", avgMonths:14.2, avgCouponUse:8.4, tagClass:"bg-green-500/15 text-green-400 border-green-500/30", barClass:"bg-green-500" },
   { level:"中", label:"エンゲージ中", description:"直近3ヶ月以内に活動・イベント参加3〜7回", count:812, pct:57.5, churnRate:"0.6%", avgMonths:8.7, avgCouponUse:3.1, tagClass:"bg-[var(--color-accent)]/15 text-[var(--color-accent-deep)] border-[var(--color-accent)]/30", barClass:"bg-[var(--color-accent)]" },
@@ -101,26 +116,47 @@ function BarChart({ data, color }: { data: number[]; color: string }) {
 
 type MainTab = "analytics" | "coupon" | "segments";
 type ChartTab = "members" | "coupon" | "revenue";
+type PeriodGranularity = "daily" | "weekly" | "monthly" | "custom";
+
+const PERIOD_LABELS: Record<PeriodGranularity, string> = {
+  daily: "日次", weekly: "週次", monthly: "月次", custom: "任意期間",
+};
 
 export default function AnalyticsPage() {
   const [tab, setTab] = useState<MainTab>("analytics");
   const [chartTab, setChartTab] = useState<ChartTab>("members");
   const [notifyModal, setNotifyModal] = useState<string | null>(null);
   const [couponModal, setCouponModal] = useState<string | null>(null);
+  const [period, setPeriod] = useState<PeriodGranularity>("monthly");
+  const [customFrom, setCustomFrom] = useState("2026-07-01");
+  const [customTo, setCustomTo] = useState("2026-07-31");
 
   // Gender usage rate for current month
   const totalM = couponUseMale[couponUseMale.length - 1];
   const totalF = couponUseFemale[couponUseFemale.length - 1];
-  const totalUse = totalM + totalF;
   const maleMembers = 780; const femaleMembers = 632;
   const maleRate = ((totalM / maleMembers) * 100).toFixed(1);
   const femaleRate = ((totalF / femaleMembers) * 100).toFixed(1);
 
+  function downloadDashboardCSV() {
+    const header = "月,新規入会,解約,退会率,売上,平均P,クーポン利用";
+    const rows = kpiTable.map(r => `${r.month},${r.newMembers},${r.churned},${r.churnRate},${r.revenue},${r.avgPoint},${r.couponUse}`);
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "dashboard_summary.csv"; a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <div className="px-8 py-6 border-b border-[var(--color-line)] flex-none">
-        <div className="font-display text-[10px] tracking-[0.12em] text-[var(--color-accent-deep)]">ANALYTICS & BI</div>
-        <h1 className="font-display text-2xl mt-0.5">分析・BI</h1>
+      <div className="px-8 py-6 border-b border-[var(--color-line)] flex-none flex items-center justify-between">
+        <div>
+          <div className="font-display text-[10px] tracking-[0.12em] text-[var(--color-accent-deep)]">ANALYTICS & BI</div>
+          <h1 className="font-display text-2xl mt-0.5">分析・BI</h1>
+        </div>
+        <button onClick={downloadDashboardCSV} className="btn-outline !py-2 text-xs">CSV出力</button>
       </div>
 
       {/* Main inline tabs */}
@@ -136,6 +172,28 @@ export default function AnalyticsPage() {
       <div className="flex-1 overflow-y-auto px-8 py-6">
         {tab === "analytics" && (
           <div className="max-w-[1100px] space-y-6">
+            {/* 期間指定 */}
+            <div className="card p-4 flex items-center gap-4 flex-wrap">
+              <span className="font-display text-[10px] text-[var(--color-mute)] flex-none">期間指定</span>
+              <div className="flex gap-1.5">
+                {(Object.keys(PERIOD_LABELS) as PeriodGranularity[]).map(p => (
+                  <button key={p} onClick={() => setPeriod(p)}
+                    className={`font-display text-xs px-3.5 py-1.5 rounded-full border transition ${period === p ? "bg-[var(--color-accent)]/15 border-[var(--color-accent)] text-[var(--color-accent-deep)]" : "border-[var(--color-line)] text-[var(--color-mute)]"}`}>
+                    {PERIOD_LABELS[p]}
+                  </button>
+                ))}
+              </div>
+              {period === "custom" && (
+                <div className="flex items-center gap-2">
+                  <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+                    className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[var(--color-accent)]/60" />
+                  <span className="font-display text-xs text-[var(--color-mute)]">〜</span>
+                  <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+                    className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[var(--color-accent)]/60" />
+                </div>
+              )}
+            </div>
+
             {/* KPI cards */}
             <div className="grid grid-cols-4 gap-4">
               {[
@@ -150,6 +208,55 @@ export default function AnalyticsPage() {
                   <div className={`font-display text-xs ${k.up ? "text-green-400" : "text-red-400"}`}>{k.sub}</div>
                 </div>
               ))}
+            </div>
+
+            {/* 会員数（新規・累計・在籍） */}
+            <div className="card p-6">
+              <div className="font-display text-sm mb-4">会員数（{PERIOD_LABELS[period]}）</div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-[var(--color-bg)] rounded-xl p-4 border border-[var(--color-line)]">
+                  <div className="font-display text-[10px] text-[var(--color-mute)] mb-1">新規入会数</div>
+                  <div className="num text-2xl text-green-400">+{memberSummary.newThisMonth}<span className="font-display text-xs text-[var(--color-mute)] ml-1">名</span></div>
+                </div>
+                <div className="bg-[var(--color-bg)] rounded-xl p-4 border border-[var(--color-line)]">
+                  <div className="font-display text-[10px] text-[var(--color-mute)] mb-1">累計会員数</div>
+                  <div className="num text-2xl">{memberSummary.cumulativeTotal.toLocaleString()}<span className="font-display text-xs text-[var(--color-mute)] ml-1">名</span></div>
+                  <div className="font-display text-[9px] text-[var(--color-mute)] mt-1">退会済み {memberSummary.withdrawnTotal}名を含む</div>
+                </div>
+                <div className="bg-[var(--color-bg)] rounded-xl p-4 border border-[var(--color-accent)]/30">
+                  <div className="font-display text-[10px] text-[var(--color-mute)] mb-1">在籍会員数</div>
+                  <div className="num text-2xl text-[var(--color-accent-deep)]">{memberSummary.activeTotal.toLocaleString()}<span className="font-display text-xs text-[var(--color-mute)] ml-1">名</span></div>
+                </div>
+              </div>
+            </div>
+
+            {/* 男女比（入会・退会・在籍） */}
+            <div className="card p-6">
+              <div className="font-display text-sm mb-4">男女比（{PERIOD_LABELS[period]}）</div>
+              <div className="grid grid-cols-3 gap-4">
+                {([
+                  { key: "joined", label: "入会", data: genderBreakdown.joined },
+                  { key: "withdrawn", label: "退会", data: genderBreakdown.withdrawn },
+                  { key: "active", label: "在籍", data: genderBreakdown.active },
+                ] as const).map(g => {
+                  const total = g.data.male + g.data.female;
+                  const maleRate = total > 0 ? (g.data.male / total * 100) : 0;
+                  return (
+                    <div key={g.key} className="bg-[var(--color-bg)] rounded-xl p-4 border border-[var(--color-line)]">
+                      <div className="font-display text-[10px] text-[var(--color-mute)] mb-2">{g.label}会員</div>
+                      <div className="num text-xl mb-2">{total.toLocaleString()}<span className="font-display text-xs text-[var(--color-mute)] ml-1">名</span></div>
+                      <div className="h-1.5 rounded-full bg-[var(--color-line)] overflow-hidden flex mb-2">
+                        <div className="bg-blue-400 h-full" style={{ width: `${maleRate}%` }} />
+                        <div className="bg-[var(--color-accent)] h-full flex-1" />
+                      </div>
+                      <div className="flex justify-between font-display text-[10px]">
+                        <span className="text-blue-400">男性 {g.data.male}名（{maleRate.toFixed(0)}%）</span>
+                        <span className="text-[var(--color-accent-deep)]">女性 {g.data.female}名（{(100 - maleRate).toFixed(0)}%）</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Chart inline tabs */}

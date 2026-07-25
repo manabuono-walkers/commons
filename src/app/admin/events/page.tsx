@@ -4,28 +4,32 @@ import ImageUpload from "@/components/ImageUpload";
 import TargetCondition from "@/components/TargetCondition";
 
 interface EventItem {
-  id: string; title: string; date: string; venue: string; type: string;
+  id: string; title: string; date: string; venue: string; venueUrl?: string; type: string; format?: string;
   capM: number; capF: number; remM: number; remF: number; feeM: string; feeF: string;
-  applicants: number; published: boolean; description?: string;
+  applicants: number; published: boolean; description?: string; publishAt?: string;
 }
 
 const initialEvents: EventItem[] = [
-  { id: "music-bar-0715", title: "COMMONS MUSIC BAR", date: "2026.07.15", venue: "SOUND BAR HOWL", type: "先着", capM: 25, capF: 25, remM: 5, remF: 3, feeM: "¥7,000", feeF: "¥6,000", applicants: 42, published: true, description: "毎月開催の人気イベント。ジャズ、ソウル、R&Bが心地よく流れるバースペースで、新しい出会いと会話を楽しんでください。" },
-  { id: "wine-salon-0802", title: "COMMONS WINE SALON", date: "2026.08.02", venue: "La Cave", type: "抽選", capM: 8, capF: 8, remM: 8, remF: 8, feeM: "¥9,800", feeF: "¥9,800", applicants: 24, published: false, description: "ソムリエが厳選したボトルを囲みながら、ワインの世界を深く掘り下げるサロン。少人数制で贅沢な時間をお届けします。" },
-  { id: "coffee-0720", title: "Coffee Cupping #7", date: "2026.07.20", venue: "Coffee Commons", type: "抽選", capM: 15, capF: 15, remM: 0, remF: 0, feeM: "¥4,000", feeF: "¥4,000", applicants: 38, published: true, description: "スペシャルティコーヒーの世界へ。バリスタが丁寧にカッピングの手順を教えてくれます。" },
-  { id: "photo-0727", title: "谷中フォトウォーク", date: "2026.07.27", venue: "谷中エリア", type: "先着", capM: 20, capF: 20, remM: 0, remF: 0, feeM: "¥2,000", feeF: "¥2,000", applicants: 40, published: true, description: "下町情緒あふれる谷中を歩きながら、それぞれの「好き」な瞬間をカメラに収めます。" },
+  { id: "music-bar-0715", title: "COMMONS MUSIC BAR", date: "2026.07.15", venue: "SOUND BAR HOWL", venueUrl: "https://maps.google.com/?q=SOUND+BAR+HOWL", type: "先着", format: "飲み放題", capM: 25, capF: 25, remM: 5, remF: 3, feeM: "¥7,000", feeF: "¥6,000", applicants: 42, published: true, description: "毎月開催の人気イベント。ジャズ、ソウル、R&Bが心地よく流れるバースペースで、新しい出会いと会話を楽しんでください。" },
+  { id: "wine-salon-0802", title: "COMMONS WINE SALON", date: "2026.08.02", venue: "La Cave", venueUrl: "https://maps.google.com/?q=La+Cave", type: "抽選", format: "ワインペアリング", capM: 8, capF: 8, remM: 8, remF: 8, feeM: "¥9,800", feeF: "¥9,800", applicants: 24, published: false, description: "ソムリエが厳選したボトルを囲みながら、ワインの世界を深く掘り下げるサロン。少人数制で贅沢な時間をお届けします。", publishAt: "2026.07.20 10:00" },
+  { id: "coffee-0720", title: "Coffee Cupping #7", date: "2026.07.20", venue: "Coffee Commons", venueUrl: "https://maps.google.com/?q=Coffee+Commons", type: "抽選", format: "カッピング体験", capM: 15, capF: 15, remM: 0, remF: 0, feeM: "¥4,000", feeF: "¥4,000", applicants: 38, published: true, description: "スペシャルティコーヒーの世界へ。バリスタが丁寧にカッピングの手順を教えてくれます。" },
+  { id: "photo-0727", title: "谷中フォトウォーク", date: "2026.07.27", venue: "谷中エリア", venueUrl: "", type: "先着", format: "街歩き", capM: 20, capF: 20, remM: 0, remF: 0, feeM: "¥2,000", feeF: "¥2,000", applicants: 40, published: true, description: "下町情緒あふれる谷中を歩きながら、それぞれの「好き」な瞬間をカメラに収めます。" },
 ];
 
-interface Applicant { no: string; name: string; gender: string; status: string; paid: boolean; }
+type CancelType = "" | "返金無し" | "半額返金";
+interface Applicant {
+  no: string; name: string; gender: string; status: string; paid: boolean;
+  age: number; eventCount: number; cancelType: CancelType;
+}
 const dummyApplicants: Applicant[] = [
-  { no: "0824", name: "青山 陸", gender: "男性", status: "確定", paid: true },
-  { no: "0827", name: "佐藤 美咲", gender: "女性", status: "確定", paid: true },
-  { no: "0880", name: "田中 康介", gender: "男性", status: "確定", paid: true },
-  { no: "0885", name: "山本 彩花", gender: "女性", status: "確定", paid: true },
-  { no: "0843", name: "山本 直", gender: "男性", status: "未払い", paid: false },
-  { no: "0891", name: "伊藤 健", gender: "男性", status: "キャンセル待ち", paid: false },
-  { no: "0873", name: "村瀬 史奈", gender: "女性", status: "確定", paid: true },
-  { no: "0898", name: "中村 優一", gender: "男性", status: "確定", paid: true },
+  { no: "0824", name: "青山 陸", gender: "男性", status: "確定", paid: true, age: 36, eventCount: 7, cancelType: "" },
+  { no: "0827", name: "佐藤 美咲", gender: "女性", status: "確定", paid: true, age: 31, eventCount: 18, cancelType: "" },
+  { no: "0880", name: "田中 康介", gender: "男性", status: "確定", paid: true, age: 33, eventCount: 11, cancelType: "" },
+  { no: "0885", name: "山本 彩花", gender: "女性", status: "確定", paid: true, age: 35, eventCount: 24, cancelType: "" },
+  { no: "0843", name: "山本 直", gender: "男性", status: "未払い", paid: false, age: 29, eventCount: 3, cancelType: "" },
+  { no: "0891", name: "伊藤 健", gender: "男性", status: "キャンセル", paid: true, age: 31, eventCount: 4, cancelType: "半額返金" },
+  { no: "0873", name: "村瀬 史奈", gender: "女性", status: "キャンセル", paid: true, age: 27, eventCount: 2, cancelType: "返金無し" },
+  { no: "0898", name: "中村 優一", gender: "男性", status: "確定", paid: true, age: 46, eventCount: 8, cancelType: "" },
 ];
 
 interface LotteryApplicant { no: string; name: string; gender: string; wins: number; engage: string; selected: boolean; checked: boolean; }
@@ -63,6 +67,8 @@ export default function AdminEventsPage() {
   const [counting, setCounting] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [scheduledPublish, setScheduledPublish] = useState(false);
+  const [publishAtInput, setPublishAtInput] = useState("");
 
   const selected = events.find(e => e.id === selectedId);
 
@@ -145,7 +151,18 @@ export default function AdminEventsPage() {
                   </div>
                   <h2 className="font-display text-2xl mb-1">{selected.title}</h2>
                   <div className="num text-2xl text-[var(--color-accent-deep)]">{selected.date}</div>
-                  <div className="font-display text-sm text-[var(--color-mute)] mt-1">{selected.venue}</div>
+                  {selected.venueUrl ? (
+                    <a href={selected.venueUrl} target="_blank" rel="noopener noreferrer"
+                      className="font-display text-sm text-[var(--color-accent-deep)] hover:underline underline-offset-2 mt-1 inline-block">
+                      {selected.venue} ↗
+                    </a>
+                  ) : (
+                    <div className="font-display text-sm text-[var(--color-mute)] mt-1">{selected.venue}</div>
+                  )}
+                  {selected.format && <div className="font-display text-xs text-[var(--color-mute)] mt-0.5">形式: {selected.format}</div>}
+                  {selected.publishAt && !selected.published && (
+                    <div className="font-display text-xs text-[var(--color-accent-deep)] mt-1">公開予約: {selected.publishAt}〜</div>
+                  )}
                 </div>
                 <div className="flex flex-col gap-2 flex-none">
                   <button onClick={() => setRightPanel("applicants")} className="btn-outline !py-1.5 text-xs">申込者管理</button>
@@ -164,7 +181,7 @@ export default function AdminEventsPage() {
                 </div>
               </div>
               <div className="grid grid-cols-4 gap-3 mb-6">
-                {[{l:"男性 残席",v:`${selected.remM}/${selected.capM}`},{l:"女性 残席",v:`${selected.remF}/${selected.capF}`},{l:"申込数",v:`${selected.applicants}名`},{l:"参加費",v:`${selected.feeM}/${selected.feeF}`}].map(s=>(
+                {[{l:"男性 申込数",v:`${selected.capM-selected.remM}/${selected.capM}`},{l:"女性 申込数",v:`${selected.capF-selected.remF}/${selected.capF}`},{l:"申込数（合計）",v:`${selected.applicants}名`},{l:"参加費",v:`${selected.feeM}/${selected.feeF}`}].map(s=>(
                   <div key={s.l} className="card p-4"><div className="font-display text-[9px] text-[var(--color-mute)]">{s.l}</div><div className="num text-lg mt-1">{s.v}</div></div>
                 ))}
               </div>
@@ -173,13 +190,16 @@ export default function AdminEventsPage() {
           )}
 
           {/* Applicant list */}
-          {selectedId && selected && rightPanel === "applicants" && (
+          {selectedId && selected && rightPanel === "applicants" && (() => {
+            // 支払い完了者のみを申込者一覧へ反映
+            const paidApplicants = dummyApplicants.filter(a => a.paid);
+            return (
             <div className="px-8 py-6">
               <div className="flex items-center justify-between mb-5">
                 <div>
                   <button onClick={() => setRightPanel("detail")} className="font-display text-[10px] text-[var(--color-mute)] hover:text-[var(--color-ink)] mb-1">← 戻る</button>
                   <h2 className="font-display text-xl">{selected.title} — 申込者一覧</h2>
-                  <div className="num text-sm text-[var(--color-accent-deep)]">{selected.date} · {dummyApplicants.length}名</div>
+                  <div className="num text-sm text-[var(--color-accent-deep)]">{selected.date} · {paidApplicants.length}名（支払完了のみ表示）</div>
                 </div>
                 {selected.type==="抽選" && (
                   <button onClick={() => setRightPanel("lottery")}
@@ -192,17 +212,29 @@ export default function AdminEventsPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="font-display text-[9px] text-[var(--color-mute)] text-left border-b border-[var(--color-line)]">
-                      <th className="px-5 py-3">会員番号</th><th className="px-5 py-3">氏名</th><th className="px-5 py-3">性別</th><th className="px-5 py-3">ステータス</th><th className="px-5 py-3">決済</th><th className="px-5 py-3">操作</th>
+                      <th className="px-5 py-3">会員番号</th><th className="px-5 py-3">氏名</th><th className="px-5 py-3">性別</th>
+                      <th className="px-5 py-3 text-center">年齢</th><th className="px-5 py-3 text-center">参加回数</th>
+                      <th className="px-5 py-3">ステータス</th><th className="px-5 py-3">決済</th><th className="px-5 py-3">操作</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--color-line)]">
-                    {dummyApplicants.map(a=>(
+                    {paidApplicants.map(a=>(
                       <tr key={a.no} className="hover:bg-[var(--color-bg-soft)] transition">
                         <td className="px-5 py-3 num text-xs">{a.no}</td>
                         <td className="px-5 py-3 font-display text-sm">{a.name}</td>
                         <td className="px-5 py-3 font-display text-xs">{a.gender}</td>
-                        <td className="px-5 py-3"><span className={`tag text-[9px] ${a.status==="確定"?"tag-ink":""}`}>{a.status}</span></td>
-                        <td className="px-5 py-3"><span className={`text-xs ${a.paid?"text-[var(--color-accent-deep)]":"text-red-400"}`}>{a.paid?"✓ 完了":"未決済"}</span></td>
+                        <td className="px-5 py-3 num text-xs text-center">{a.age}歳</td>
+                        <td className="px-5 py-3 num text-xs text-center">{a.eventCount}回</td>
+                        <td className="px-5 py-3">
+                          <span className={`tag text-[9px] ${a.status==="確定"?"tag-ink":a.status==="キャンセル"?"border-red-400/30 text-red-400":""}`}>{a.status}</span>
+                        </td>
+                        <td className="px-5 py-3">
+                          {a.cancelType ? (
+                            <span className="text-xs text-red-400">{a.cancelType}</span>
+                          ) : (
+                            <span className="text-xs text-[var(--color-accent-deep)]">✓ 完了</span>
+                          )}
+                        </td>
                         <td className="px-5 py-3">
                           <div className="flex gap-1.5">
                             <button className="font-display text-[10px] px-2 py-1 rounded border border-[var(--color-line)] hover:border-[var(--color-accent)] transition">詳細</button>
@@ -215,7 +247,8 @@ export default function AdminEventsPage() {
                 </table>
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {/* Lottery */}
           {selectedId && selected && rightPanel === "lottery" && (
@@ -353,12 +386,60 @@ export default function AdminEventsPage() {
               )}
               <h2 className="font-display text-xl mb-5">イベント作成</h2>
               <div className="space-y-4">
-                {[{l:"イベント名",t:"text",ph:"COMMONS MUSIC BAR"},{l:"開催日時",t:"text",ph:"2026.08.15 19:00〜22:00"},{l:"会場",t:"text",ph:"会場名・最寄り駅"},{l:"定員（男性）",t:"number",ph:"25"},{l:"定員（女性）",t:"number",ph:"25"},{l:"参加費（男性）",t:"text",ph:"¥7,000"},{l:"参加費（女性）",t:"text",ph:"¥6,000"}].map(f=>(
-                  <div key={f.l}>
-                    <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">{f.l}</label>
-                    <input type={f.t} placeholder={f.ph} className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
+                <div>
+                  <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">イベント名</label>
+                  <input type="text" placeholder="COMMONS MUSIC BAR" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
+                </div>
+
+                <div>
+                  <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">開催日</label>
+                  <input type="date" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">開始時刻</label>
+                    <input type="time" defaultValue="19:00" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
                   </div>
-                ))}
+                  <div>
+                    <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">終了時刻</label>
+                    <input type="time" defaultValue="22:00" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+                  </div>
+                </div>
+                <p className="font-display text-[10px] text-[var(--color-mute)] -mt-2">※ 時刻はスクロール選択・キーボードでの手入力どちらも対応しています</p>
+
+                <div>
+                  <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">会場名</label>
+                  <input type="text" placeholder="会場名・最寄り駅" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
+                </div>
+                <div>
+                  <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">会場URL（Googleマップ等・任意）</label>
+                  <input type="url" placeholder="https://maps.google.com/?q=..." className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
+                </div>
+
+                <div>
+                  <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">イベント形式</label>
+                  <input type="text" placeholder="例: 飲み放題、ビュッフェ、着席ディナー" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">定員（男性）</label>
+                    <input type="number" placeholder="25" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
+                  </div>
+                  <div>
+                    <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">定員（女性）</label>
+                    <input type="number" placeholder="25" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
+                  </div>
+                  <div>
+                    <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">参加費（男性・円）</label>
+                    <input type="number" placeholder="7000" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
+                  </div>
+                  <div>
+                    <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">参加費（女性・円）</label>
+                    <input type="number" placeholder="6000" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
+                  </div>
+                </div>
+
                 <div>
                   <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">募集タイプ</label>
                   <select className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none">
@@ -368,6 +449,17 @@ export default function AdminEventsPage() {
                 <div>
                   <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">イベント説明</label>
                   <textarea rows={4} placeholder="イベントの詳細説明..." className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none resize-none placeholder-[var(--color-mute)]" />
+                </div>
+
+                <div className="rounded-xl border border-[var(--color-line)] p-4">
+                  <label className="flex items-center gap-2.5 cursor-pointer mb-3">
+                    <input type="checkbox" checked={scheduledPublish} onChange={e => setScheduledPublish(e.target.checked)} className="accent-[var(--color-accent)]" />
+                    <span className="font-display text-xs text-[var(--color-mute)]">公開予約する（指定日時に自動公開）</span>
+                  </label>
+                  {scheduledPublish && (
+                    <input type="datetime-local" value={publishAtInput} onChange={e => setPublishAtInput(e.target.value)}
+                      className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+                  )}
                 </div>
                 <ImageUpload hint="推奨: 16:9 / JPG・PNG / 最大5MB" />
                 <TargetCondition label="申込対象（対象を限定する場合）" />

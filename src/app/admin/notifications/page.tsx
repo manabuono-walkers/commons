@@ -5,22 +5,23 @@ import TargetCondition from "@/components/TargetCondition";
 interface NotifHistory {
   id: number; title: string; segment: string; sent: string;
   opens: string; clicks: string; body: string; channels: string[];
+  recipientCount: number;
 }
 
 const history: NotifHistory[] = [
-  { id:1, title:"7月イベント募集開始のお知らせ", segment:"全会員", sent:"2026.07.01 10:00", opens:"87%", clicks:"42%", channels:["アプリ内通知"], body:"7月のイベント募集が開始されました！\n\nCoffee Cupping #7、COMMONS WINE SALON など今月も充実のラインナップをご用意しています。\n\n参加ご希望の方はアプリのイベント一覧からお申し込みください。" },
-  { id:2, title:"新クラブ「ジャズ部」が誕生しました", segment:"東京会員", sent:"2026.06.28 12:00", opens:"74%", clicks:"31%", channels:["アプリ内通知","メール"], body:"COMMONS に新しいクラブ「ジャズ部」が誕生しました！\n\nジャズを愛するメンバーが集まり、名盤の紹介や生演奏鑑賞ツアーなどを計画しています。\n\n興味のある方はぜひクラブ一覧からご参加ください。" },
-  { id:3, title:"Coffee Cupping #7 抽選結果のお知らせ", segment:"申込者のみ", sent:"2026.06.25 18:00", opens:"96%", clicks:"88%", channels:["メール"], body:"Coffee Cupping #7 の抽選結果をお知らせします。\n\n【当選の方へ】\nおめでとうございます！参加確定の手続きを7月2日までにお済ませください。\n\n【落選の方へ】\n今回はご縁がありませんでしたが、次回のイベントにぜひご参加ください。" },
-  { id:4, title:"月次メンバーズレポート（6月）", segment:"全会員", sent:"2026.06.30 09:00", opens:"62%", clicks:"18%", channels:["アプリ内通知","メール"], body:"6月の活動まとめをお届けします。\n\n・開催イベント: 17件\n・新規参加クラブ: 3件\n・新規入会: 51名\n\n7月も充実したイベントをご用意しております。引き続きよろしくお願いいたします。" },
+  { id:1, title:"7月イベント募集開始のお知らせ", segment:"全会員", sent:"2026.07.01 10:00", opens:"87%", clicks:"42%", channels:["アプリ内通知"], recipientCount: 1412, body:"7月のイベント募集が開始されました！\n\nCoffee Cupping #7、COMMONS WINE SALON など今月も充実のラインナップをご用意しています。\n\n参加ご希望の方はアプリのイベント一覧からお申し込みください。" },
+  { id:2, title:"新クラブ「ジャズ部」が誕生しました", segment:"東京会員", sent:"2026.06.28 12:00", opens:"74%", clicks:"31%", channels:["アプリ内通知","メール"], recipientCount: 823, body:"COMMONS に新しいクラブ「ジャズ部」が誕生しました！\n\nジャズを愛するメンバーが集まり、名盤の紹介や生演奏鑑賞ツアーなどを計画しています。\n\n興味のある方はぜひクラブ一覧からご参加ください。" },
+  { id:3, title:"Coffee Cupping #7 抽選結果のお知らせ", segment:"申込者のみ", sent:"2026.06.25 18:00", opens:"96%", clicks:"88%", channels:["メール"], recipientCount: 38, body:"Coffee Cupping #7 の抽選結果をお知らせします。\n\n【当選の方へ】\nおめでとうございます！参加確定の手続きを7月2日までにお済ませください。\n\n【落選の方へ】\n今回はご縁がありませんでしたが、次回のイベントにぜひご参加ください。" },
+  { id:4, title:"月次メンバーズレポート（6月）", segment:"全会員", sent:"2026.06.30 09:00", opens:"62%", clicks:"18%", channels:["アプリ内通知","メール"], recipientCount: 1362, body:"6月の活動まとめをお届けします。\n\n・開催イベント: 17件\n・新規参加クラブ: 3件\n・新規入会: 51名\n\n7月も充実したイベントをご用意しております。引き続きよろしくお願いいたします。" },
 ];
 
 const scheduledItems: NotifHistory[] = [
-  { id:101, title:"8月イベント募集開始のお知らせ（予約）", segment:"全会員", sent:"2026.08.01 10:00（予定）", opens:"—", clicks:"—", channels:["アプリ内通知","メール"], body:"8月のイベント情報をお届けする予定の通知です。" },
+  { id:101, title:"8月イベント募集開始のお知らせ（予約）", segment:"全会員", sent:"2026.08.01 10:00（予定）", opens:"—", clicks:"—", channels:["アプリ内通知","メール"], recipientCount: 1420, body:"8月のイベント情報をお届けする予定の通知です。" },
 ];
 
 type Tab = "app" | "email" | "scheduled";
 
-function NotifList({ items, selectedId, onSelect, onDelete }: { items: NotifHistory[]; selectedId: number|null; onSelect: (id:number)=>void; onDelete: (id:number)=>void }) {
+function NotifList({ items, selectedId, onSelect }: { items: NotifHistory[]; selectedId: number|null; onSelect: (id:number)=>void }) {
   return (
     <div className="divide-y divide-[var(--color-line)]">
       {items.length === 0 && (
@@ -82,6 +83,29 @@ export default function NotificationsPage() {
   const currentList = tab === "app" ? appItems : tab === "email" ? emailItems : scheduled;
   const detail = [...notifications, ...scheduled].find(h => h.id === selectedId);
 
+  const sentRecipientTotal = notifications.reduce((s, h) => s + h.recipientCount, 0);
+  const scheduledRecipientTotal = scheduled.reduce((s, h) => s + h.recipientCount, 0);
+
+  function downloadAnalyticsCSV() {
+    const header = "タイトル,本文,送信数,開封数,開封率,クリック数,クリック率";
+    const rows = notifications.map(h => {
+      const sent = h.recipientCount;
+      const openRate = h.opens === "—" ? 0 : parseFloat(h.opens);
+      const opens = Math.round(sent * openRate / 100);
+      const clickRate = h.clicks === "—" ? 0 : parseFloat(h.clicks);
+      const clicks = Math.round(opens * clickRate / 100);
+      const clickThroughRate = opens > 0 ? ((clicks / opens) * 100).toFixed(1) + "%" : "0%";
+      const escapedBody = `"${h.body.replace(/"/g, '""').replace(/\n/g, " ")}"`;
+      return `${h.title},${escapedBody},${sent},${opens},${h.opens},${clicks},${clickThroughRate}`;
+    });
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "notification_analytics.csv"; a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <div className="px-8 py-6 border-b border-[var(--color-line)] flex items-center justify-between flex-none">
@@ -89,7 +113,24 @@ export default function NotificationsPage() {
           <div className="font-display text-[10px] tracking-[0.12em] text-[var(--color-accent-deep)]">NOTIFICATION</div>
           <h1 className="font-display text-2xl mt-0.5">通知・配信管理</h1>
         </div>
-        <button onClick={() => setShowCompose(true)} className="btn-primary !py-2 text-xs">＋ 通知作成</button>
+        <div className="flex items-center gap-2">
+          <button onClick={downloadAnalyticsCSV} className="btn-outline !py-2 text-xs">配信分析CSV出力</button>
+          <button onClick={() => setShowCompose(true)} className="btn-primary !py-2 text-xs">＋ 通知作成</button>
+        </div>
+      </div>
+
+      {/* 配信数サマリー */}
+      <div className="px-8 py-3 border-b border-[var(--color-line)] flex gap-6 flex-none">
+        <div className="flex items-center gap-1.5">
+          <span className="font-display text-[10px] text-[var(--color-mute)]">送信済み配信数</span>
+          <span className="num text-sm text-[var(--color-accent-deep)]">{sentRecipientTotal.toLocaleString()}</span>
+          <span className="font-display text-[10px] text-[var(--color-mute)]">名（{notifications.length}件）</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="font-display text-[10px] text-[var(--color-mute)]">予約送信予定数</span>
+          <span className="num text-sm text-[var(--color-accent-deep)]">{scheduledRecipientTotal.toLocaleString()}</span>
+          <span className="font-display text-[10px] text-[var(--color-mute)]">名（{scheduled.length}件）</span>
+        </div>
       </div>
 
       {/* Inline tabs */}
@@ -108,7 +149,7 @@ export default function NotificationsPage() {
 
       <div className="flex flex-1 overflow-hidden">
         <div className="w-[320px] border-r border-[var(--color-line)] overflow-y-auto flex-none">
-          <NotifList items={currentList} selectedId={selectedId} onSelect={setSelectedId} onDelete={deleteNotif} />
+          <NotifList items={currentList} selectedId={selectedId} onSelect={setSelectedId} />
         </div>
 
         {!detail && (

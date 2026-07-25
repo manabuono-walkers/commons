@@ -4,9 +4,26 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
+const WITHDRAW_REASONS = [
+  "イベントに参加できなくなった",
+  "費用に見合わないと感じた",
+  "期待していたコンテンツと違った",
+  "他のコミュニティに移ることにした",
+  "一時的に休止したい",
+  "その他",
+];
+
 export default function SettingsPage() {
   const router = useRouter();
   const [showWithdraw, setShowWithdraw] = useState(false);
+  const [reason, setReason] = useState<string | null>(null);
+  const [otherReason, setOtherReason] = useState("");
+
+  function closeWithdraw() {
+    setShowWithdraw(false);
+    setReason(null);
+    setOtherReason("");
+  }
 
   return (
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
@@ -49,16 +66,49 @@ export default function SettingsPage() {
         </main>
 
         {showWithdraw && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowWithdraw(false)}>
-            <div className="w-full max-w-[430px] bg-[var(--color-bg-soft)] rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={closeWithdraw}>
+            <div className="w-full max-w-[430px] bg-[var(--color-bg-soft)] rounded-t-3xl p-6 pb-10 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
               <div className="w-10 h-1 bg-[var(--color-line)] rounded-full mx-auto mb-6" />
               <h2 className="font-display text-xl font-semibold">退会の確認</h2>
               <p className="mt-3 text-sm text-[var(--color-mute)] leading-relaxed">
                 退会するとすべてのデータが削除され、復元できません。本当に退会しますか？
               </p>
+
+              {/* 退会理由（任意） */}
+              <div className="mt-6">
+                <p className="font-display text-xs text-[var(--color-accent-deep)] mb-3">退会理由（任意）</p>
+                <div className="space-y-2">
+                  {WITHDRAW_REASONS.map(r => (
+                    <button
+                      key={r}
+                      onClick={() => setReason(prev => prev === r ? null : r)}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition text-left"
+                      style={{
+                        borderColor: reason === r ? "var(--color-accent)" : "var(--color-line)",
+                        background: reason === r ? "rgba(184,152,90,0.08)" : "transparent",
+                      }}
+                    >
+                      <div className="w-4 h-4 rounded-full border-2 flex-none flex items-center justify-center"
+                        style={{ borderColor: reason === r ? "var(--color-accent-deep)" : "var(--color-line)" }}>
+                        {reason === r && <div className="w-2 h-2 rounded-full" style={{ background: "var(--color-accent-deep)" }} />}
+                      </div>
+                      <span className="font-display text-sm">{r}</span>
+                    </button>
+                  ))}
+                </div>
+                {reason === "その他" && (
+                  <textarea
+                    className="input-field mt-3 min-h-[80px] resize-none text-sm w-full"
+                    placeholder="ご意見をお聞かせください…"
+                    value={otherReason}
+                    onChange={e => setOtherReason(e.target.value)}
+                  />
+                )}
+              </div>
+
               <div className="mt-6 space-y-3">
                 <button className="w-full py-3.5 rounded-full font-display text-sm bg-red-500/90 text-white hover:bg-red-500 transition">退会する</button>
-                <button onClick={() => setShowWithdraw(false)} className="w-full py-3.5 rounded-full font-display text-sm border border-[var(--color-line)] text-[var(--color-mute)] hover:text-[var(--color-ink)] hover:border-[var(--color-ink)] transition">キャンセル</button>
+                <button onClick={closeWithdraw} className="w-full py-3.5 rounded-full font-display text-sm border border-[var(--color-line)] text-[var(--color-mute)] hover:text-[var(--color-ink)] hover:border-[var(--color-ink)] transition">キャンセル</button>
               </div>
             </div>
           </div>
