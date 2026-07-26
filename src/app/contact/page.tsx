@@ -1,20 +1,10 @@
 ﻿"use client";
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
-const topics = [
-  "イベントの申込・キャンセル",
-  "支払い・請求について",
-  "アカウント・ログイン",
-  "クラブ・コミュニティ",
-  "その他のご質問",
-];
-
 export default function ContactPage() {
   const router = useRouter();
-  const [topic, setTopic] = useState("");
   const [body, setBody] = useState("");
   const [sent, setSent] = useState(false);
 
@@ -40,6 +30,7 @@ export default function ContactPage() {
       <div className="w-full max-w-[430px] pb-24">
         <header className="sticky top-0 z-40 bg-[var(--color-bg)]/95 backdrop-blur-md border-b border-[var(--color-line)] px-5 py-3 flex items-center justify-between">
           <button onClick={() => router.back()} className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">← 戻る</button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", objectFit: "contain" }} />
           <span className="w-12" />
         </header>
@@ -65,28 +56,12 @@ export default function ContactPage() {
             ))}
           </section>
           <section className="space-y-4">
-            <div className="font-display text-xs text-[var(--color-mute)] px-1">お問い合わせフォーム</div>
-            <div>
-              <div className="font-display text-xs text-[var(--color-mute)] mb-2">お問い合わせ種別 *</div>
-              <div className="space-y-2">
-                {topics.map(t => (
-                  <button key={t} onClick={() => setTopic(t)} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition"
-                    style={{ borderColor: topic === t ? "var(--color-accent)" : "var(--color-line)", background: topic === t ? "rgba(184,152,90,0.06)" : "var(--color-bg-soft)" }}>
-                    <div className="flex-none w-4 h-4 rounded-full border flex items-center justify-center transition"
-                      style={{ borderColor: topic === t ? "var(--color-accent-deep)" : "var(--color-line)" }}>
-                      {topic === t && <div className="w-2 h-2 rounded-full" style={{ background: "var(--color-accent-deep)" }} />}
-                    </div>
-                    <span className="font-display text-sm">{t}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
             <div>
               <div className="font-display text-xs text-[var(--color-mute)] mb-2">お問い合わせ内容 *</div>
               <textarea className="w-full bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-xl p-3 text-sm text-[var(--color-ink)] outline-none resize-none focus:border-[var(--color-accent)] transition"
                 rows={5} placeholder="詳細をご記入ください" value={body} onChange={e => setBody(e.target.value)} />
             </div>
-            <button onClick={() => (topic && body.trim()) && setSent(true)} disabled={!topic || !body.trim()}
+            <button onClick={() => body.trim() && setSent(true)} disabled={!body.trim()}
               className="w-full py-4 rounded-full font-display text-sm transition hover:opacity-90 disabled:opacity-40"
               style={{ background: "linear-gradient(135deg, #CBAE74, #B8985A)", color: "#0B0F16" }}>
               送信する

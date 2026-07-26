@@ -4,7 +4,8 @@ import { useState } from "react";
 type AppStatus = "approved" | "rejected" | "pending";
 
 interface Application {
-  id: string; name: string; kana: string; age: number; gender: string;
+  id: string; name: string; kana: string; dob: string; gender: string;
+  email: string; tel: string;
   job: string; industry: string; company: string; title: string;
   area: string; pref: string; region: string;
   income: string; referee: string; applied: string; docs: boolean;
@@ -14,24 +15,67 @@ interface Application {
 }
 
 const initialApplications: Application[] = [
-  { id:"A-0871", name:"松本 弦", kana:"マツモト ゲン", age:28, gender:"男性", job:"ITエンジニア", industry:"IT・ソフトウェア", company:"株式会社テックA", title:"エンジニア", area:"東京都渋谷区", pref:"東京", region:"東京", income:"800〜1000万", referee:"田中 康介（#0880）", applied:"2026.07.01 14:32", docs:true, interests:["ワイン","写真"], insta:"gen_matsumoto", entryReasons:["趣味や興味が合う人との交流","新しい体験・イベントを楽しみたい"], howFound:"COMMONS Instagram", selfIntro:"エンジニアとして都内のスタートアップに勤務しています。週末はワインと写真が趣味で、気の合う仲間と過ごしたいです。", lifestyle:"エンジニア仲間以外の交流機会が少なく、多様なバックグラウンドを持つ人と話す場所が欲しいと感じています。", desired:"ワインや写真を通じて、異業種・異世代の友人を作り、充実した週末を過ごしたいと思っています。" },
-  { id:"A-0867", name:"藤井 結菜", kana:"フジイ ユイナ", age:31, gender:"女性", job:"マーケター", industry:"広告・マーケティング", company:"株式会社○○アド", title:"シニアマーケター", area:"東京都港区", pref:"東京", region:"東京", income:"600〜800万", referee:"なし", applied:"2026.07.03 09:18", docs:true, interests:["アート","コーヒー"], insta:"yuina_fujii", entryReasons:["趣味や興味が合う人との交流","職場・既存コミュニティ以外の居場所づくり"], howFound:"COMMONS TikTok", selfIntro:"マーケターとして広告代理店に勤務しています。グルメとアートのイベントが大好きで、仕事以外での充実した交流を求めています。", lifestyle:"仕事で忙しい日々の中で、職場以外のリフレッシュできるコミュニティが欲しいと感じています。", desired:"アートやコーヒーを通じた感性豊かな仲間と出会い、週末を豊かに過ごしたいです。" },
-  { id:"A-0868", name:"橋本 涼", kana:"ハシモト リョウ", age:25, gender:"男性", job:"デザイナー", industry:"デザイン・クリエイティブ", company:"フリーランス", title:"", area:"神奈川県横浜市", pref:"神奈川", region:"東京", income:"400〜600万", referee:"山本 彩花（#0885）", applied:"2026.07.05 21:47", docs:false, interests:["アート","写真"], insta:"ryo_hshmt", entryReasons:["異性・同性問わず新しい友人づくり","趣味や興味が合う人との交流"], howFound:"COMMONS Instagram", selfIntro:"フリーランスのデザイナーです。アートや写真が好きで、クリエイティブなコミュニティを長年探していました。", lifestyle:"フリーランスゆえに孤独を感じることがあり、同じクリエイティブ系の仲間と交流したいです。", desired:"アートや写真を通じて刺激し合えるクリエイター仲間と、定期的に交流できる場所を作りたいです。" },
-  // 再入会判定の検証用：退会済み会員（村瀬 史奈 #0873）と同姓同名で再申込
-  { id:"A-0902", name:"村瀬 史奈", kana:"ムラセ フミナ", age:27, gender:"女性", job:"フリーランス", industry:"デザイン・クリエイティブ", company:"", title:"", area:"大阪府大阪市", pref:"大阪", region:"大阪", income:"600〜800万", referee:"森田 桂（#0851）", applied:"2026.07.10 11:05", docs:true, interests:["アート","コーヒー"], insta:"fumina_mrsw2", entryReasons:["趣味や興味が合う人との交流"], howFound:"COMMONS Instagram", selfIntro:"以前会員だったのですが再度申し込みたいと思い応募しました。", lifestyle:"クリエイター仲間との交流をまた再開したいです。", desired:"アートやデザインが好きな仲間と再び交流したいです。" },
+  { id:"A-0871", name:"松本 弦", kana:"マツモト ゲン", dob:"1998.03.14", gender:"男性", email:"gen.matsumoto@example.com", tel:"09011112222", job:"ITエンジニア", industry:"IT・ソフトウェア", company:"株式会社テックA", title:"エンジニア", area:"東京都渋谷区", pref:"東京都", region:"東京", income:"700万円〜900万円", referee:"田中 康介（#0880）", applied:"2026.07.01 14:32", docs:true, interests:["ワイン","写真"], insta:"gen_matsumoto", entryReasons:["趣味や興味が合う人との交流","新しい体験・イベントを楽しみたい"], howFound:"COMMONS Instagram", selfIntro:"エンジニアとして都内のスタートアップに勤務しています。週末はワインと写真が趣味で、気の合う仲間と過ごしたいです。", lifestyle:"エンジニア仲間以外の交流機会が少なく、多様なバックグラウンドを持つ人と話す場所が欲しいと感じています。", desired:"ワインや写真を通じて、異業種・異世代の友人を作り、充実した週末を過ごしたいと思っています。" },
+  { id:"A-0867", name:"藤井 結菜", kana:"フジイ ユイナ", dob:"1994.11.02", gender:"女性", email:"yuina.fujii@example.com", tel:"09022223333", job:"会社員（総合職）", industry:"広告・マーケティング", company:"株式会社○○アド", title:"シニアマーケター", area:"東京都港区", pref:"東京都", region:"東京", income:"500万円〜700万円", referee:"なし", applied:"2026.07.03 09:18", docs:true, interests:["アート","コーヒー"], insta:"yuina_fujii", entryReasons:["趣味や興味が合う人との交流","職場・既存コミュニティ以外の居場所づくり"], howFound:"COMMONS TikTok", selfIntro:"マーケターとして広告代理店に勤務しています。グルメとアートのイベントが大好きで、仕事以外での充実した交流を求めています。", lifestyle:"仕事で忙しい日々の中で、職場以外のリフレッシュできるコミュニティが欲しいと感じています。", desired:"アートやコーヒーを通じた感性豊かな仲間と出会い、週末を豊かに過ごしたいです。" },
+  { id:"A-0868", name:"橋本 涼", kana:"ハシモト リョウ", dob:"2001.05.20", gender:"男性", email:"ryo.hashimoto@example.com", tel:"09033334444", job:"自営業", industry:"デザイン・クリエイティブ", company:"フリーランス", title:"", area:"神奈川県横浜市", pref:"神奈川県", region:"東京", income:"300万円〜500万円", referee:"山本 彩花（#0885）", applied:"2026.07.05 21:47", docs:false, interests:["アート","写真"], insta:"ryo_hshmt", entryReasons:["異性・同性問わず新しい友人づくり","趣味や興味が合う人との交流"], howFound:"COMMONS Instagram", selfIntro:"フリーランスのデザイナーです。アートや写真が好きで、クリエイティブなコミュニティを長年探していました。", lifestyle:"フリーランスゆえに孤独を感じることがあり、同じクリエイティブ系の仲間と交流したいです。", desired:"アートや写真を通じて刺激し合えるクリエイター仲間と、定期的に交流できる場所を作りたいです。" },
+  // 再入会判定の検証用：退会済み会員（村瀬 史奈 #0873）と誕生日・氏名・電話番号が一致する再申込
+  { id:"A-0902", name:"村瀬 史奈", kana:"ムラセ フミナ", dob:"1998.09.02", gender:"女性", email:"fumina.murase@example.com", tel:"09099998888", job:"自営業", industry:"デザイン・クリエイティブ", company:"", title:"", area:"大阪府大阪市", pref:"大阪府", region:"大阪", income:"500万円〜700万円", referee:"森田 桂（#0851）", applied:"2026.07.10 11:05", docs:true, interests:["アート","コーヒー"], insta:"fumina_mrsw2", entryReasons:["趣味や興味が合う人との交流"], howFound:"COMMONS Instagram", selfIntro:"以前会員だったのですが再度申し込みたいと思い応募しました。", lifestyle:"クリエイター仲間との交流をまた再開したいです。", desired:"アートやデザインが好きな仲間と再び交流したいです。" },
 ];
 
 // 退会済み会員データ（再入会判定の照合用・admin/membersの退会済みレコードと連動想定）
 const withdrawnMembers = [
-  { name:"村瀬 史奈", kana:"ムラセ フミナ", memberNo:"0873", withdrawnDate:"2026.03.20", reason:"料金が高いと感じた。他のコミュニティと掛け持ちが難しくなった。" },
+  { name:"村瀬 史奈", kana:"ムラセ フミナ", dob:"1998.09.02", tel:"09099998888", memberNo:"0873", withdrawnDate:"2026.03.20", reason:"料金が高いと感じた。他のコミュニティと掛け持ちが難しくなった。" },
 ];
 
 const rejectedHistory: (Application & { rejectedAt: string; reason: string })[] = [
-  { id:"A-0755", name:"村上 一浩", kana:"ムラカミ カズヒロ", age:22, gender:"男性", job:"学生", industry:"学生", company:"", title:"", area:"東京都八王子市", pref:"東京", region:"東京", income:"400万未満", referee:"なし", applied:"2025.12.10 16:20", docs:false, interests:[], insta:"kazuhiro_m", entryReasons:["異性・同性問わず新しい友人づくり"], howFound:"COMMONS Instagram", selfIntro:"友達が多い場所が好きで気軽に参加したいです。", lifestyle:"友達が少ない。", desired:"たくさんの人と仲良くなりたい。", rejectedAt:"2025.12.15", reason:"在籍コミュニティとの価値観ミスマッチ" },
-  { id:"A-0801", name:"石田 明", kana:"イシダ アキラ", age:35, gender:"男性", job:"会社員", industry:"製造業", company:"△△製造", title:"", area:"埼玉県さいたま市", pref:"埼玉", region:"東京", income:"400〜600万", referee:"なし", applied:"2026.02.20 10:03", docs:true, interests:["コーヒー"], insta:"akira_ishida", entryReasons:["異性・同性問わず新しい友人づくり"], howFound:"COMMONS X", selfIntro:"近所だから入ってみたい。特にこれといった趣味はないですが交流を楽しみたいです。", lifestyle:"近所で気軽に行ける場所を探していた。", desired:"近くに友人を作りたい。", rejectedAt:"2026.02.26", reason:"申請動機が不十分" },
+  { id:"A-0755", name:"村上 一浩", kana:"ムラカミ カズヒロ", dob:"2003.08.30", gender:"男性", email:"kazuhiro.murakami@example.com", tel:"09044445555", job:"学生", industry:"学生", company:"", title:"", area:"東京都八王子市", pref:"東京都", region:"東京", income:"〜300万円", referee:"なし", applied:"2025.12.10 16:20", docs:false, interests:[], insta:"kazuhiro_m", entryReasons:["異性・同性問わず新しい友人づくり"], howFound:"COMMONS Instagram", selfIntro:"友達が多い場所が好きで気軽に参加したいです。", lifestyle:"友達が少ない。", desired:"たくさんの人と仲良くなりたい。", rejectedAt:"2025.12.15", reason:"在籍コミュニティとの価値観ミスマッチ" },
+  { id:"A-0801", name:"石田 明", kana:"イシダ アキラ", dob:"1990.02.11", gender:"男性", email:"akira.ishida@example.com", tel:"09055556666", job:"会社員（一般職）", industry:"製造業", company:"△△製造", title:"", area:"埼玉県さいたま市", pref:"埼玉県", region:"東京", income:"300万円〜500万円", referee:"なし", applied:"2026.02.20 10:03", docs:true, interests:["コーヒー"], insta:"akira_ishida", entryReasons:["異性・同性問わず新しい友人づくり"], howFound:"COMMONS X", selfIntro:"近所だから入ってみたい。特にこれといった趣味はないですが交流を楽しみたいです。", lifestyle:"近所で気軽に行ける場所を探していた。", desired:"近くに友人を作りたい。", rejectedAt:"2026.02.26", reason:"申請動機が不十分" },
 ];
 
 type Tab = "list" | "rejected";
+
+// 誕生日（YYYY.MM.DD）から満年齢を計算
+function calcAge(dob: string): number {
+  const [y, m, d] = dob.split(".").map(Number);
+  const today = new Date();
+  let age = today.getFullYear() - y;
+  if (today.getMonth() + 1 < m || (today.getMonth() + 1 === m && today.getDate() < d)) age--;
+  return age;
+}
+
+// 退会後1年以内の再入会は要注意（申込日と退会日の差分で判定）
+function isWithinOneYear(withdrawnDate: string, appliedDate: string): boolean {
+  const w = new Date(withdrawnDate.replace(/\./g, "-"));
+  const a = new Date(appliedDate.slice(0, 10).replace(/\./g, "-"));
+  const diffDays = (a.getTime() - w.getTime()) / 86400000;
+  return diffDays < 365;
+}
+
+// 職業・年収・年齢は10点か5点の自動採点（審査スコア用）
+function jobScore(job: string): number {
+  return /経営者|役員|医師|医療|弁護士|士業|自営業/.test(job) ? 10 : 5;
+}
+function incomeScore(income: string): number {
+  const m = income.match(/(\d+)万円/);
+  const n = m ? Number(m[1]) : 0;
+  return n >= 700 ? 10 : 5;
+}
+function ageScore(age: number): number {
+  return age >= 25 && age <= 40 ? 10 : 5;
+}
+
+// 誕生日・氏名・電話番号のうち2つ以上一致した過去否決／退会履歴をサジェスト
+function findPastHistory(app: Application) {
+  const rejections = rejectedHistory.filter(r => {
+    const matches = [r.dob === app.dob, r.name === app.name, r.tel === app.tel].filter(Boolean).length;
+    return matches >= 2;
+  });
+  const withdrawal = withdrawnMembers.find(w => {
+    const matches = [w.dob === app.dob, w.name === app.name, w.tel === app.tel].filter(Boolean).length;
+    return matches >= 2;
+  }) ?? null;
+  return { rejections, withdrawal };
+}
 
 export default function ScreeningPage() {
   const [tab, setTab] = useState<Tab>("list");
@@ -39,12 +83,28 @@ export default function ScreeningPage() {
   const [done, setDone] = useState<Record<string, AppStatus>>({});
   const [selected, setSelected] = useState<string>(apps[0].id);
   const [rejectedSelected, setRejectedSelected] = useState<string | null>(null);
-  const [pastCheckResult, setPastCheckResult] = useState<Record<string, {
-    rejections: (Application & { rejectedAt: string; reason: string })[];
-    withdrawal: (typeof withdrawnMembers)[number] | null;
-  } | null>>({});
   const [rejectModal, setRejectModal] = useState<string | null>(null);
   const [rejectComment, setRejectComment] = useState("");
+  const [scores, setScores] = useState<Record<string, { face: string; insta: string; writing: string }>>({});
+  const [totals, setTotals] = useState<Record<string, number>>({});
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+
+  function saveScore(id: string) {
+    setSavedIds(prev => new Set([...prev, id]));
+  }
+
+  function updateScore(id: string, field: "face" | "insta" | "writing", value: string) {
+    setScores(prev => {
+      const current = prev[id] ?? { face: "", insta: "", writing: "" };
+      return { ...prev, [id]: { ...current, [field]: value } };
+    });
+  }
+  function calcTotal(app: Application) {
+    const s = scores[app.id] ?? { face: "", insta: "", writing: "" };
+    const total = (Number(s.face) || 0) + (Number(s.insta) || 0) + (Number(s.writing) || 0)
+      + jobScore(app.job) + incomeScore(app.income) + ageScore(calcAge(app.dob));
+    setTotals(prev => ({ ...prev, [app.id]: total }));
+  }
 
   function approve(id: string) { setDone(prev => ({ ...prev, [id]: "approved" })); }
   function reject(id: string) { setDone(prev => ({ ...prev, [id]: "rejected" })); }
@@ -54,22 +114,9 @@ export default function ScreeningPage() {
     setRejectModal(null);
     setRejectComment("");
   }
-  function checkPastRejection(app: Application) {
-    const rejections = rejectedHistory.filter(r => r.name === app.name || r.kana === app.kana);
-    const withdrawal = withdrawnMembers.find(w => w.name === app.name || w.kana === app.kana) ?? null;
-    setPastCheckResult(prev => ({ ...prev, [app.id]: { rejections, withdrawal } }));
-  }
-
-  // 退会後1年以内の再入会は要注意（申込日と退会日の差分で判定）
-  function isWithinOneYear(withdrawnDate: string, appliedDate: string): boolean {
-    const w = new Date(withdrawnDate.replace(/\./g, "-"));
-    const a = new Date(appliedDate.slice(0, 10).replace(/\./g, "-"));
-    const diffDays = (a.getTime() - w.getTime()) / 86400000;
-    return diffDays < 365;
-  }
   function downloadCSV() {
     const header = ["申込ID","氏名","フリガナ","性別","年齢","職業","エリア","申込日","否決日","理由"];
-    const rows = rejectedHistory.map(r => [r.id,r.name,r.kana,r.gender,r.age,r.job,r.area,r.applied,r.rejectedAt,r.reason]);
+    const rows = rejectedHistory.map(r => [r.id,r.name,r.kana,r.gender,calcAge(r.dob),r.job,r.area,r.applied,r.rejectedAt,r.reason]);
     const csv = [header,...rows].map(row=>row.join(",")).join("\n");
     const blob = new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8;"});
     const url = URL.createObjectURL(blob);
@@ -105,149 +152,180 @@ export default function ScreeningPage() {
       {tab === "list" && (
         <div className="flex flex-1 overflow-hidden">
           <div className="w-[260px] border-r border-[var(--color-line)] overflow-y-auto flex-none">
-            {apps.map(a => (
-              <button key={a.id} onClick={() => setSelected(a.id)}
-                className={`w-full text-left px-5 py-4 border-b border-[var(--color-line)] transition ${selected===a.id?"bg-[var(--color-accent)]/8":"hover:bg-[var(--color-bg-soft)]"}`}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-display text-sm">{a.name}</span>
-                  {done[a.id] ? (
-                    <span className={`tag text-[9px] ${done[a.id]==="approved"?"tag-accent":""}`}>{done[a.id]==="approved"?"承認済":"否決済"}</span>
-                  ) : (
-                    <span className="tag text-[9px]">審査中</span>
+            {apps.map(a => {
+              const hasHistory = (() => {
+                const h = findPastHistory(a);
+                return h.rejections.length > 0 || !!h.withdrawal;
+              })();
+              return (
+                <button key={a.id} onClick={() => setSelected(a.id)}
+                  className={`w-full text-left px-5 py-4 border-b border-[var(--color-line)] transition ${selected===a.id?"bg-[var(--color-accent)]/8":"hover:bg-[var(--color-bg-soft)]"}`}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-display text-sm">{a.name}</span>
+                    {done[a.id] ? (
+                      <span className={`tag text-[9px] ${done[a.id]==="approved"?"tag-accent":""}`}>{done[a.id]==="approved"?"承認済":"否決済"}</span>
+                    ) : (
+                      <span className="tag text-[9px]">審査中</span>
+                    )}
+                  </div>
+                  <div className="font-display text-[10px] text-[var(--color-mute)]">{a.id} · {a.applied}</div>
+                  <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">{a.job} · {a.area}</div>
+                  {hasHistory && (
+                    <div className="font-display text-[9px] text-red-400 mt-1">⚠ 過去履歴あり</div>
                   )}
-                </div>
-                <div className="font-display text-[10px] text-[var(--color-mute)]">{a.id} · {a.applied}</div>
-                <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">{a.job} · {a.area}</div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
 
-          {detail && (
-            <div className="flex-1 overflow-y-auto px-8 py-6">
-              <div className="max-w-[760px]">
-                <div className="flex items-start justify-between mb-6">
-                  <div>
+          {detail && (() => {
+            const history = findPastHistory(detail);
+            const reentryFlag = history.withdrawal ? isWithinOneYear(history.withdrawal.withdrawnDate, detail.applied) : false;
+            const hasHistory = history.rejections.length > 0 || !!history.withdrawal;
+            return (
+              <div className="flex-1 overflow-y-auto px-8 py-6">
+                <div className="max-w-[760px]">
+                  {/* 否決・承認（最上部） */}
+                  <div className="flex items-center justify-end mb-5">
+                    {!done[detail.id] ? (
+                      <div className="flex gap-2">
+                        <button onClick={() => setRejectModal(detail.id)} className="btn-outline !py-2 text-xs border-red-400/40 text-red-400 hover:bg-red-400/8">否決</button>
+                        <button onClick={() => !reentryFlag && approve(detail.id)} disabled={reentryFlag}
+                          title={reentryFlag ? "退会後1年以内のため承認できません" : undefined}
+                          className="btn-primary !py-2 text-xs disabled:opacity-40 disabled:cursor-not-allowed">
+                          承認{reentryFlag ? "不可" : ""}
+                        </button>
+                      </div>
+                    ) : (
+                      <span className={`tag ${done[detail.id]==="approved"?"tag-accent":""}`}>{done[detail.id]==="approved"?"✓ 承認済み":"✗ 否決済み"}</span>
+                    )}
+                  </div>
+
+                  {/* 過去審査履歴・再入会判定（自動表示・最上部） */}
+                  <div className={`card p-4 mb-5 ${hasHistory ? "border-red-400/30" : "border-green-500/30"}`}>
+                    <div className={`font-display text-[10px] mb-2 ${hasHistory ? "text-red-400" : "text-green-500"}`}>
+                      {hasHistory ? "⚠ 過去審査履歴・再入会判定" : "✓ 過去審査履歴・再入会判定：該当なし"}
+                    </div>
+                    {!hasHistory && (
+                      <div className="text-sm text-[var(--color-mute)]">誕生日・氏名・電話番号のいずれも過去の否決履歴・退会履歴と一致しませんでした。</div>
+                    )}
+                    {history.withdrawal && (
+                      <div className={`mt-1 pt-3 ${history.rejections.length ? "border-t border-[var(--color-line)]" : ""}`}>
+                        <div className={`text-sm ${reentryFlag ? "text-red-400" : ""}`}>
+                          {reentryFlag ? "退会後1年以内のため再入会不可" : "再入会申込（退会後1年以上経過・承認可）"}
+                        </div>
+                        <div className="text-sm mt-1">会員番号 #{history.withdrawal.memberNo} として在籍 → {history.withdrawal.withdrawnDate} 退会</div>
+                        <div className="font-display text-xs text-[var(--color-mute)] mt-1.5">退会理由: {history.withdrawal.reason}</div>
+                      </div>
+                    )}
+                    {history.rejections.map(rej => (
+                      <div key={rej.id} className="mt-3 pt-3 border-t border-[var(--color-line)]">
+                        <div className="font-display text-[10px] text-red-400 mb-1">過去の否決履歴（{rej.id}）</div>
+                        <div className="text-sm">{rej.reason}</div>
+                        <div className="font-display text-xs text-[var(--color-mute)] mt-1.5">申込 {rej.applied} → 否決 {rej.rejectedAt}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* 審査スコア */}
+                  <div className="card p-5 mb-5">
+                    <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-3">審査スコア</div>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      {([
+                        { key: "face" as const, l: "顔写真の印象" },
+                        { key: "insta" as const, l: "Instagram" },
+                        { key: "writing" as const, l: "文章の質・誠実さ" },
+                      ]).map(f => (
+                        <div key={f.key}>
+                          <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">{f.l}（手入力）</label>
+                          <input type="number" value={scores[detail.id]?.[f.key] ?? ""} onChange={e => updateScore(detail.id, f.key, e.target.value)}
+                            placeholder="点数を入力" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
+                        </div>
+                      ))}
+                      {[
+                        { l: "職業（自動）", v: jobScore(detail.job) },
+                        { l: "年収（自動）", v: incomeScore(detail.income) },
+                        { l: "年齢（自動）", v: ageScore(calcAge(detail.dob)) },
+                      ].map(r => (
+                        <div key={r.l}>
+                          <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">{r.l}</label>
+                          <div className="w-full bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-lg px-3 py-2 text-sm num">{r.v}点</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between pt-3 border-t border-[var(--color-line)]">
+                      <div>
+                        <div className="font-display text-[10px] text-[var(--color-mute)] mb-1">合計点数</div>
+                        <div className="num text-2xl text-[var(--color-accent-deep)]">{totals[detail.id] ?? "—"}{totals[detail.id] !== undefined && "点"}</div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => calcTotal(detail)} className="btn-outline !py-2 text-xs">計算する</button>
+                        <button onClick={() => saveScore(detail.id)} className="btn-primary !py-2 text-xs">保存</button>
+                      </div>
+                    </div>
+                    {savedIds.has(detail.id) && (
+                      <div className="font-display text-[10px] text-[var(--color-accent-deep)] mt-2">✓ 保存しました</div>
+                    )}
+                  </div>
+
+                  <div className="mb-6">
                     <div className="num text-xs text-[var(--color-mute)] mb-1">{detail.id}</div>
                     <h2 className="font-display text-2xl">{detail.name}</h2>
                     <div className="font-display text-xs text-[var(--color-mute)] mt-1">{detail.kana} · {detail.applied} 申込</div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    {!done[detail.id] ? (() => {
-                      const r = pastCheckResult[detail.id];
-                      const reentryBlocked = !!r?.withdrawal && isWithinOneYear(r.withdrawal.withdrawnDate, detail.applied);
-                      return (
-                        <div className="flex gap-2">
-                          <button onClick={() => setRejectModal(detail.id)} className="btn-outline !py-2 text-xs border-red-400/40 text-red-400 hover:bg-red-400/8">否決</button>
-                          <button onClick={() => !reentryBlocked && approve(detail.id)} disabled={reentryBlocked}
-                            title={reentryBlocked ? "退会後1年以内のため承認できません" : undefined}
-                            className="btn-primary !py-2 text-xs disabled:opacity-40 disabled:cursor-not-allowed">
-                            承認{reentryBlocked ? "不可" : ""}
-                          </button>
-                        </div>
-                      );
-                    })() : (
-                      <span className={`tag ${done[detail.id]==="approved"?"tag-accent":""}`}>{done[detail.id]==="approved"?"✓ 承認済み":"✗ 否決済み"}</span>
-                    )}
-                    <button onClick={() => checkPastRejection(detail)}
-                      className="font-display text-[11px] px-3 py-1.5 rounded-full border border-[var(--color-accent)]/40 text-[var(--color-accent-deep)] hover:bg-[var(--color-accent)]/8 transition">
-                      過去否決チェック
-                    </button>
-                    {pastCheckResult[detail.id] !== undefined && (() => {
-                      const r = pastCheckResult[detail.id];
-                      const hasIssue = !!r && (r.rejections.length > 0 || !!r.withdrawal);
-                      return (
-                        <div className={`font-display text-xs px-3 py-1.5 rounded-full ${hasIssue?"bg-red-400/10 text-red-400 border border-red-400/30":"bg-green-500/10 text-green-400 border border-green-500/30"}`}>
-                          {hasIssue?"⚠ 過去履歴あり":"✓ 過去履歴なし"}
-                        </div>
-                      );
-                    })()}
-                    {done[detail.id]==="rejected" && (
-                      <button className="font-display text-[11px] px-3 py-1.5 rounded-full border border-red-400/40 text-red-400 hover:bg-red-400/8 transition">CCキャンセル</button>
-                    )}
+
+                  <div className="grid grid-cols-3 gap-3 mb-5">
+                    {[
+                      {l:"申込地域",v:detail.region},{l:"年齢",v:`${calcAge(detail.dob)}歳`},{l:"生年月日",v:detail.dob},
+                      {l:"性別",v:detail.gender},{l:"メールアドレス",v:detail.email},{l:"電話番号",v:detail.tel},
+                      {l:"Instagram ID",v:"@"+detail.insta},{l:"都道府県",v:detail.pref},{l:"職業",v:detail.job},
+                      {l:"具体的な業種",v:detail.industry},{l:"勤務先",v:detail.company||"—"},{l:"役職・肩書き",v:detail.title||"—"},
+                      {l:"年収",v:detail.income},{l:"知ったきっかけ",v:detail.howFound},{l:"紹介者",v:detail.referee},
+                    ].map(r=>(
+                      <div key={r.l} className="card p-4">
+                        <div className="font-display text-[10px] text-[var(--color-mute)] mb-1">{r.l}</div>
+                        <div className="text-sm break-all">{r.v}</div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-
-                {pastCheckResult[detail.id] && (() => {
-                  const r = pastCheckResult[detail.id]!;
-                  const reentryFlag = r.withdrawal ? isWithinOneYear(r.withdrawal.withdrawnDate, detail.applied) : false;
-                  if (r.rejections.length === 0 && !r.withdrawal) return null;
-                  return (
-                    <div className="mb-5 space-y-3">
-                      {r.withdrawal && (
-                        <div className={`card p-4 ${reentryFlag ? "border-red-400/30" : "border-[var(--color-accent)]/30"}`}>
-                          <div className={`font-display text-[10px] mb-2 ${reentryFlag ? "text-red-400" : "text-[var(--color-accent-deep)]"}`}>
-                            {reentryFlag ? "⚠ 退会後1年以内のため再入会不可" : "再入会申請（退会後1年以上経過・承認可）"}
-                          </div>
-                          <div className="text-sm">会員番号 #{r.withdrawal.memberNo} として在籍 → {r.withdrawal.withdrawnDate} 退会</div>
-                          <div className="font-display text-xs text-[var(--color-mute)] mt-1.5">退会理由: {r.withdrawal.reason}</div>
-                          {reentryFlag && (
-                            <div className="font-display text-xs text-red-400 mt-2 pt-2 border-t border-red-400/20">
-                              退会後1年以内の再入会は規定により承認できません。承認ボタンは無効化されています。
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      {r.rejections.map(rej => (
-                        <div key={rej.id} className="card p-4 border-red-400/20">
-                          <div className="font-display text-[10px] text-red-400 mb-1">過去の否決履歴（{rej.id}）</div>
-                          <div className="text-sm">{rej.reason}</div>
-                          <div className="font-display text-xs text-[var(--color-mute)] mt-1.5">申込 {rej.applied} → 否決 {rej.rejectedAt}</div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-
-                <div className="grid grid-cols-3 gap-3 mb-5">
-                  {[
-                    {l:"年齢",v:`${detail.age}歳`},{l:"性別",v:detail.gender},{l:"申込地域",v:detail.region},
-                    {l:"都道府県",v:detail.pref},{l:"職業",v:detail.job},{l:"業種",v:detail.industry},
-                    {l:"勤務先",v:detail.company||"—"},{l:"役職・肩書き",v:detail.title||"—"},{l:"年収",v:detail.income},
-                    {l:"Instagram ID",v:"@"+detail.insta},{l:"紹介者",v:detail.referee},{l:"知ったきっかけ",v:detail.howFound},
-                  ].map(r=>(
-                    <div key={r.l} className="card p-4">
-                      <div className="font-display text-[10px] text-[var(--color-mute)] mb-1">{r.l}</div>
-                      <div className="text-sm break-all">{r.v}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="card p-5 mb-4">
-                  <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">入会の理由</div>
-                  <div className="flex flex-wrap gap-1.5">{detail.entryReasons.map(r=><span key={r} className="tag text-[9px]">{r}</span>)}</div>
-                </div>
-                {detail.interests.length>0&&(
                   <div className="card p-5 mb-4">
-                    <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">興味カテゴリ</div>
-                    <div className="flex flex-wrap gap-1.5">{detail.interests.map(i=><span key={i} className="tag text-[9px]">{i}</span>)}</div>
+                    <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">ご入会の理由</div>
+                    <div className="flex flex-wrap gap-1.5">{detail.entryReasons.map(r=><span key={r} className="tag text-[9px]">{r}</span>)}</div>
                   </div>
-                )}
-                <div className="card p-5 mb-4">
-                  <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">自己紹介</div>
-                  <p className="text-sm leading-relaxed text-[var(--color-mute)]">{detail.selfIntro}</p>
-                </div>
-                <div className="card p-5 mb-4">
-                  <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">ライフスタイル・人間関係で感じる物足りなさ</div>
-                  <p className="text-sm leading-relaxed text-[var(--color-mute)]">{detail.lifestyle}</p>
-                </div>
-                <div className="card p-5 mb-4">
-                  <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">実現したいつながり・日常</div>
-                  <p className="text-sm leading-relaxed text-[var(--color-mute)]">{detail.desired}</p>
-                </div>
-                <div className="card p-5">
-                  <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-3">本人確認書類</div>
-                  {detail.docs ? (
-                    <div className="flex items-center gap-3">
-                      <div className="w-24 h-16 rounded-lg bg-[var(--color-line)] flex items-center justify-center text-xs text-[var(--color-mute)]">身分証 表</div>
-                      <div className="w-24 h-16 rounded-lg bg-[var(--color-line)] flex items-center justify-center text-xs text-[var(--color-mute)]">身分証 裏</div>
-                      <div className="font-display text-xs text-[var(--color-accent-deep)]">✓ アップロード済み</div>
+                  {detail.interests.length>0&&(
+                    <div className="card p-5 mb-4">
+                      <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">興味カテゴリ</div>
+                      <div className="flex flex-wrap gap-1.5">{detail.interests.map(i=><span key={i} className="tag text-[9px]">{i}</span>)}</div>
                     </div>
-                  ) : (
-                    <div className="font-display text-xs text-red-400">⚠ 書類未提出</div>
                   )}
+                  <div className="card p-5 mb-4">
+                    <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">自己紹介</div>
+                    <p className="text-sm leading-relaxed text-[var(--color-mute)]">{detail.selfIntro}</p>
+                  </div>
+                  <div className="card p-5 mb-4">
+                    <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">ライフスタイル・人間関係で感じる物足りなさ</div>
+                    <p className="text-sm leading-relaxed text-[var(--color-mute)]">{detail.lifestyle}</p>
+                  </div>
+                  <div className="card p-5 mb-4">
+                    <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">実現したいつながり・日常</div>
+                    <p className="text-sm leading-relaxed text-[var(--color-mute)]">{detail.desired}</p>
+                  </div>
+                  <div className="card p-5">
+                    <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-3">身分証明書・顔写真</div>
+                    {detail.docs ? (
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 h-16 rounded-lg bg-[var(--color-line)] flex items-center justify-center text-xs text-[var(--color-mute)]">身分証明書</div>
+                        <div className="w-24 h-16 rounded-lg bg-[var(--color-line)] flex items-center justify-center text-xs text-[var(--color-mute)]">顔写真</div>
+                        <div className="font-display text-xs text-[var(--color-accent-deep)]">✓ アップロード済み</div>
+                      </div>
+                    ) : (
+                      <div className="font-display text-xs text-red-400">⚠ 書類未提出</div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       )}
 
@@ -275,16 +353,52 @@ export default function ScreeningPage() {
                     <h2 className="font-display text-2xl">{rejDetail.name}</h2>
                     <div className="font-display text-xs text-[var(--color-mute)] mt-1">{rejDetail.kana}</div>
                   </div>
-                  <button className="font-display text-xs px-4 py-2 rounded-full border border-red-400/40 text-red-400 hover:bg-red-400/8 transition">CCキャンセル</button>
                 </div>
                 <div className="card p-5 mb-4 border-red-400/20">
                   <div className="font-display text-[10px] text-red-400 mb-1">否決理由</div>
                   <div className="text-sm">{rejDetail.reason}</div>
                   <div className="font-display text-[10px] text-[var(--color-mute)] mt-2">否決日: {rejDetail.rejectedAt}</div>
                 </div>
+
+                {/* 審査スコア（否決済みのため非活性） */}
+                <div className="card p-5 mb-4 opacity-60">
+                  <div className="font-display text-[10px] text-[var(--color-mute)] mb-3">審査スコア</div>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    {([
+                      { l: "顔写真の印象（手入力）" },
+                      { l: "Instagram（手入力）" },
+                      { l: "文章の質・誠実さ（手入力）" },
+                    ]).map(f => (
+                      <div key={f.l}>
+                        <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">{f.l}</label>
+                        <input type="number" value="" disabled placeholder="—"
+                          className="w-full bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-lg px-3 py-2 text-sm outline-none placeholder-[var(--color-mute)] cursor-not-allowed" />
+                      </div>
+                    ))}
+                    {[
+                      { l: "職業（自動）", v: jobScore(rejDetail.job) },
+                      { l: "年収（自動）", v: incomeScore(rejDetail.income) },
+                      { l: "年齢（自動）", v: ageScore(calcAge(rejDetail.dob)) },
+                    ].map(r => (
+                      <div key={r.l}>
+                        <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">{r.l}</label>
+                        <div className="w-full bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-lg px-3 py-2 text-sm num">{r.v}点</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between pt-3 border-t border-[var(--color-line)]">
+                    <div>
+                      <div className="font-display text-[10px] text-[var(--color-mute)] mb-1">合計点数</div>
+                      <div className="num text-2xl text-[var(--color-mute)]">—</div>
+                    </div>
+                    <button disabled className="btn-outline !py-2 text-xs opacity-40 cursor-not-allowed">計算する</button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   {[
-                    {l:"年齢",v:`${rejDetail.age}歳`},{l:"性別",v:rejDetail.gender},{l:"都道府県",v:rejDetail.pref},
+                    {l:"年齢",v:`${calcAge(rejDetail.dob)}歳`},{l:"生年月日",v:rejDetail.dob},{l:"性別",v:rejDetail.gender},
+                    {l:"メールアドレス",v:rejDetail.email},{l:"電話番号",v:rejDetail.tel},{l:"都道府県",v:rejDetail.pref},
                     {l:"職業",v:rejDetail.job},{l:"業種",v:rejDetail.industry},{l:"勤務先",v:rejDetail.company||"—"},
                     {l:"年収",v:rejDetail.income},{l:"申込日",v:rejDetail.applied},{l:"紹介者",v:rejDetail.referee},
                     {l:"Instagram ID",v:"@"+rejDetail.insta},{l:"知ったきっかけ",v:rejDetail.howFound},
@@ -296,7 +410,7 @@ export default function ScreeningPage() {
                   ))}
                 </div>
                 <div className="card p-5 mb-4">
-                  <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">入会の理由</div>
+                  <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">ご入会の理由</div>
                   <div className="flex flex-wrap gap-1.5">{rejDetail.entryReasons.map(r=><span key={r} className="tag text-[9px]">{r}</span>)}</div>
                 </div>
                 <div className="card p-5 mb-4">

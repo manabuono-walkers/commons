@@ -38,12 +38,9 @@ function NotifList({ items, selectedId, onSelect }: { items: NotifHistory[]; sel
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-14 h-1.5 rounded-full bg-[var(--color-line)] overflow-hidden"><div className="h-full bg-[var(--color-accent)] rounded-full" style={{width:h.opens==="—"?"0%":h.opens}} /></div>
-              <span className="num text-[10px]">開封 {h.opens}</span>
+              <span className="num text-[10px]">開封率 {h.opens}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-14 h-1.5 rounded-full bg-[var(--color-line)] overflow-hidden"><div className="h-full bg-[var(--color-accent-deep)] rounded-full" style={{width:h.clicks==="—"?"0%":h.clicks}} /></div>
-              <span className="num text-[10px]">クリック {h.clicks}</span>
-            </div>
+            <span className="num text-[10px] text-[var(--color-mute)]">送信 {h.recipientCount.toLocaleString()}名</span>
           </div>
         </div>
       ))}
@@ -177,14 +174,20 @@ export default function NotificationsPage() {
                   <button onClick={() => setSelectedId(null)} className="text-[var(--color-mute)] hover:text-[var(--color-ink)] ml-1">✕</button>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                {[{l:"開封率",v:detail.opens},{l:"クリック率",v:detail.clicks}].map(s=>(
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                {[
+                  {l:"送信者数",v:`${detail.recipientCount.toLocaleString()}名`},
+                  {l:"開封数",v:detail.opens==="—"?"—":`${Math.round(detail.recipientCount * parseInt(detail.opens) / 100).toLocaleString()}名`},
+                  {l:"開封率",v:detail.opens},
+                ].map(s=>(
                   <div key={s.l} className="card p-5">
                     <div className="font-display text-[10px] text-[var(--color-mute)] mb-2">{s.l}</div>
-                    <div className="num text-3xl mb-3">{s.v}</div>
-                    <div className="w-full h-2 rounded-full bg-[var(--color-line)] overflow-hidden">
-                      <div className="h-full bg-[var(--color-accent)] rounded-full" style={{width:s.v==="—"?"0%":s.v}} />
-                    </div>
+                    <div className="num text-2xl mb-3">{s.v}</div>
+                    {s.l==="開封率" && (
+                      <div className="w-full h-2 rounded-full bg-[var(--color-line)] overflow-hidden">
+                        <div className="h-full bg-[var(--color-accent)] rounded-full" style={{width:s.v==="—"?"0%":s.v}} />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

@@ -15,6 +15,10 @@ interface ClubApplication {
 
 interface ClubMember { no: string; name: string; joinedAt: string; }
 interface Club { id: string; name: string; members: ClubMember[]; }
+interface ClubEvent {
+  id: string; clubId: string; title: string; date: string; time: string; endTime: string;
+  venue: string; fee: string; capacity: string; desc: string;
+}
 
 // ============ ダミーデータ ============
 const initialApplications: ClubApplication[] = [
@@ -45,6 +49,16 @@ const initialClubs: Club[] = [
   ] },
 ];
 
+const initialClubEvents: ClubEvent[] = [
+  { id: "ce-1", clubId: "wine", title: "気軽な交流会", date: "2026-07-25", time: "18:00", endTime: "21:00", venue: "新宿", fee: "男性 6,000円 / 女性 4,000円", capacity: "10", desc: "気軽に話せる場を作りたくて、少人数の交流会を企画しました。形式ばった会ではなく、落ち着いて会話ができる時間にしたいと思っています。仕事以外のつながりを作りたい方や、新しい人と話してみたい方はぜひ。" },
+  { id: "ce-2", clubId: "wine", title: "シャンパーニュ特集 Vol.3", date: "2026-07-12", time: "19:00", endTime: "21:00", venue: "La Cave 麻布十番", fee: "¥8,500", capacity: "12", desc: "銘醸シャンパーニュをヴィンテージ違いで飲み比べ。醸造家による特別解説付き。ドレスコードはスマートカジュアルでお越しください。" },
+  { id: "ce-3", clubId: "wine", title: "ボルドー格付け比較会", date: "2026-08-02", time: "18:30", endTime: "21:00", venue: "Atelier du Vin 銀座", fee: "¥11,000", capacity: "10", desc: "1〜5級シャトーを縦断してテイスティング。格付けと価格の関係を体感できる贅沢な一夜。専門家の解説付き。" },
+  { id: "ce-4", clubId: "wine", title: "秋のブルゴーニュナイト Vol.13", date: "2026-09-06", time: "19:00", endTime: "21:00", venue: "La Cave 麻布十番", fee: "¥9,500", capacity: "12", desc: "ブルゴーニュの赤・白をヴィンテージ違いで楽しむ人気シリーズ第13弾。ソムリエによる詳細解説もあります。" },
+  { id: "ce-5", clubId: "coffee", title: "Sunday Coffee Cupping #8", date: "2026-07-05", time: "11:00", endTime: "13:00", venue: "COFFEE LAB 渋谷", fee: "¥3,200", capacity: "8", desc: "シングルオリジン3種をスペシャルティコーヒー専門家とカッピング。香りと味わいの違いを丁寧に解説します。初心者歓迎。" },
+  { id: "ce-6", clubId: "photo", title: "谷中フォトウォーク", date: "2026-07-27", time: "09:00", endTime: "12:00", venue: "谷中エリア", fee: "¥2,000", capacity: "20", desc: "下町情緒あふれる谷中を歩きながら、それぞれの「好き」な瞬間をカメラに収めます。" },
+  { id: "ce-7", clubId: "jazz", title: "ジャズ鑑賞会", date: "2026-08-10", time: "19:00", endTime: "21:00", venue: "The Library 渋谷", fee: "¥3,500", capacity: "15", desc: "名盤レコードを聴きながら語り合う鑑賞会。" },
+];
+
 const statusLabel: Record<ClubApplication["status"], string> = { pending: "審査中", approved: "承認済み", rejected: "否認済み" };
 const statusClass: Record<ClubApplication["status"], string> = {
   pending: "border-[var(--color-accent)]/40 text-[var(--color-accent-deep)]",
@@ -52,19 +66,54 @@ const statusClass: Record<ClubApplication["status"], string> = {
   rejected: "border-red-400/40 text-red-400",
 };
 
-type Tab = "applications" | "members";
+type Tab = "applications" | "members" | "events";
 
 export default function ClubsPage() {
   const [tab, setTab] = useState<Tab>("applications");
   const [applications, setApplications] = useState<ClubApplication[]>(initialApplications);
   const [clubs] = useState<Club[]>(initialClubs);
+  const [clubEvents, setClubEvents] = useState<ClubEvent[]>(initialClubEvents);
   const [selectedAppId, setSelectedAppId] = useState<string | null>(initialApplications[0]?.id ?? null);
   const [selectedClubId, setSelectedClubId] = useState<string | null>(null);
+  const [eventsClubId, setEventsClubId] = useState<string | null>(clubs[0]?.id ?? null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [eventEditing, setEventEditing] = useState(false);
+  const [editEventTitle, setEditEventTitle] = useState("");
+  const [editEventDate, setEditEventDate] = useState("");
+  const [editEventTime, setEditEventTime] = useState("");
+  const [editEventEndTime, setEditEventEndTime] = useState("");
+  const [editEventVenue, setEditEventVenue] = useState("");
+  const [editEventFee, setEditEventFee] = useState("");
+  const [editEventCapacity, setEditEventCapacity] = useState("");
+  const [editEventDesc, setEditEventDesc] = useState("");
   const [rejectModalId, setRejectModalId] = useState<string | null>(null);
   const [rejectReasonInput, setRejectReasonInput] = useState("");
 
   const selectedApp = applications.find(a => a.id === selectedAppId);
   const selectedClub = clubs.find(c => c.id === selectedClubId);
+  const eventsClub = clubs.find(c => c.id === eventsClubId);
+  const clubEventList = clubEvents.filter(e => e.clubId === eventsClubId);
+  const selectedEvent = clubEvents.find(e => e.id === selectedEventId);
+
+  function openEventEdit(e: ClubEvent) {
+    setSelectedEventId(e.id); setEditEventTitle(e.title); setEditEventDate(e.date);
+    setEditEventTime(e.time); setEditEventEndTime(e.endTime); setEditEventVenue(e.venue);
+    setEditEventFee(e.fee); setEditEventCapacity(e.capacity); setEditEventDesc(e.desc);
+    setEventEditing(true);
+  }
+  function saveEventEdit() {
+    if (!selectedEventId) return;
+    setClubEvents(prev => prev.map(e => e.id === selectedEventId ? {
+      ...e, title: editEventTitle, date: editEventDate, time: editEventTime, endTime: editEventEndTime,
+      venue: editEventVenue, fee: editEventFee, capacity: editEventCapacity, desc: editEventDesc,
+    } : e));
+    setEventEditing(false);
+  }
+  function deleteEvent(id: string) {
+    if (!confirm("このイベントを削除しますか？")) return;
+    setClubEvents(prev => prev.filter(e => e.id !== id));
+    if (selectedEventId === id) { setSelectedEventId(null); setEventEditing(false); }
+  }
 
   function approve(id: string) {
     setApplications(prev => prev.map(a => a.id === id ? { ...a, status: "approved", rejectReason: undefined } : a));
@@ -102,7 +151,7 @@ export default function ClubsPage() {
 
       {/* Inline tabs */}
       <div className="px-8 border-b border-[var(--color-line)] flex gap-6 flex-none">
-        {([["applications", "クラブ作成申請"], ["members", "参加者確認"]] as const).map(([k, l]) => (
+        {([["applications", "クラブ作成申請"], ["members", "参加者確認"], ["events", "イベント確認"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)}
             className={`font-display text-sm py-4 border-b-2 transition ${tab === k ? "border-[var(--color-accent)] text-[var(--color-accent-deep)]" : "border-transparent text-[var(--color-mute)]"}`}>
             {l}
@@ -209,6 +258,125 @@ export default function ClubsPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ===== イベント確認タブ ===== */}
+      {tab === "events" && (
+        <div className="flex flex-1 overflow-hidden">
+          <div className="w-[300px] border-r border-[var(--color-line)] overflow-y-auto flex-none">
+            {clubs.map(c => (
+              <button key={c.id} onClick={() => { setEventsClubId(c.id); setSelectedEventId(null); setEventEditing(false); }}
+                className={`w-full text-left px-5 py-4 border-b border-[var(--color-line)] transition ${eventsClubId === c.id ? "bg-[var(--color-accent)]/8" : "hover:bg-[var(--color-bg-soft)]"}`}>
+                <div className="font-display text-sm">{c.name}</div>
+                <div className="num text-[10px] text-[var(--color-mute)] mt-0.5">{clubEvents.filter(e => e.clubId === c.id).length}件のイベント</div>
+              </button>
+            ))}
+          </div>
+
+          <div className="w-[300px] border-r border-[var(--color-line)] overflow-y-auto flex-none">
+            {eventsClub && (
+              <div className="px-5 py-3 border-b border-[var(--color-line)] font-display text-xs text-[var(--color-mute)]">{eventsClub.name} のイベント</div>
+            )}
+            {clubEventList.map(e => (
+              <button key={e.id} onClick={() => { setSelectedEventId(e.id); setEventEditing(false); }}
+                className={`w-full text-left px-5 py-4 border-b border-[var(--color-line)] transition ${selectedEventId === e.id ? "bg-[var(--color-accent)]/8" : "hover:bg-[var(--color-bg-soft)]"}`}>
+                <div className="font-display text-sm">{e.title}</div>
+                <div className="num text-[10px] text-[var(--color-mute)] mt-0.5">{e.date} {e.time}〜{e.endTime} · {e.venue}</div>
+              </button>
+            ))}
+            {clubEventList.length === 0 && (
+              <div className="px-5 py-8 text-center font-display text-xs text-[var(--color-mute)]">このクラブのイベントはありません</div>
+            )}
+          </div>
+
+          <div className="flex-1 overflow-y-auto bg-[var(--color-bg-soft)] px-8 py-6">
+            {!selectedEvent ? (
+              <div className="flex items-center justify-center h-full">
+                <span className="font-display text-sm text-[var(--color-mute)]">イベントを選択してください</span>
+              </div>
+            ) : !eventEditing ? (
+              <div className="max-w-[560px]">
+                <div className="flex items-start justify-between mb-5">
+                  <div>
+                    <h2 className="font-display text-xl">{selectedEvent.title}</h2>
+                    <div className="font-display text-xs text-[var(--color-mute)] mt-1">{selectedEvent.date} {selectedEvent.time}〜{selectedEvent.endTime} · {selectedEvent.venue}</div>
+                  </div>
+                  <div className="flex gap-2 flex-none">
+                    <button onClick={() => openEventEdit(selectedEvent)} className="btn-outline !py-1.5 text-xs">編集</button>
+                    <button onClick={() => deleteEvent(selectedEvent.id)} className="font-display text-xs px-3 py-1.5 rounded-full border border-red-400/30 text-red-400 hover:bg-red-400/8 transition">削除</button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  {[
+                    {l:"参加費",v:selectedEvent.fee},
+                    {l:"定員",v:`${selectedEvent.capacity}名`},
+                  ].map(r=>(
+                    <div key={r.l} className="card p-4">
+                      <div className="font-display text-[10px] text-[var(--color-mute)] mb-1">{r.l}</div>
+                      <div className="text-sm">{r.v}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="card p-5">
+                  <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">詳細・備考</div>
+                  <p className="text-sm text-[var(--color-mute)] leading-relaxed">{selectedEvent.desc}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="max-w-[560px] space-y-4">
+                <h2 className="font-display text-xl mb-2">イベントを編集</h2>
+                <div>
+                  <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">イベント名</label>
+                  <input value={editEventTitle} onChange={e=>setEditEventTitle(e.target.value)} placeholder="例：シャンパーニュ特集 Vol.4"
+                    className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+                </div>
+                <div>
+                  <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">開催日</label>
+                  <input type="date" value={editEventDate} onChange={e=>setEditEventDate(e.target.value)}
+                    className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">開始時間</label>
+                    <input type="time" value={editEventTime} onChange={e=>setEditEventTime(e.target.value)}
+                      className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+                  </div>
+                  <div>
+                    <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">終了時間</label>
+                    <input type="time" value={editEventEndTime} onChange={e=>setEditEventEndTime(e.target.value)}
+                      className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+                  </div>
+                </div>
+                <div>
+                  <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">場所</label>
+                  <input value={editEventVenue} onChange={e=>setEditEventVenue(e.target.value)} placeholder="例：La Cave 麻布十番 / 新宿"
+                    className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">参加費</label>
+                    <input value={editEventFee} onChange={e=>setEditEventFee(e.target.value)} placeholder="例：¥5,000"
+                      className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+                  </div>
+                  <div>
+                    <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">定員</label>
+                    <input type="number" value={editEventCapacity} onChange={e=>setEditEventCapacity(e.target.value)} placeholder="例：12"
+                      className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
+                  </div>
+                </div>
+                <div>
+                  <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">詳細・備考</label>
+                  <textarea value={editEventDesc} onChange={e=>setEditEventDesc(e.target.value)} rows={4}
+                    className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none resize-none focus:border-[var(--color-accent)]/50" />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button onClick={saveEventEdit} className="flex-1 btn-primary justify-center text-sm">保存する</button>
+                  <button onClick={() => setEventEditing(false)} className="flex-1 btn-outline justify-center text-sm">キャンセル</button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

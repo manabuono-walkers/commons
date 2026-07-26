@@ -221,7 +221,7 @@ export default function CommunityPage() {
   const [dmMenuTarget, setDmMenuTarget] = useState<DmConv|null>(null);
   const [reportedDms, setReportedDms] = useState<Set<number>>(new Set());
   const [reportSheet, setReportSheet] = useState<DmConv|null>(null);
-  const [reportReason, setReportReason] = useState<string|null>(null);
+  const [reportDetail, setReportDetail] = useState("");
   const [likersPost, setLikersPost] = useState<Post|null>(null);
   const [showMembers, setShowMembers] = useState(false);
   const [showGroupCreate, setShowGroupCreate] = useState(false);
@@ -1108,12 +1108,12 @@ export default function CommunityPage() {
 
         {/* ===== 通報モーダル ===== */}
         {reportSheet && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60" onClick={() => { setReportSheet(null); setReportReason(null); }}>
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60" onClick={() => { setReportSheet(null); setReportDetail(""); }}>
             <div className="w-full max-w-[430px] bg-[var(--color-bg-soft)] rounded-t-3xl pt-4 pb-24" onClick={e => e.stopPropagation()}>
               <div className="w-10 h-1 bg-[var(--color-line)] rounded-full mx-auto mb-5" />
               <div className="px-5 mb-5">
                 <div className="font-display text-base font-semibold mb-1">通報する</div>
-                <div className="font-display text-xs text-[var(--color-mute)]">{reportSheet.name} を通報する理由を選択してください</div>
+                <div className="font-display text-xs text-[var(--color-mute)]">{reportSheet.name} を通報する内容を入力してください</div>
               </div>
               {reportedDms.has(reportSheet.id) ? (
                 <div className="px-5 py-6 text-center space-y-3">
@@ -1128,48 +1128,29 @@ export default function CommunityPage() {
                 </div>
               ) : (
                 <div className="px-4 space-y-2">
-                  {reportReason ? (
-                    <>
-                      <div className="px-1 mb-3">
-                        <div className="font-display text-xs text-[var(--color-mute)] mb-2">選択した理由: <span className="text-[var(--color-ink)]">{reportReason}</span></div>
-                        <textarea
-                          className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-3 text-sm text-[var(--color-ink)] placeholder-[var(--color-mute)] outline-none resize-none leading-relaxed"
-                          placeholder="詳細を入力してください（任意）"
-                          rows={4}
-                          style={{ transition: "border-color 0.2s" }}
-                          onFocus={e => (e.target as HTMLTextAreaElement).style.borderColor = "var(--color-accent)"}
-                          onBlur={e => (e.target as HTMLTextAreaElement).style.borderColor = "var(--color-line)"}
-                        />
-                      </div>
-                      <button
-                        onClick={() => { setReportedDms(prev => new Set([...prev, reportSheet.id])); setReportReason(null); }}
-                        className="w-full py-3.5 rounded-full font-display text-sm transition"
-                        style={{ background: "linear-gradient(135deg,#ef4444,#dc2626)", color: "white" }}
-                      >
-                        送信する
-                      </button>
-                      <button onClick={() => setReportReason(null)} className="w-full py-3.5 rounded-2xl font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] border border-[var(--color-line)] transition">
-                        ← 理由を選び直す
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      {["スパム・迷惑行為", "不適切なメッセージ", "ハラスメント", "なりすまし", "その他"].map(reason => (
-                        <button key={reason}
-                          onClick={() => setReportReason(reason)}
-                          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border border-[var(--color-line)] bg-[var(--color-bg)] hover:border-[var(--color-accent)]/40 transition text-left"
-                        >
-                          <span className="font-display text-sm text-[var(--color-ink)]">{reason}</span>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-mute)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="9 18 15 12 9 6"/>
-                          </svg>
-                        </button>
-                      ))}
-                      <button onClick={() => { setReportSheet(null); setReportReason(null); }} className="w-full mt-2 py-3.5 rounded-2xl font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] border border-[var(--color-line)] transition">
-                        キャンセル
-                      </button>
-                    </>
-                  )}
+                  <div className="px-1 mb-3">
+                    <textarea
+                      value={reportDetail}
+                      onChange={e => setReportDetail(e.target.value)}
+                      className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-3 text-sm text-[var(--color-ink)] placeholder-[var(--color-mute)] outline-none resize-none leading-relaxed"
+                      placeholder="通報の理由・内容を自由にご記入ください"
+                      rows={5}
+                      style={{ transition: "border-color 0.2s" }}
+                      onFocus={e => (e.target as HTMLTextAreaElement).style.borderColor = "var(--color-accent)"}
+                      onBlur={e => (e.target as HTMLTextAreaElement).style.borderColor = "var(--color-line)"}
+                    />
+                  </div>
+                  <button
+                    disabled={!reportDetail.trim()}
+                    onClick={() => { setReportedDms(prev => new Set([...prev, reportSheet.id])); setReportDetail(""); }}
+                    className="w-full py-3.5 rounded-full font-display text-sm transition disabled:opacity-40"
+                    style={{ background: "linear-gradient(135deg,#ef4444,#dc2626)", color: "white" }}
+                  >
+                    送信する
+                  </button>
+                  <button onClick={() => { setReportSheet(null); setReportDetail(""); }} className="w-full mt-2 py-3.5 rounded-2xl font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] border border-[var(--color-line)] transition">
+                    キャンセル
+                  </button>
                 </div>
               )}
             </div>

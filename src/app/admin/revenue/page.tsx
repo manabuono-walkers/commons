@@ -14,22 +14,22 @@ const monthlyData = [
 
 // 売上一覧用のダミー明細データ
 const revenueItems = [
-  { id:"R0712-001", date:"2026.07.12", category:"会員費", plan:"月払い", name:"青山 陸", no:"0824", amount:980, status:"確定" },
-  { id:"R0712-002", date:"2026.07.12", category:"イベント", plan:"Coffee Cupping #7", name:"佐藤 美咲", no:"0827", amount:4000, status:"確定" },
-  { id:"R0712-003", date:"2026.07.12", category:"会員費", plan:"年払い", name:"中島 誉", no:"0830", amount:500, status:"確定" },
-  { id:"R0712-004", date:"2026.07.12", category:"クーポン", plan:"夏の紹介キャンペーン", name:"山本 直", no:"0843", amount:-500, status:"適用" },
-  { id:"R0711-001", date:"2026.07.11", category:"イベント", plan:"COMMONS MUSIC BAR", name:"山本 直", no:"0843", amount:7000, status:"確定" },
-  { id:"R0711-002", date:"2026.07.11", category:"会員費", plan:"月払い", name:"森田 桂", no:"0851", amount:980, status:"確定" },
-  { id:"R0711-003", date:"2026.07.11", category:"イベント", plan:"COMMONS MUSIC BAR", name:"村瀬 史奈", no:"0873", amount:6000, status:"確定" },
-  { id:"R0711-004", date:"2026.07.11", category:"返金対応", plan:"COMMONS MUSIC BAR キャンセル", name:"田中 康介", no:"0880", amount:-7000, status:"返金済" },
-  { id:"R0710-001", date:"2026.07.10", category:"会員費", plan:"年払い", name:"田中 康介", no:"0880", amount:500, status:"確定" },
-  { id:"R0710-002", date:"2026.07.10", category:"会員費", plan:"月払い", name:"山本 彩花", no:"0885", amount:980, status:"確定" },
-  { id:"R0710-003", date:"2026.07.10", category:"イベント", plan:"Coffee Cupping #7", name:"伊藤 健", no:"0891", amount:4000, status:"確定" },
-  { id:"R0710-004", date:"2026.07.10", category:"クーポン", plan:"初回入会特典", name:"中村 優一", no:"0898", amount:-980, status:"適用" },
-  { id:"R0709-001", date:"2026.07.09", category:"会員費", plan:"月払い", name:"中村 優一", no:"0898", amount:980, status:"確定" },
-  { id:"R0709-002", date:"2026.07.09", category:"イベント", plan:"COMMONS MUSIC BAR", name:"青山 陸", no:"0824", amount:7000, status:"未確定" },
-  { id:"R0708-001", date:"2026.07.08", category:"会員費", plan:"年払い", name:"佐藤 美咲", no:"0827", amount:500, status:"確定" },
-  { id:"R0708-002", date:"2026.07.08", category:"返金対応", plan:"Wine Salon キャンセル", name:"森田 桂", no:"0851", amount:-9800, status:"返金済" },
+  { id:"R0712-001", date:"2026.07.12", category:"会員費", plan:"月払い", name:"青山 陸", no:"0824", gender:"男性", amount:980, status:"確定" },
+  { id:"R0712-002", date:"2026.07.12", category:"イベント", plan:"Coffee Cupping #7", name:"佐藤 美咲", no:"0827", gender:"女性", amount:4000, status:"確定" },
+  { id:"R0712-003", date:"2026.07.12", category:"会員費", plan:"年払い", name:"中島 誉", no:"0830", gender:"男性", amount:500, status:"確定" },
+  { id:"R0712-004", date:"2026.07.12", category:"クーポン", plan:"夏の紹介キャンペーン", name:"山本 直", no:"0843", gender:"男性", amount:-500, status:"適用" },
+  { id:"R0711-001", date:"2026.07.11", category:"イベント", plan:"COMMONS MUSIC BAR", name:"山本 直", no:"0843", gender:"男性", amount:7000, status:"確定" },
+  { id:"R0711-002", date:"2026.07.11", category:"会員費", plan:"月払い", name:"森田 桂", no:"0851", gender:"男性", amount:980, status:"確定" },
+  { id:"R0711-003", date:"2026.07.11", category:"イベント", plan:"COMMONS MUSIC BAR", name:"村瀬 史奈", no:"0873", gender:"女性", amount:6000, status:"確定" },
+  { id:"R0711-004", date:"2026.07.11", category:"返金対応", plan:"COMMONS MUSIC BAR キャンセル", name:"田中 康介", no:"0880", gender:"男性", amount:-7000, status:"返金済" },
+  { id:"R0710-001", date:"2026.07.10", category:"会員費", plan:"年払い", name:"田中 康介", no:"0880", gender:"男性", amount:500, status:"確定" },
+  { id:"R0710-002", date:"2026.07.10", category:"会員費", plan:"月払い", name:"山本 彩花", no:"0885", gender:"女性", amount:980, status:"確定" },
+  { id:"R0710-003", date:"2026.07.10", category:"イベント", plan:"Coffee Cupping #7", name:"伊藤 健", no:"0891", gender:"男性", amount:4000, status:"確定" },
+  { id:"R0710-004", date:"2026.07.10", category:"クーポン", plan:"初回入会特典", name:"中村 優一", no:"0898", gender:"男性", amount:-980, status:"適用" },
+  { id:"R0709-001", date:"2026.07.09", category:"会員費", plan:"月払い", name:"中村 優一", no:"0898", gender:"男性", amount:980, status:"確定" },
+  { id:"R0709-002", date:"2026.07.09", category:"イベント", plan:"COMMONS MUSIC BAR", name:"青山 陸", no:"0824", gender:"男性", amount:7000, status:"未確定" },
+  { id:"R0708-001", date:"2026.07.08", category:"会員費", plan:"年払い", name:"佐藤 美咲", no:"0827", gender:"女性", amount:500, status:"確定" },
+  { id:"R0708-002", date:"2026.07.08", category:"返金対応", plan:"Wine Salon キャンセル", name:"森田 桂", no:"0851", gender:"男性", amount:-9800, status:"返金済" },
 ];
 
 // 直近8週間の純売上推移（※仮データ）
@@ -90,6 +90,7 @@ export default function RevenuePage() {
   const [eventSearch, setEventSearch] = useState("");
   const [memberSearch, setMemberSearch] = useState("");
   const [planFilter, setPlanFilter] = useState<"" | "月払い" | "年払い">("");
+  const [genderFilter, setGenderFilter] = useState<"" | "男性" | "女性">("");
   const [eventProfits, setEventProfits] = useState<EventProfitRow[]>(initialEventProfits);
 
   function updateEventProfit(id: string, field: "expense" | "venueFee", value: number) {
@@ -118,6 +119,7 @@ export default function RevenuePage() {
     if (eventSearch && !r.plan.toLowerCase().includes(eventSearch.toLowerCase())) return false;
     if (memberSearch && !r.name.includes(memberSearch) && !r.no.includes(memberSearch)) return false;
     if (planFilter && r.plan !== planFilter) return false;
+    if (genderFilter && r.gender !== genderFilter) return false;
     return true;
   });
 
@@ -390,8 +392,17 @@ export default function RevenuePage() {
                       </button>
                     ))}
                   </div>
-                  {(eventSearch||memberSearch||planFilter) && (
-                    <button onClick={() => { setEventSearch(""); setMemberSearch(""); setPlanFilter(""); }} className="font-display text-[10px] text-[var(--color-mute)] hover:text-[var(--color-ink)]">クリア</button>
+                  <div className="flex items-center gap-2">
+                    <span className="font-display text-[10px] text-[var(--color-mute)] flex-none">性別</span>
+                    {(["男性","女性"] as const).map(g => (
+                      <button key={g} onClick={() => setGenderFilter(genderFilter===g ? "" : g)}
+                        className={`font-display text-[10px] px-3 py-1 rounded-full border transition ${genderFilter===g?"bg-[var(--color-accent)]/15 border-[var(--color-accent)] text-[var(--color-accent-deep)]":"border-[var(--color-line)] text-[var(--color-mute)]"}`}>
+                        {g}
+                      </button>
+                    ))}
+                  </div>
+                  {(eventSearch||memberSearch||planFilter||genderFilter) && (
+                    <button onClick={() => { setEventSearch(""); setMemberSearch(""); setPlanFilter(""); setGenderFilter(""); }} className="font-display text-[10px] text-[var(--color-mute)] hover:text-[var(--color-ink)]">クリア</button>
                   )}
                 </div>
               </div>

@@ -182,9 +182,15 @@ export default function MembersPage() {
                 <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">承認日（まで）</label>
                 <input type="date" value={fApproveTo} onChange={e=>setFApproveTo(e.target.value)} className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none" />
               </div>
-              <div className="col-span-4 flex items-center gap-2 pt-1">
-                <input type="checkbox" id="vip-only" checked={fVip} onChange={e=>setFVip(e.target.checked)} className="accent-[var(--color-accent)]" />
-                <label htmlFor="vip-only" className="font-display text-xs cursor-pointer">VIP会員のみ表示</label>
+              <div className="col-span-4 flex items-center gap-5 pt-1">
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="vip-only" checked={fVip} onChange={e=>setFVip(e.target.checked)} className="accent-[var(--color-accent)]" />
+                  <label htmlFor="vip-only" className="font-display text-xs cursor-pointer">PRIME会員のみ表示</label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="withdrawn-only" checked={fStatus==="退会済"} onChange={e=>setFStatus(e.target.checked?"退会済":"")} className="accent-[var(--color-accent)]" />
+                  <label htmlFor="withdrawn-only" className="font-display text-xs cursor-pointer">退会済みユーザーのみ表示</label>
+                </div>
               </div>
             </div>
           </div>
@@ -219,7 +225,7 @@ export default function MembersPage() {
                     </td>
                     <td className="py-3 pr-3">
                       <div className="font-display flex items-center gap-1.5">
-                        {m.name}{m.vip&&<span className="tag tag-accent text-[8px] !py-0">VIP</span>}
+                        {m.name}{m.vip&&<span className="tag tag-accent text-[8px] !py-0">PRIME</span>}
                       </div>
                     </td>
                     <td className="py-3 pr-3">
@@ -273,7 +279,7 @@ export default function MembersPage() {
                 <div className="w-12 h-12 rounded-full bg-[var(--color-accent)]/15 flex items-center justify-center font-display text-lg text-[var(--color-accent-deep)]">{detail.name[0]}</div>
                 <div>
                   <div className="font-display text-lg flex items-center gap-1.5">
-                    {detail.name}{detail.vip&&<span className="tag tag-accent text-[8px] !py-0">VIP</span>}
+                    {detail.name}{detail.vip&&<span className="tag tag-accent text-[8px] !py-0">PRIME</span>}
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="num text-xs text-[var(--color-mute)]">#{detail.no}</span>

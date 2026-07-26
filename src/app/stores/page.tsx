@@ -297,9 +297,10 @@ function StoresContent() {
   const [scene,  setScene]  = useState<Scene | "">("");
   const [time,   setTime]   = useState<TimeSlot | "">("");
   const [area,   setArea]   = useState("すべて");
+  const [partnerOnly, setPartnerOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
-  const hasFilter = genre !== "すべて" || scene !== "" || time !== "" || area !== "すべて";
+  const hasFilter = genre !== "すべて" || scene !== "" || time !== "" || area !== "すべて" || partnerOnly;
 
   const filtered = stores.filter(s => {
     if (query.trim()) {
@@ -310,6 +311,7 @@ function StoresContent() {
     if (scene && !s.scenes.includes(scene)) return false;
     if (time  && !s.times.includes(time))   return false;
     if (area  !== "すべて" && s.area !== area) return false;
+    if (partnerOnly && !s.isPartner) return false;
     return true;
   });
 
@@ -418,6 +420,12 @@ function StoresContent() {
               {AREAS.map(a => <option key={a} value={a}>{a}</option>)}
             </select>
           </div>
+
+          {/* PARTNER ONLY */}
+          <label className="flex items-center gap-2.5 cursor-pointer">
+            <input type="checkbox" checked={partnerOnly} onChange={e => setPartnerOnly(e.target.checked)} className="accent-[var(--color-accent)]" />
+            <span className="font-display text-xs text-[var(--color-mute)]">提携店舗のみ表示</span>
+          </label>
           </>)}
         </div>
 

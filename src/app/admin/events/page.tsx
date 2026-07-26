@@ -238,6 +238,8 @@ export default function AdminEventsPage() {
                         <td className="px-5 py-3">
                           <div className="flex gap-1.5">
                             <button className="font-display text-[10px] px-2 py-1 rounded border border-[var(--color-line)] hover:border-[var(--color-accent)] transition">詳細</button>
+                            <a href={`/admin/inquiries?tab=other&user=${a.no}`}
+                              className="font-display text-[10px] px-2 py-1 rounded border border-[var(--color-accent)]/40 text-[var(--color-accent-deep)] hover:bg-[var(--color-accent)]/8 transition">DM</a>
                             <button className="font-display text-[10px] px-2 py-1 rounded border border-red-400/30 text-red-400 hover:bg-red-400/8 transition">取消</button>
                           </div>
                         </td>
