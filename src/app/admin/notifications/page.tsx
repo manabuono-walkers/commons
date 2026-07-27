@@ -19,6 +19,17 @@ const scheduledItems: NotifHistory[] = [
   { id:101, title:"8月イベント募集開始のお知らせ（予約）", segment:"全会員", sent:"2026.08.01 10:00（予定）", opens:"—", clicks:"—", channels:["アプリ内通知","メール"], recipientCount: 1420, body:"8月のイベント情報をお届けする予定の通知です。" },
 ];
 
+function opensCountFor(h: NotifHistory): number | null {
+  if (h.opens === "—") return null;
+  return Math.round(h.recipientCount * parseFloat(h.opens) / 100);
+}
+
+function clicksCountFor(h: NotifHistory): number | null {
+  const opens = opensCountFor(h);
+  if (opens === null || h.clicks === "—") return null;
+  return Math.round(opens * parseFloat(h.clicks) / 100);
+}
+
 type Tab = "app" | "email" | "scheduled";
 
 function NotifList({ items, selectedId, onSelect }: { items: NotifHistory[]; selectedId: number|null; onSelect: (id:number)=>void }) {
@@ -35,11 +46,12 @@ function NotifList({ items, selectedId, onSelect }: { items: NotifHistory[]; sel
             <span className="tag text-[9px] flex-none">{h.segment}</span>
           </div>
           <div className="num text-xs text-[var(--color-mute)] mb-2">{h.sent}</div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <div className="w-14 h-1.5 rounded-full bg-[var(--color-line)] overflow-hidden"><div className="h-full bg-[var(--color-accent)] rounded-full" style={{width:h.opens==="—"?"0%":h.opens}} /></div>
               <span className="num text-[10px]">開封率 {h.opens}</span>
             </div>
+            <span className="num text-[10px] text-[var(--color-mute)]">クリック {clicksCountFor(h)===null?"—":`${clicksCountFor(h)!.toLocaleString()}件`}</span>
             <span className="num text-[10px] text-[var(--color-mute)]">送信 {h.recipientCount.toLocaleString()}名</span>
           </div>
         </div>
@@ -175,11 +187,12 @@ export default function NotificationsPage() {
                   <button onClick={() => setSelectedId(null)} className="hidden md:inline text-[var(--color-mute)] hover:text-[var(--color-ink)] ml-1">✕</button>
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                 {[
                   {l:"送信者数",v:`${detail.recipientCount.toLocaleString()}名`},
-                  {l:"開封数",v:detail.opens==="—"?"—":`${Math.round(detail.recipientCount * parseInt(detail.opens) / 100).toLocaleString()}名`},
+                  {l:"開封数",v:opensCountFor(detail)===null?"—":`${opensCountFor(detail)!.toLocaleString()}名`},
                   {l:"開封率",v:detail.opens},
+                  {l:"クリック数",v:clicksCountFor(detail)===null?"—":`${clicksCountFor(detail)!.toLocaleString()}件`},
                 ].map(s=>(
                   <div key={s.l} className="card p-5">
                     <div className="font-display text-[10px] text-[var(--color-mute)] mb-2">{s.l}</div>
