@@ -77,6 +77,7 @@ export default function AdminEventsPage() {
     setLotteryDone(false); setNotifyDone(false);
     setLotteryList(lotteryApplicants.map(a=>({...a})));
   }
+  function backToList() { setSelectedId(null); setRightPanel("detail"); }
   function togglePublish(id: string) { setEvents(prev => prev.map(e => e.id===id?{...e,published:!e.published}:e)); }
   function deleteEvent(id: string) {
     if (!confirm("このイベントを削除しますか？")) return;
@@ -103,17 +104,17 @@ export default function AdminEventsPage() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <div className="px-6 py-6 border-b border-[var(--color-line)] flex items-center justify-between flex-none">
+      <div className="px-4 sm:px-6 py-6 border-b border-[var(--color-line)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-none">
         <div>
           <div className="font-display text-[10px] tracking-[0.12em] text-[var(--color-accent-deep)]">EVENT</div>
           <h1 className="font-display text-2xl mt-0.5">イベント管理</h1>
         </div>
-        <button onClick={() => { setSelectedId(null); setRightPanel("create"); }} className="btn-primary !py-2 text-xs">＋ イベント作成</button>
+        <button onClick={() => { setSelectedId(null); setRightPanel("create"); }} className="btn-primary !py-2 text-xs self-start sm:self-auto">＋ イベント作成</button>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Left: event list */}
-        <div className="w-[260px] border-r border-[var(--color-line)] overflow-y-auto flex-none bg-[var(--color-bg)]">
+        <div className={`w-full md:w-[260px] border-r border-[var(--color-line)] overflow-y-auto flex-none bg-[var(--color-bg)] ${(selectedId || rightPanel==="create") ? "hidden md:block" : ""}`}>
           {events.map(e => (
             <div key={e.id} onClick={() => selectEvent(e.id)}
               className={`px-6 py-4 cursor-pointer transition hover:bg-[var(--color-bg-soft)] border-b border-[var(--color-line)] border-l-2 ${selectedId===e.id?"bg-[var(--color-accent)]/8 border-l-[var(--color-accent)]":"border-l-transparent"}`}>
@@ -133,15 +134,16 @@ export default function AdminEventsPage() {
         </div>
 
         {/* Right panel */}
-        <div className="flex-1 overflow-y-auto bg-[var(--color-bg-soft)]">
+        <div className={`flex-1 overflow-y-auto bg-[var(--color-bg-soft)] ${(selectedId || rightPanel==="create") ? "" : "hidden md:block"}`}>
           {!selectedId && rightPanel !== "create" && (
             <div className="flex items-center justify-center h-full text-[var(--color-mute)] font-display text-sm">イベントを選択してください</div>
           )}
 
           {/* Detail */}
           {selectedId && selected && rightPanel === "detail" && (
-            <div className="px-8 py-6 max-w-[800px]">
-              <div className="flex items-start justify-between mb-6">
+            <div className="px-4 sm:px-8 py-6 max-w-[800px]">
+              <button onClick={backToList} className="md:hidden font-display text-[11px] text-[var(--color-mute)] hover:text-[var(--color-ink)] mb-4">← 一覧に戻る</button>
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="tag text-[9px]">{selected.type}</span>
@@ -164,7 +166,7 @@ export default function AdminEventsPage() {
                     <div className="font-display text-xs text-[var(--color-accent-deep)] mt-1">公開予約: {selected.publishAt}〜</div>
                   )}
                 </div>
-                <div className="flex flex-col gap-2 flex-none">
+                <div className="flex flex-row sm:flex-col flex-wrap gap-2 flex-none">
                   <button onClick={() => setRightPanel("applicants")} className="btn-outline !py-1.5 text-xs">申込者管理</button>
                   {selected.type==="抽選" && (
                     <button onClick={() => setRightPanel("lottery")}
@@ -180,7 +182,7 @@ export default function AdminEventsPage() {
                   <button onClick={() => deleteEvent(selected.id)} className="font-display text-xs px-3 py-1.5 rounded-full border border-red-400/30 text-red-400 hover:bg-red-400/8 transition">削除</button>
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-3 mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                 {[{l:"男性 申込数",v:`${selected.capM-selected.remM}/${selected.capM}`},{l:"女性 申込数",v:`${selected.capF-selected.remF}/${selected.capF}`},{l:"申込数（合計）",v:`${selected.applicants}名`},{l:"参加費",v:`${selected.feeM}/${selected.feeF}`}].map(s=>(
                   <div key={s.l} className="card p-4"><div className="font-display text-[9px] text-[var(--color-mute)]">{s.l}</div><div className="num text-lg mt-1">{s.v}</div></div>
                 ))}
@@ -194,8 +196,8 @@ export default function AdminEventsPage() {
             // 支払い完了者のみを申込者一覧へ反映
             const paidApplicants = dummyApplicants.filter(a => a.paid);
             return (
-            <div className="px-8 py-6">
-              <div className="flex items-center justify-between mb-5">
+            <div className="px-4 sm:px-8 py-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
                 <div>
                   <button onClick={() => setRightPanel("detail")} className="font-display text-[10px] text-[var(--color-mute)] hover:text-[var(--color-ink)] mb-1">← 戻る</button>
                   <h2 className="font-display text-xl">{selected.title} — 申込者一覧</h2>
@@ -203,13 +205,13 @@ export default function AdminEventsPage() {
                 </div>
                 {selected.type==="抽選" && (
                   <button onClick={() => setRightPanel("lottery")}
-                    className="font-display text-xs px-4 py-2 rounded-full border border-[var(--color-accent)]/50 text-[var(--color-accent-deep)] bg-[var(--color-accent)]/8 hover:bg-[var(--color-accent)]/16 transition">
+                    className="font-display text-xs px-4 py-2 rounded-full border border-[var(--color-accent)]/50 text-[var(--color-accent-deep)] bg-[var(--color-accent)]/8 hover:bg-[var(--color-accent)]/16 transition self-start">
                     抽選を実施
                   </button>
                 )}
               </div>
-              <div className="card overflow-hidden">
-                <table className="w-full text-sm">
+              <div className="card overflow-hidden overflow-x-auto">
+                <table className="w-full text-sm min-w-[700px]">
                   <thead>
                     <tr className="font-display text-[9px] text-[var(--color-mute)] text-left border-b border-[var(--color-line)]">
                       <th className="px-5 py-3">会員番号</th><th className="px-5 py-3">氏名</th><th className="px-5 py-3">性別</th>
@@ -254,7 +256,7 @@ export default function AdminEventsPage() {
 
           {/* Lottery */}
           {selectedId && selected && rightPanel === "lottery" && (
-            <div className="px-8 py-6">
+            <div className="px-4 sm:px-8 py-6">
               <div className="mb-5">
                 <button onClick={() => setRightPanel("detail")} className="font-display text-[10px] text-[var(--color-mute)] hover:text-[var(--color-ink)] mb-1">← 戻る</button>
                 <h2 className="font-display text-xl">{selected.title} — 抽選管理</h2>
@@ -264,7 +266,7 @@ export default function AdminEventsPage() {
               {/* Controls */}
               <div className="card p-5 mb-5">
                 <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-3">抽選設定</div>
-                <div className="flex items-center gap-6 mb-4">
+                <div className="flex flex-wrap items-center gap-6 mb-4">
                   <div>
                     <label className="font-display text-xs text-[var(--color-mute)] block mb-1">男性 当選数</label>
                     <div className="flex items-center gap-2">
@@ -281,7 +283,7 @@ export default function AdminEventsPage() {
                       <button onClick={() => setPickF(pickF+1)} className="w-8 h-8 rounded-full border border-[var(--color-line)] font-display text-sm flex items-center justify-center hover:border-[var(--color-accent)] transition">＋</button>
                     </div>
                   </div>
-                  <div className="flex-1 flex justify-end">
+                  <div className="flex-1 flex justify-start sm:justify-end">
                     <button onClick={runLottery} className="btn-primary text-sm !py-2.5">ランダム抽選</button>
                   </div>
                 </div>
@@ -294,11 +296,12 @@ export default function AdminEventsPage() {
 
               {/* Applicant table with checkboxes */}
               <div className="card overflow-hidden">
-                <div className="px-5 py-3 border-b border-[var(--color-line)] flex items-center justify-between">
+                <div className="px-5 py-3 border-b border-[var(--color-line)] flex flex-wrap items-center justify-between gap-1.5">
                   <span className="font-display text-[10px] text-[var(--color-mute)]">申込者一覧 ({lotteryList.length}名)</span>
                   {lotteryDone && <span className="font-display text-[10px] text-[var(--color-accent-deep)]">当選: {lotteryList.filter(a=>a.selected).length}名</span>}
                 </div>
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[600px]">
                   <thead>
                     <tr className="font-display text-[9px] text-[var(--color-mute)] text-left border-b border-[var(--color-line)]">
                       <th className="px-4 py-3">
@@ -337,7 +340,8 @@ export default function AdminEventsPage() {
                     ))}
                   </tbody>
                 </table>
-                <div className="px-5 py-4 border-t border-[var(--color-line)] flex items-center justify-between">
+                </div>
+                <div className="px-5 py-4 border-t border-[var(--color-line)] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <span className="font-display text-[10px] text-[var(--color-mute)]">
                     {lotteryList.filter(a=>a.checked).length}名 選択中
                   </span>
@@ -349,7 +353,7 @@ export default function AdminEventsPage() {
 
           {/* Edit panel */}
           {selectedId && selected && rightPanel === "edit" && (
-            <div className="px-8 py-6 max-w-[640px]">
+            <div className="px-4 sm:px-8 py-6 max-w-[640px]">
               <button onClick={() => setRightPanel("detail")} className="font-display text-[10px] text-[var(--color-mute)] hover:text-[var(--color-ink)] mb-4">← 戻る</button>
               <h2 className="font-display text-xl mb-5">編集: {selected.title}</h2>
               <div className="space-y-4">
@@ -380,7 +384,8 @@ export default function AdminEventsPage() {
 
           {/* Create panel */}
           {rightPanel === "create" && (
-            <div className="px-8 py-6 max-w-[640px]">
+            <div className="px-4 sm:px-8 py-6 max-w-[640px]">
+              <button onClick={backToList} className="md:hidden font-display text-[11px] text-[var(--color-mute)] hover:text-[var(--color-ink)] mb-4">← 一覧に戻る</button>
               {draftSaved && (
                 <div className="mb-4 px-4 py-3 rounded-xl bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30 font-display text-xs text-[var(--color-accent-deep)] flex items-center justify-between">
                   下書きとして保存しました<button onClick={() => setDraftSaved(false)} className="text-[var(--color-mute)]">✕</button>
@@ -473,7 +478,7 @@ export default function AdminEventsPage() {
                   {countResult!==null && <div className="font-display text-sm text-[var(--color-accent-deep)]">対象: 約 <span className="num text-lg">{countResult}</span> 名</div>}
                 </div>
               </div>
-              <div className="flex gap-2 mt-6">
+              <div className="flex flex-wrap gap-2 mt-6">
                 <button onClick={() => setShowPreview(true)} className="btn-outline !py-2 text-xs flex-none">プレビュー</button>
                 <button onClick={() => setDraftSaved(true)} className="btn-outline !py-2 text-xs flex-none">下書き保存</button>
                 <button className="btn-primary !py-2 text-xs flex-1 justify-center">作成する</button>
@@ -486,8 +491,8 @@ export default function AdminEventsPage() {
 
       {/* Preview modal */}
       {showPreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowPreview(false)}>
-          <div className="bg-[var(--color-bg-soft)] rounded-2xl p-8 w-[480px]" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setShowPreview(false)}>
+          <div className="bg-[var(--color-bg-soft)] rounded-2xl p-6 sm:p-8 w-full max-w-[480px]" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-display text-xl">プレビュー</h2>
               <button onClick={() => setShowPreview(false)} className="text-[var(--color-mute)]">✕</button>
@@ -506,8 +511,8 @@ export default function AdminEventsPage() {
 
       {/* Notify done popup */}
       {notifyDone && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setNotifyDone(false)}>
-          <div className="bg-[var(--color-bg-soft)] rounded-2xl p-8 w-[380px] text-center" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setNotifyDone(false)}>
+          <div className="bg-[var(--color-bg-soft)] rounded-2xl p-6 sm:p-8 w-full max-w-[380px] text-center" onClick={e => e.stopPropagation()}>
             <div className="w-14 h-14 rounded-full bg-green-500/15 flex items-center justify-center mx-auto mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400"><polyline points="20 6 9 17 4 12"/></svg>
             </div>

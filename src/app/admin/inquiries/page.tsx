@@ -2,7 +2,7 @@
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-type Category = "inquiry" | "report" | "other";
+type Category = "report" | "other";
 type Tab = Category | "closed";
 
 interface ThreadMessage { from: "user" | "admin"; text: string; date: string; }
@@ -14,15 +14,6 @@ interface Thread {
 }
 
 const initialThreads: Thread[] = [
-  { id:"IQ-0041", category:"inquiry", subject:"イベントのキャンセル方法を教えてください", from:"田中 康介", no:"0880", date:"2026.07.09 14:23", status:"未読", closed:false,
-    messages:[{ from:"user", text:"お世話になっております。7月15日のCOMMONS MUSIC BARに申し込みましたが、急な予定が入り参加が難しくなりました。キャンセルの方法を教えていただけますでしょうか。", date:"2026.07.09 14:23" }] },
-  { id:"IQ-0040", category:"inquiry", subject:"クーポンが使用できませんでした", from:"佐藤 美咲", no:"0827", date:"2026.07.09 11:08", status:"未読", closed:false,
-    messages:[{ from:"user", text:"先日、Coffee Commonsでクーポンを使用しようとしたところ、「このクーポンは使用できません」と表示されてしまいました。有効期限は2026.12.31となっているはずなのですが、どうすれば使用できるようになりますか？", date:"2026.07.09 11:08" }] },
-  { id:"IQ-0038", category:"inquiry", subject:"退会手続きについて教えてください", from:"伊藤 健", no:"0891", date:"2026.07.08 09:12", status:"返信済み", closed:false,
-    messages:[
-      { from:"user", text:"退会を検討しています。退会手続きの方法と、退会後のポイントはどうなるか教えてください。", date:"2026.07.08 09:12" },
-      { from:"admin", text:"お問い合わせありがとうございます。退会は会員マイページの「設定」から手続き可能です。保有ポイントは退会と同時に失効いたしますのでご了承ください。", date:"2026.07.08 15:40" },
-    ] },
   { id:"RP-0012", category:"report", subject:"DMで不適切な勧誘を受けた", from:"山本 彩花", no:"0885", date:"2026.07.10 20:11", status:"未読", closed:false,
     reportReason:"ネットワークビジネス・投資案件等の勧誘行為",
     messages:[{ from:"user", text:"DMで知らない会員から投資案件への勧誘を受けました。COMMONSの規約に違反していると思うので報告します。相手のユーザー名は「naoki_invest」です。", date:"2026.07.10 20:11" }] },
@@ -53,7 +44,7 @@ const MEMBER_DIRECTORY = [
   { no:"0898", name:"中村 優一" },
 ];
 
-const catLabel: Record<Tab, string> = { inquiry: "お問い合わせ", report: "通報", other: "個別やり取り", closed: "クローズ" };
+const catLabel: Record<Tab, string> = { report: "通報", other: "個別やり取り", closed: "クローズ" };
 const statusColor: Record<string, string> = { "未読": "tag-ink" };
 
 function nowStamp(): string {
@@ -64,10 +55,10 @@ function nowStamp(): string {
 
 function InquiriesContent() {
   const searchParams = useSearchParams();
-  const initialTab = (searchParams.get("tab") as Tab) ?? "inquiry";
+  const initialTab = (searchParams.get("tab") as Tab) ?? "report";
   const initialUser = searchParams.get("user") ?? "";
   const [threads, setThreads] = useState<Thread[]>(initialThreads);
-  const [tab, setTab] = useState<Tab>(initialTab in catLabel ? initialTab : "inquiry");
+  const [tab, setTab] = useState<Tab>(initialTab in catLabel ? initialTab : "report");
   const [selected, setSelected] = useState<string | null>(null);
   const [reply, setReply] = useState("");
   const [otherUserQuery, setOtherUserQuery] = useState(initialUser);
@@ -128,7 +119,7 @@ function InquiriesContent() {
       <div className="px-8 py-6 border-b border-[var(--color-line)] flex items-center justify-between flex-none">
         <div>
           <div className="font-display text-[10px] tracking-[0.12em] text-[var(--color-accent-deep)]">INQUIRY</div>
-          <h1 className="font-display text-2xl mt-0.5">通報・お問い合わせ・個別やり取り</h1>
+          <h1 className="font-display text-2xl mt-0.5">通報・個別やり取り</h1>
         </div>
         <div className="font-display text-xs text-[var(--color-mute)]">未読 <span className="num text-[var(--color-accent-deep)]">{unreadTotal}</span> 件</div>
       </div>

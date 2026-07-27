@@ -105,19 +105,19 @@ export default function NotificationsPage() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <div className="px-8 py-6 border-b border-[var(--color-line)] flex items-center justify-between flex-none">
+      <div className="px-4 sm:px-8 py-6 border-b border-[var(--color-line)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-none">
         <div>
           <div className="font-display text-[10px] tracking-[0.12em] text-[var(--color-accent-deep)]">NOTIFICATION</div>
           <h1 className="font-display text-2xl mt-0.5">通知・配信管理</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button onClick={downloadAnalyticsCSV} className="btn-outline !py-2 text-xs">配信分析CSV出力</button>
           <button onClick={() => setShowCompose(true)} className="btn-primary !py-2 text-xs">＋ 通知作成</button>
         </div>
       </div>
 
       {/* 配信数サマリー */}
-      <div className="px-8 py-3 border-b border-[var(--color-line)] flex gap-6 flex-none">
+      <div className="px-4 sm:px-8 py-3 border-b border-[var(--color-line)] flex flex-wrap gap-x-6 gap-y-1.5 flex-none">
         <div className="flex items-center gap-1.5">
           <span className="font-display text-[10px] text-[var(--color-mute)]">送信済み配信数</span>
           <span className="num text-sm text-[var(--color-accent-deep)]">{sentRecipientTotal.toLocaleString()}</span>
@@ -131,34 +131,35 @@ export default function NotificationsPage() {
       </div>
 
       {/* Inline tabs */}
-      <div className="px-8 border-b border-[var(--color-line)] flex gap-6 flex-none">
+      <div className="px-4 sm:px-8 border-b border-[var(--color-line)] flex gap-4 sm:gap-6 flex-none overflow-x-auto whitespace-nowrap">
         {([
           ["app", "アプリ通知済み"],
           ["email", "メール通知済み"],
           ["scheduled", "予約送信"],
         ] as const).map(([k,l]) => (
           <button key={k} onClick={() => { setTab(k); setSelectedId(null); }}
-            className={`font-display text-sm py-4 border-b-2 transition ${tab===k?"border-[var(--color-accent)] text-[var(--color-accent-deep)]":"border-transparent text-[var(--color-mute)]"}`}>
+            className={`font-display text-sm py-4 border-b-2 transition flex-none ${tab===k?"border-[var(--color-accent)] text-[var(--color-accent-deep)]":"border-transparent text-[var(--color-mute)]"}`}>
             {l}
           </button>
         ))}
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        <div className="w-[320px] border-r border-[var(--color-line)] overflow-y-auto flex-none">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+        <div className={`w-full md:w-[320px] border-r border-[var(--color-line)] overflow-y-auto flex-none ${selectedId ? "hidden md:block" : ""}`}>
           <NotifList items={currentList} selectedId={selectedId} onSelect={setSelectedId} />
         </div>
 
         {!detail && (
-          <div className="flex-1 flex items-center justify-center bg-[var(--color-bg-soft)]">
+          <div className="hidden md:flex flex-1 items-center justify-center bg-[var(--color-bg-soft)]">
             <span className="font-display text-sm text-[var(--color-mute)]">通知を選択してください</span>
           </div>
         )}
 
         {detail && (
-          <div className="flex-1 overflow-y-auto px-8 py-6">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
             <div className="max-w-[620px]">
-              <div className="flex items-start justify-between mb-6">
+              <button onClick={() => setSelectedId(null)} className="md:hidden font-display text-[11px] text-[var(--color-mute)] hover:text-[var(--color-ink)] mb-4">← 一覧に戻る</button>
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-6">
                 <div>
                   <h2 className="font-display text-xl mb-1">{detail.title}</h2>
                   <div className="flex items-center gap-3">
@@ -171,10 +172,10 @@ export default function NotificationsPage() {
                     <button onClick={() => setShowCompose(true)} className="btn-outline !py-1.5 text-xs">編集</button>
                   )}
                   <button onClick={() => deleteNotif(detail.id)} className="font-display text-xs px-3 py-1.5 rounded-full border border-red-400/30 text-red-400 hover:bg-red-400/8 transition">削除</button>
-                  <button onClick={() => setSelectedId(null)} className="text-[var(--color-mute)] hover:text-[var(--color-ink)] ml-1">✕</button>
+                  <button onClick={() => setSelectedId(null)} className="hidden md:inline text-[var(--color-mute)] hover:text-[var(--color-ink)] ml-1">✕</button>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 {[
                   {l:"送信者数",v:`${detail.recipientCount.toLocaleString()}名`},
                   {l:"開封数",v:detail.opens==="—"?"—":`${Math.round(detail.recipientCount * parseInt(detail.opens) / 100).toLocaleString()}名`},
@@ -206,8 +207,8 @@ export default function NotificationsPage() {
 
       {/* Compose modal */}
       {showCompose && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowCompose(false)}>
-          <div className="bg-[var(--color-bg-soft)] rounded-2xl p-8 w-[560px] max-h-[88vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setShowCompose(false)}>
+          <div className="bg-[var(--color-bg-soft)] rounded-2xl p-5 sm:p-8 w-full max-w-[560px] max-h-[88vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display text-xl">通知作成</h2>
               <button onClick={() => setShowCompose(false)} className="text-[var(--color-mute)]">✕</button>
@@ -265,8 +266,8 @@ export default function NotificationsPage() {
       )}
 
       {showPreview && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60" onClick={() => setShowPreview(false)}>
-          <div className="bg-[var(--color-bg-soft)] rounded-2xl p-8 w-[420px]" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4" onClick={() => setShowPreview(false)}>
+          <div className="bg-[var(--color-bg-soft)] rounded-2xl p-6 sm:p-8 w-full max-w-[420px]" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display text-xl">プレビュー</h2>
               <button onClick={() => setShowPreview(false)} className="text-[var(--color-mute)]">✕</button>

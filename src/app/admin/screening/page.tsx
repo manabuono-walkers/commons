@@ -74,6 +74,8 @@ function incomeRating(income: string): Rating {
   if (n >= 400) return "triangle";
   return "cross";
 }
+const RATING_SYMBOL: Record<Rating, string> = { circle: "〇", triangle: "△", cross: "✖" };
+
 function ageRating(age: number): Rating {
   if (age >= 25 && age <= 40) return "circle";
   if ((age >= 20 && age < 25) || (age > 40 && age <= 50)) return "triangle";
@@ -290,13 +292,13 @@ export default function ScreeningPage() {
                         </div>
                       ))}
                       {[
-                        { l: "職業（自動）", v: pointsFor("job", jobRating(detail.job), detail.gender) },
-                        { l: "年収（自動）", v: pointsFor("income", incomeRating(detail.income), detail.gender) },
-                        { l: "年齢（自動）", v: pointsFor("age", ageRating(calcAge(detail.dob)), detail.gender) },
+                        { l: "職業（自動）", v: RATING_SYMBOL[jobRating(detail.job)] },
+                        { l: "年収（自動）", v: RATING_SYMBOL[incomeRating(detail.income)] },
+                        { l: "年齢（自動）", v: RATING_SYMBOL[ageRating(calcAge(detail.dob))] },
                       ].map(r => (
                         <div key={r.l}>
                           <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">{r.l}</label>
-                          <div className="w-full bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-lg px-3 py-2 text-sm num">{r.v}点</div>
+                          <div className="w-full bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-lg px-3 py-2 text-sm text-center">{r.v}</div>
                         </div>
                       ))}
                     </div>
@@ -423,13 +425,13 @@ export default function ScreeningPage() {
                       </div>
                     ))}
                     {[
-                      { l: "職業（自動）", v: pointsFor("job", jobRating(rejDetail.job), rejDetail.gender) },
-                      { l: "年収（自動）", v: pointsFor("income", incomeRating(rejDetail.income), rejDetail.gender) },
-                      { l: "年齢（自動）", v: pointsFor("age", ageRating(calcAge(rejDetail.dob)), rejDetail.gender) },
+                      { l: "職業（自動）", v: RATING_SYMBOL[jobRating(rejDetail.job)] },
+                      { l: "年収（自動）", v: RATING_SYMBOL[incomeRating(rejDetail.income)] },
+                      { l: "年齢（自動）", v: RATING_SYMBOL[ageRating(calcAge(rejDetail.dob))] },
                     ].map(r => (
                       <div key={r.l}>
                         <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">{r.l}</label>
-                        <div className="w-full bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-lg px-3 py-2 text-sm num">{r.v}点</div>
+                        <div className="w-full bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-lg px-3 py-2 text-sm text-center">{r.v}</div>
                       </div>
                     ))}
                   </div>
