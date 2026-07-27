@@ -39,10 +39,16 @@ interface GenderScores { circle: number; triangle: number; cross: number; }
 interface ScoreCriterion { id: string; name: string; male: GenderScores; female: GenderScores; }
 
 const DEFAULT_SCORE_SETTINGS: ScoreCriterion[] = [
+  { id: "face", name: "顔写真の印象", male: { circle: 10, triangle: 5, cross: 0 }, female: { circle: 10, triangle: 5, cross: 0 } },
+  { id: "insta", name: "Instagram", male: { circle: 10, triangle: 5, cross: 0 }, female: { circle: 10, triangle: 5, cross: 0 } },
+  { id: "writing", name: "文章の質・誠実さ", male: { circle: 10, triangle: 5, cross: 0 }, female: { circle: 10, triangle: 5, cross: 0 } },
   { id: "job", name: "職業", male: { circle: 10, triangle: 5, cross: 0 }, female: { circle: 10, triangle: 5, cross: 0 } },
   { id: "income", name: "年収", male: { circle: 10, triangle: 5, cross: 0 }, female: { circle: 10, triangle: 5, cross: 0 } },
   { id: "age", name: "年齢", male: { circle: 10, triangle: 5, cross: 0 }, female: { circle: 10, triangle: 5, cross: 0 } },
 ];
+
+const MANUAL_CRITERIA = ["face", "insta", "writing"] as const;
+const FIXED_CRITERIA_IDS = [...MANUAL_CRITERIA, "job", "income", "age"];
 
 // 誕生日（YYYY.MM.DD）から満年齢を計算
 function calcAge(dob: string): number {
@@ -103,7 +109,7 @@ export default function ScreeningPage() {
   const [rejectedSelected, setRejectedSelected] = useState<string | null>(null);
   const [rejectModal, setRejectModal] = useState<string | null>(null);
   const [rejectComment, setRejectComment] = useState("");
-  const [scores, setScores] = useState<Record<string, { face: string; insta: string; writing: string }>>({});
+  const [scores, setScores] = useState<Record<string, Partial<Record<typeof MANUAL_CRITERIA[number], Rating>>>>({});
   const [totals, setTotals] = useState<Record<string, number>>({});
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [scoreSettings, setScoreSettings] = useState<ScoreCriterion[]>(DEFAULT_SCORE_SETTINGS);
@@ -142,15 +148,19 @@ export default function ScreeningPage() {
     setTimeout(() => setSettingsSaved(false), 2000);
   }
 
-  function updateScore(id: string, field: "face" | "insta" | "writing", value: string) {
+  function updateScore(id: string, field: typeof MANUAL_CRITERIA[number], value: Rating) {
     setScores(prev => {
-      const current = prev[id] ?? { face: "", insta: "", writing: "" };
+      const current = prev[id] ?? {};
       return { ...prev, [id]: { ...current, [field]: value } };
     });
   }
   function calcTotal(app: Application) {
-    const s = scores[app.id] ?? { face: "", insta: "", writing: "" };
-    const total = (Number(s.face) || 0) + (Number(s.insta) || 0) + (Number(s.writing) || 0)
+    const s = scores[app.id] ?? {};
+    const manualTotal = MANUAL_CRITERIA.reduce((sum, field) => {
+      const rating = s[field];
+      return sum + (rating ? pointsFor(field, rating, app.gender) : 0);
+    }, 0);
+    const total = manualTotal
       + pointsFor("job", jobRating(app.job), app.gender) + pointsFor("income", incomeRating(app.income), app.gender) + pointsFor("age", ageRating(calcAge(app.dob)), app.gender);
     setTotals(prev => ({ ...prev, [app.id]: total }));
   }
@@ -287,8 +297,14 @@ export default function ScreeningPage() {
                       ]).map(f => (
                         <div key={f.key}>
                           <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">{f.l}（手入力）</label>
-                          <input type="number" value={scores[detail.id]?.[f.key] ?? ""} onChange={e => updateScore(detail.id, f.key, e.target.value)}
-                            placeholder="点数を入力" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
+                          <div className="flex gap-1.5">
+                            {(["circle","triangle","cross"] as const).map(rating => (
+                              <button key={rating} type="button" onClick={() => updateScore(detail.id, f.key, rating)}
+                                className={`flex-1 py-2 rounded-lg border text-sm transition ${scores[detail.id]?.[f.key]===rating ? "bg-[var(--color-accent)]/15 border-[var(--color-accent)] text-[var(--color-accent-deep)]" : "bg-[var(--color-bg)] border-[var(--color-line)] hover:border-[var(--color-accent)]/40"}`}>
+                                {RATING_SYMBOL[rating]}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       ))}
                       {[
@@ -420,8 +436,14 @@ export default function ScreeningPage() {
                     ]).map(f => (
                       <div key={f.l}>
                         <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">{f.l}</label>
-                        <input type="number" value="" disabled placeholder="—"
-                          className="w-full bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-lg px-3 py-2 text-sm outline-none placeholder-[var(--color-mute)] cursor-not-allowed" />
+                        <div className="flex gap-1.5">
+                          {(["circle","triangle","cross"] as const).map(rating => (
+                            <button key={rating} type="button" disabled
+                              className="flex-1 py-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-bg-soft)] text-sm text-[var(--color-mute)] cursor-not-allowed">
+                              {RATING_SYMBOL[rating]}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     ))}
                     {[
@@ -512,7 +534,7 @@ export default function ScreeningPage() {
                     <tr key={c.id}>
                       <td className="px-3 py-3">
                         <input value={c.name} onChange={e => updateCriterionName(c.id, e.target.value)}
-                          placeholder="項目名を入力" disabled={["job","income","age"].includes(c.id)}
+                          placeholder="項目名を入力" disabled={FIXED_CRITERIA_IDS.includes(c.id)}
                           className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)] disabled:opacity-70 disabled:cursor-not-allowed" />
                       </td>
                       {(["circle","triangle","cross"] as const).map((field,i) => (

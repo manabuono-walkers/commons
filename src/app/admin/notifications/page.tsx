@@ -187,21 +187,16 @@ export default function NotificationsPage() {
                   <button onClick={() => setSelectedId(null)} className="hidden md:inline text-[var(--color-mute)] hover:text-[var(--color-ink)] ml-1">✕</button>
                 </div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 {[
-                  {l:"送信者数",v:`${detail.recipientCount.toLocaleString()}名`},
-                  {l:"開封数",v:opensCountFor(detail)===null?"—":`${opensCountFor(detail)!.toLocaleString()}名`},
-                  {l:"開封率",v:detail.opens},
-                  {l:"クリック数",v:clicksCountFor(detail)===null?"—":`${clicksCountFor(detail)!.toLocaleString()}件`},
+                  {l:"送信者数",v:`${detail.recipientCount.toLocaleString()}名`,sub:null},
+                  {l:"開封数",v:opensCountFor(detail)===null?"—":`${opensCountFor(detail)!.toLocaleString()}名`,sub:detail.opens==="—"?null:`開封率：${parseFloat(detail.opens).toFixed(1)}%`},
+                  {l:"クリック数",v:clicksCountFor(detail)===null?"—":`${clicksCountFor(detail)!.toLocaleString()}件`,sub:detail.clicks==="—"?null:`クリック率：${parseFloat(detail.clicks).toFixed(1)}%`},
                 ].map(s=>(
                   <div key={s.l} className="card p-5">
                     <div className="font-display text-[10px] text-[var(--color-mute)] mb-2">{s.l}</div>
-                    <div className="num text-2xl mb-3">{s.v}</div>
-                    {s.l==="開封率" && (
-                      <div className="w-full h-2 rounded-full bg-[var(--color-line)] overflow-hidden">
-                        <div className="h-full bg-[var(--color-accent)] rounded-full" style={{width:s.v==="—"?"0%":s.v}} />
-                      </div>
-                    )}
+                    <div className="num text-2xl">{s.v}</div>
+                    {s.sub && <div className="num text-xs text-[var(--color-accent-deep)] mt-1">（{s.sub}）</div>}
                   </div>
                 ))}
               </div>
