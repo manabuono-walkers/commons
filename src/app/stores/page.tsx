@@ -87,6 +87,33 @@ const stores: Store[] = [
   },
 ];
 
+interface ChatMessage {
+  role: "user" | "ai";
+  text: string;
+  storeIds?: number[];
+}
+
+const AI_SUGGESTIONS = ["デート向けのお店は？", "接待で使えるお店ある？", "麻布十番で二軒目の候補は？", "一人でも入りやすいお店は？"];
+
+function matchStores(query: string): Store[] {
+  const q = query.toLowerCase();
+  const matched = stores.filter(s => {
+    if (!s.active) return false;
+    if (SCENES.some(sc => q.includes(sc.toLowerCase()) && s.scenes.includes(sc))) return true;
+    if (GENRES.some(g => g !== "すべて" && q.includes(g.toLowerCase()) && s.cat === g)) return true;
+    if (AREAS.some(a => a !== "すべて" && q.includes(a.toLowerCase()) && s.area === a)) return true;
+    if (TIMES.some(t => q.includes(t.toLowerCase()) && s.times.includes(t))) return true;
+    return s.name.toLowerCase().includes(q) || s.intro.includes(query);
+  });
+  if (matched.length > 0) return matched.slice(0, 3);
+  return stores.filter(s => s.active && s.isPartner).slice(0, 3);
+}
+
+function buildAiReply(query: string, matches: Store[]): string {
+  if (matches.length === 0) return "ご希望に近いお店が見つかりませんでした。エリアやシーンを変えてもう一度聞いてみてください。";
+  return `「${query}」ですね。会員の皆さんに人気のこちらのお店はいかがでしょうか。`;
+}
+
 const GENRES = ["すべて", "ワインバー", "バー", "コーヒー", "アートギャラリー"];
 const SCENES: Scene[] = ["デート", "接待・ビジネス", "女子会", "二軒目", "記念日", "お一人様"];
 const TIMES: TimeSlot[] = ["ランチ", "ディナー", "深夜"];
@@ -289,6 +316,131 @@ function ListView({ stores }: { stores: Store[] }) {
   );
 }
 
+// ---- AI相談チャット ----
+function AiStoreCard({ store }: { store: Store }) {
+  return (
+    <div className="flex gap-3 p-2.5 rounded-xl bg-[var(--color-bg)] border border-[var(--color-line)]">
+      <div className="w-14 h-14 rounded-lg bg-cover bg-center flex-none" style={{ backgroundImage: `url(${store.image})` }} />
+      <div className="min-w-0 flex-1">
+        <div className="font-display text-xs truncate">{store.name}</div>
+        <div className="font-display text-[9px] text-[var(--color-mute)] mt-0.5">{store.cat} · {store.area}</div>
+        <div className="font-display text-[9px] text-[var(--color-accent-deep)] mt-1">{store.benefit}</div>
+      </div>
+      <a href={store.googleMapsUrl} target="_blank" rel="noopener noreferrer"
+        className="flex-none self-center font-display text-[10px] px-2.5 py-1.5 rounded-full border border-[var(--color-accent)]/50 text-[var(--color-accent-deep)] hover:bg-[var(--color-accent)]/10 transition whitespace-nowrap">
+        見る
+      </a>
+    </div>
+  );
+}
+
+function AiConcierge({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { role: "ai", text: "こんにちは！シーンやエリア、気分を教えていただければ、COMMONS提携店舗の中からぴったりのお店をご提案します。" },
+  ]);
+  const [input, setInput] = useState("");
+  const [thinking, setThinking] = useState(false);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, thinking]);
+
+  function send(text: string) {
+    const query = text.trim();
+    if (!query || thinking) return;
+    setMessages(prev => [...prev, { role: "user", text: query }]);
+    setInput("");
+    setThinking(true);
+    setTimeout(() => {
+      const matches = matchStores(query);
+      setMessages(prev => [...prev, { role: "ai", text: buildAiReply(query, matches), storeIds: matches.map(s => s.id) }]);
+      setThinking(false);
+    }, 900);
+  }
+
+  const storeMap = Object.fromEntries(stores.map(s => [s.id, s]));
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60" onClick={onClose}>
+      <div
+        className="w-full max-w-[430px] bg-[var(--color-bg-soft)] rounded-t-2xl flex flex-col"
+        style={{ height: "82vh" }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--color-line)] flex-none">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">✨</span>
+            <div>
+              <div className="font-display text-sm">AIコンシェルジュ</div>
+              <div className="font-display text-[9px] text-[var(--color-mute)]">提携店舗からおすすめを提案します</div>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-[var(--color-mute)] text-lg leading-none">✕</button>
+        </div>
+
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+          {messages.map((m, i) => (
+            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[85%] space-y-2 ${m.role === "user" ? "" : ""}`}>
+                <div className={
+                  m.role === "user"
+                    ? "font-display text-xs px-4 py-2.5 rounded-2xl rounded-br-sm bg-[var(--color-accent)] text-[#0B0F16]"
+                    : "text-xs leading-relaxed px-4 py-2.5 rounded-2xl rounded-bl-sm bg-[var(--color-bg)] border border-[var(--color-line)]"
+                }>
+                  {m.text}
+                </div>
+                {m.storeIds && m.storeIds.length > 0 && (
+                  <div className="space-y-2">
+                    {m.storeIds.map(id => storeMap[id] && <AiStoreCard key={id} store={storeMap[id]} />)}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {thinking && (
+            <div className="flex justify-start">
+              <div className="text-xs px-4 py-2.5 rounded-2xl rounded-bl-sm bg-[var(--color-bg)] border border-[var(--color-line)] text-[var(--color-mute)]">
+                考え中…
+              </div>
+            </div>
+          )}
+        </div>
+
+        {messages.length <= 1 && (
+          <div className="px-4 pb-2 flex gap-2 overflow-x-auto flex-none" style={{ scrollbarWidth: "none" }}>
+            {AI_SUGGESTIONS.map(s => (
+              <button key={s} onClick={() => send(s)}
+                className="flex-none font-display text-[10px] px-3 py-1.5 rounded-full border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-accent)]/50 transition whitespace-nowrap">
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 px-4 py-3 border-t border-[var(--color-line)] flex-none">
+          <input
+            type="text"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") send(input); }}
+            placeholder="例：デートで使える落ち着いたお店"
+            className="flex-1 bg-[var(--color-bg)] border border-[var(--color-line)] rounded-full px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/60 placeholder-[var(--color-mute)] font-display"
+          />
+          <button onClick={() => send(input)} disabled={!input.trim() || thinking}
+            className="flex-none w-10 h-10 rounded-full bg-[var(--color-accent)] text-[#0B0F16] flex items-center justify-center disabled:opacity-40 transition">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ---- Main ----
 function StoresContent() {
   const [tab,    setTab]    = useState<"map" | "list">("map");
@@ -299,6 +451,7 @@ function StoresContent() {
   const [area,   setArea]   = useState("すべて");
   const [partnerOnly, setPartnerOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
 
   const hasFilter = genre !== "すべて" || scene !== "" || time !== "" || area !== "すべて" || partnerOnly;
 
@@ -446,6 +599,19 @@ function StoresContent() {
 
         {tab === "map"  && <MapView  stores={filtered} />}
         {tab === "list" && <ListView stores={filtered} />}
+
+        <div className="fixed bottom-[84px] left-0 right-0 z-40 flex justify-center pointer-events-none">
+          <div className="w-full max-w-[430px] relative">
+            <button
+              onClick={() => setAiOpen(true)}
+              className="pointer-events-auto absolute right-4 bottom-0 flex items-center gap-1.5 font-display text-xs px-4 py-3 rounded-full bg-[var(--color-accent)] text-[#0B0F16] shadow-lg hover:brightness-105 transition"
+            >
+              <span>✨</span>AIに相談する
+            </button>
+          </div>
+        </div>
+
+        <AiConcierge open={aiOpen} onClose={() => setAiOpen(false)} />
 
         <BottomNav />
       </div>
