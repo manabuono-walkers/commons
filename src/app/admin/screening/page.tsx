@@ -550,7 +550,9 @@ export default function ScreeningPage() {
                         </td>
                       ))}
                       <td className="px-3 py-3 text-right">
-                        <button onClick={() => removeCriterion(c.id)} className="font-display text-[10px] px-2 py-1 rounded border border-red-400/30 text-red-400 hover:bg-red-400/8 transition whitespace-nowrap">削除</button>
+                        {!["job","income","age"].includes(c.id) && (
+                          <button onClick={() => removeCriterion(c.id)} className="font-display text-[10px] px-2 py-1 rounded border border-red-400/30 text-red-400 hover:bg-red-400/8 transition whitespace-nowrap">削除</button>
+                        )}
                       </td>
                     </tr>
                   ))}
