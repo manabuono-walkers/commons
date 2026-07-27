@@ -600,7 +600,7 @@ function StoresContent() {
         {tab === "map"  && <MapView  stores={filtered} />}
         {tab === "list" && <ListView stores={filtered} />}
 
-        <div className="fixed bottom-[84px] left-0 right-0 z-40 flex justify-center pointer-events-none">
+        <div className="fixed bottom-[84px] left-0 right-0 z-[1200] flex justify-center pointer-events-none">
           <div className="w-full max-w-[430px] relative">
             <button
               onClick={() => setAiOpen(true)}
