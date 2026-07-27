@@ -364,10 +364,10 @@ function AiConcierge({ open, onClose }: { open: boolean; onClose: () => void }) 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60" onClick={onClose}>
+    <div className="fixed inset-0 z-[1300] flex items-end justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={onClose}>
       <div
         className="w-full max-w-[430px] bg-[var(--color-bg-soft)] rounded-t-2xl flex flex-col"
-        style={{ height: "82vh" }}
+        style={{ height: "min(82vh, 82dvh)" }}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--color-line)] flex-none">
@@ -381,7 +381,7 @@ function AiConcierge({ open, onClose }: { open: boolean; onClose: () => void }) 
           <button onClick={onClose} className="text-[var(--color-mute)] text-lg leading-none">✕</button>
         </div>
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-[var(--color-bg-soft)]">
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[85%] space-y-2 ${m.role === "user" ? "" : ""}`}>
@@ -600,6 +600,7 @@ function StoresContent() {
         {tab === "map"  && <MapView  stores={filtered} />}
         {tab === "list" && <ListView stores={filtered} />}
 
+        {!aiOpen && (
         <div className="fixed bottom-[84px] left-0 right-0 z-[1200] flex justify-center pointer-events-none">
           <div className="w-full max-w-[430px] relative">
             <button
@@ -610,6 +611,7 @@ function StoresContent() {
             </button>
           </div>
         </div>
+        )}
 
         <AiConcierge open={aiOpen} onClose={() => setAiOpen(false)} />
 
