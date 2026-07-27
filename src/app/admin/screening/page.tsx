@@ -49,6 +49,7 @@ const DEFAULT_SCORE_SETTINGS: ScoreCriterion[] = [
 
 const MANUAL_CRITERIA = ["face", "insta", "writing"] as const;
 const FIXED_CRITERIA_IDS = [...MANUAL_CRITERIA, "job", "income", "age"];
+const POINT_OPTIONS = [0, 5, 10, 15, 20, 25, 30];
 
 // 誕生日（YYYY.MM.DD）から満年齢を計算
 function calcAge(dob: string): number {
@@ -539,14 +540,18 @@ export default function ScreeningPage() {
                       </td>
                       {(["circle","triangle","cross"] as const).map((field,i) => (
                         <td key={`male-${field}`} className={`px-1 py-3 ${i===0?"border-l border-[var(--color-line)]":""}`}>
-                          <input type="number" value={c.male[field]} onChange={e => updateCriterionScore(c.id, "male", field, e.target.value)}
-                            className="w-full max-w-14 mx-auto block bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-1 py-1.5 text-sm text-center outline-none focus:border-[var(--color-accent)]/50" />
+                          <select value={c.male[field]} onChange={e => updateCriterionScore(c.id, "male", field, e.target.value)}
+                            className="w-full max-w-16 mx-auto block bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-1 py-1.5 text-sm text-center outline-none focus:border-[var(--color-accent)]/50">
+                            {POINT_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
+                          </select>
                         </td>
                       ))}
                       {(["circle","triangle","cross"] as const).map((field,i) => (
                         <td key={`female-${field}`} className={`px-1 py-3 ${i===0?"border-l border-[var(--color-line)]":""}`}>
-                          <input type="number" value={c.female[field]} onChange={e => updateCriterionScore(c.id, "female", field, e.target.value)}
-                            className="w-full max-w-14 mx-auto block bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-1 py-1.5 text-sm text-center outline-none focus:border-[var(--color-accent)]/50" />
+                          <select value={c.female[field]} onChange={e => updateCriterionScore(c.id, "female", field, e.target.value)}
+                            className="w-full max-w-16 mx-auto block bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-1 py-1.5 text-sm text-center outline-none focus:border-[var(--color-accent)]/50">
+                            {POINT_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
+                          </select>
                         </td>
                       ))}
                       <td className="px-3 py-3 text-right">
