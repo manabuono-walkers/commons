@@ -605,9 +605,10 @@ function StoresContent() {
           <div className="w-full max-w-[430px] relative">
             <button
               onClick={() => setAiOpen(true)}
-              className="pointer-events-auto absolute right-4 bottom-0 flex items-center gap-1.5 font-display text-xs px-4 py-3 rounded-full bg-[var(--color-accent)] text-[#0B0F16] shadow-lg hover:brightness-105 transition"
+              className="pointer-events-auto absolute right-4 bottom-0 font-display text-xs px-4 py-3 rounded-full text-white transition hover:brightness-110"
+              style={{ background: "linear-gradient(135deg, #a855f7, #7c3aed)", boxShadow: "0 4px 20px rgba(168,85,247,0.35)" }}
             >
-              <span>✨</span>AIに相談する
+              AIに相談する
             </button>
           </div>
         </div>
