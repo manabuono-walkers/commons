@@ -1,5 +1,5 @@
 "use client";
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
 
@@ -43,6 +43,9 @@ const PROFILES: Record<string, ProfileData> = {
 export default function MemberProfilePage({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = use(params);
   const profile = PROFILES[handle];
+  const [showReport, setShowReport] = useState(false);
+  const [reportDetail, setReportDetail] = useState("");
+  const [reported, setReported] = useState(false);
 
   if (!profile) {
     return (
@@ -121,9 +124,71 @@ export default function MemberProfilePage({ params }: { params: Promise<{ handle
             </svg>
             DM を送る
           </Link>
+
+          {/* 通報ボタン */}
+          <button
+            onClick={() => { setShowReport(true); setReported(false); setReportDetail(""); }}
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-full border border-[var(--color-line)] font-display text-sm text-red-400/80 hover:border-red-400/40 hover:text-red-400 transition"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
+            </svg>
+            通報する
+          </button>
         </main>
 
         <BottomNav />
+
+        {/* ===== 通報モーダル ===== */}
+        {showReport && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60" onClick={() => { setShowReport(false); setReportDetail(""); }}>
+            <div className="w-full max-w-[430px] bg-[var(--color-bg-soft)] rounded-t-3xl pt-4 pb-24" onClick={e => e.stopPropagation()}>
+              <div className="w-10 h-1 bg-[var(--color-line)] rounded-full mx-auto mb-5" />
+              <div className="px-5 mb-5">
+                <div className="font-display text-base font-semibold mb-1">通報する</div>
+                <div className="font-display text-xs text-[var(--color-mute)]">{profile.name} を通報する内容を入力してください</div>
+              </div>
+              {reported ? (
+                <div className="px-5 py-6 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center" style={{ background: "rgba(184,152,90,0.15)" }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-deep)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </div>
+                  <div className="font-display text-sm text-[var(--color-ink)]">通報を受け付けました</div>
+                  <div className="font-display text-xs text-[var(--color-mute)]">運営が確認し、適切に対応します</div>
+                  <button onClick={() => setShowReport(false)} className="mt-2 w-full py-3.5 rounded-full font-display text-sm border border-[var(--color-line)] text-[var(--color-mute)] transition hover:text-[var(--color-ink)]">閉じる</button>
+                </div>
+              ) : (
+                <div className="px-4 space-y-2">
+                  <div className="px-1 mb-3">
+                    <textarea
+                      value={reportDetail}
+                      onChange={e => setReportDetail(e.target.value)}
+                      className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-3 text-sm text-[var(--color-ink)] placeholder-[var(--color-mute)] outline-none resize-none leading-relaxed"
+                      placeholder="通報の理由・内容を自由にご記入ください"
+                      rows={5}
+                      style={{ transition: "border-color 0.2s" }}
+                      onFocus={e => (e.target as HTMLTextAreaElement).style.borderColor = "var(--color-accent)"}
+                      onBlur={e => (e.target as HTMLTextAreaElement).style.borderColor = "var(--color-line)"}
+                    />
+                  </div>
+                  <button
+                    disabled={!reportDetail.trim()}
+                    onClick={() => setReported(true)}
+                    className="w-full py-3.5 rounded-full font-display text-sm transition disabled:opacity-40"
+                    style={{ background: "linear-gradient(135deg,#ef4444,#dc2626)", color: "white" }}
+                  >
+                    送信する
+                  </button>
+                  <button onClick={() => { setShowReport(false); setReportDetail(""); }} className="w-full mt-2 py-3.5 rounded-2xl font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] border border-[var(--color-line)] transition">
+                    キャンセル
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

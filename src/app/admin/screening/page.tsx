@@ -32,7 +32,17 @@ const rejectedHistory: (Application & { rejectedAt: string; reason: string })[] 
   { id:"A-0801", name:"石田 明", kana:"イシダ アキラ", dob:"1990.02.11", gender:"男性", email:"akira.ishida@example.com", tel:"09055556666", job:"会社員（一般職）", industry:"製造業", company:"△△製造", title:"", area:"埼玉県さいたま市", pref:"埼玉県", region:"東京", income:"300万円〜500万円", referee:"なし", applied:"2026.02.20 10:03", docs:true, interests:["コーヒー"], insta:"akira_ishida", entryReasons:["異性・同性問わず新しい友人づくり"], howFound:"COMMONS X", selfIntro:"近所だから入ってみたい。特にこれといった趣味はないですが交流を楽しみたいです。", lifestyle:"近所で気軽に行ける場所を探していた。", desired:"近くに友人を作りたい。", rejectedAt:"2026.02.26", reason:"申請動機が不十分" },
 ];
 
-type Tab = "list" | "rejected";
+type Tab = "list" | "rejected" | "settings";
+type Rating = "circle" | "triangle" | "cross";
+
+interface GenderScores { circle: number; triangle: number; cross: number; }
+interface ScoreCriterion { id: string; name: string; male: GenderScores; female: GenderScores; }
+
+const DEFAULT_SCORE_SETTINGS: ScoreCriterion[] = [
+  { id: "job", name: "職業", male: { circle: 10, triangle: 5, cross: 0 }, female: { circle: 10, triangle: 5, cross: 0 } },
+  { id: "income", name: "年収", male: { circle: 10, triangle: 5, cross: 0 }, female: { circle: 10, triangle: 5, cross: 0 } },
+  { id: "age", name: "年齢", male: { circle: 10, triangle: 5, cross: 0 }, female: { circle: 10, triangle: 5, cross: 0 } },
+];
 
 // 誕生日（YYYY.MM.DD）から満年齢を計算
 function calcAge(dob: string): number {
@@ -51,17 +61,23 @@ function isWithinOneYear(withdrawnDate: string, appliedDate: string): boolean {
   return diffDays < 365;
 }
 
-// 職業・年収・年齢は10点か5点の自動採点（審査スコア用）
-function jobScore(job: string): number {
-  return /経営者|役員|医師|医療|弁護士|士業|自営業/.test(job) ? 10 : 5;
+// 職業・年収・年齢の〇△✖判定（点数は審査スコア設定タブで管理）
+function jobRating(job: string): Rating {
+  if (/経営者|役員|医師|医療|弁護士|士業/.test(job)) return "circle";
+  if (/自営業|会社員|エンジニア|マーケター|デザイナー|コンサル/.test(job)) return "triangle";
+  return "cross";
 }
-function incomeScore(income: string): number {
+function incomeRating(income: string): Rating {
   const m = income.match(/(\d+)万円/);
   const n = m ? Number(m[1]) : 0;
-  return n >= 700 ? 10 : 5;
+  if (n >= 700) return "circle";
+  if (n >= 400) return "triangle";
+  return "cross";
 }
-function ageScore(age: number): number {
-  return age >= 25 && age <= 40 ? 10 : 5;
+function ageRating(age: number): Rating {
+  if (age >= 25 && age <= 40) return "circle";
+  if ((age >= 20 && age < 25) || (age > 40 && age <= 50)) return "triangle";
+  return "cross";
 }
 
 // 誕生日・氏名・電話番号のうち2つ以上一致した過去否決／退会履歴をサジェスト
@@ -88,9 +104,40 @@ export default function ScreeningPage() {
   const [scores, setScores] = useState<Record<string, { face: string; insta: string; writing: string }>>({});
   const [totals, setTotals] = useState<Record<string, number>>({});
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [scoreSettings, setScoreSettings] = useState<ScoreCriterion[]>(DEFAULT_SCORE_SETTINGS);
+  const [settingsSaved, setSettingsSaved] = useState(false);
 
   function saveScore(id: string) {
     setSavedIds(prev => new Set([...prev, id]));
+  }
+
+  function pointsFor(criterionId: string, rating: Rating, gender: string): number {
+    const c = scoreSettings.find(c => c.id === criterionId);
+    if (!c) return 0;
+    const group = gender === "女性" ? c.female : c.male;
+    return group[rating];
+  }
+  function updateCriterionName(id: string, value: string) {
+    setScoreSettings(prev => prev.map(c => c.id === id ? { ...c, name: value } : c));
+  }
+  function updateCriterionScore(id: string, genderKey: "male" | "female", field: Rating, value: string) {
+    setScoreSettings(prev => prev.map(c => c.id === id
+      ? { ...c, [genderKey]: { ...c[genderKey], [field]: Number(value) || 0 } }
+      : c));
+  }
+  function addCriterion() {
+    setScoreSettings(prev => [...prev, {
+      id: `custom-${Date.now()}`, name: "",
+      male: { circle: 0, triangle: 0, cross: 0 },
+      female: { circle: 0, triangle: 0, cross: 0 },
+    }]);
+  }
+  function removeCriterion(id: string) {
+    setScoreSettings(prev => prev.filter(c => c.id !== id));
+  }
+  function saveSettings() {
+    setSettingsSaved(true);
+    setTimeout(() => setSettingsSaved(false), 2000);
   }
 
   function updateScore(id: string, field: "face" | "insta" | "writing", value: string) {
@@ -102,7 +149,7 @@ export default function ScreeningPage() {
   function calcTotal(app: Application) {
     const s = scores[app.id] ?? { face: "", insta: "", writing: "" };
     const total = (Number(s.face) || 0) + (Number(s.insta) || 0) + (Number(s.writing) || 0)
-      + jobScore(app.job) + incomeScore(app.income) + ageScore(calcAge(app.dob));
+      + pointsFor("job", jobRating(app.job), app.gender) + pointsFor("income", incomeRating(app.income), app.gender) + pointsFor("age", ageRating(calcAge(app.dob)), app.gender);
     setTotals(prev => ({ ...prev, [app.id]: total }));
   }
 
@@ -141,7 +188,7 @@ export default function ScreeningPage() {
 
       {/* Inline tabs */}
       <div className="px-8 border-b border-[var(--color-line)] flex gap-6 flex-none">
-        {([["list","申込一覧"],["rejected","否決履歴"]] as const).map(([k,l])=>(
+        {([["list","申込一覧"],["rejected","否決履歴"],["settings","審査スコア設定"]] as const).map(([k,l])=>(
           <button key={k} onClick={()=>setTab(k)}
             className={`font-display text-sm py-4 border-b-2 transition ${tab===k?"border-[var(--color-accent)] text-[var(--color-accent-deep)]":"border-transparent text-[var(--color-mute)]"}`}>
             {l}
@@ -243,9 +290,9 @@ export default function ScreeningPage() {
                         </div>
                       ))}
                       {[
-                        { l: "職業（自動）", v: jobScore(detail.job) },
-                        { l: "年収（自動）", v: incomeScore(detail.income) },
-                        { l: "年齢（自動）", v: ageScore(calcAge(detail.dob)) },
+                        { l: "職業（自動）", v: pointsFor("job", jobRating(detail.job), detail.gender) },
+                        { l: "年収（自動）", v: pointsFor("income", incomeRating(detail.income), detail.gender) },
+                        { l: "年齢（自動）", v: pointsFor("age", ageRating(calcAge(detail.dob)), detail.gender) },
                       ].map(r => (
                         <div key={r.l}>
                           <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">{r.l}</label>
@@ -376,9 +423,9 @@ export default function ScreeningPage() {
                       </div>
                     ))}
                     {[
-                      { l: "職業（自動）", v: jobScore(rejDetail.job) },
-                      { l: "年収（自動）", v: incomeScore(rejDetail.income) },
-                      { l: "年齢（自動）", v: ageScore(calcAge(rejDetail.dob)) },
+                      { l: "職業（自動）", v: pointsFor("job", jobRating(rejDetail.job), rejDetail.gender) },
+                      { l: "年収（自動）", v: pointsFor("income", incomeRating(rejDetail.income), rejDetail.gender) },
+                      { l: "年齢（自動）", v: pointsFor("age", ageRating(calcAge(rejDetail.dob)), rejDetail.gender) },
                     ].map(r => (
                       <div key={r.l}>
                         <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">{r.l}</label>
@@ -430,6 +477,70 @@ export default function ScreeningPage() {
           ) : (
             <div className="flex-1 flex items-center justify-center text-[var(--color-mute)] font-display text-sm">左から対象者を選択してください</div>
           )}
+        </div>
+      )}
+
+      {tab === "settings" && (
+        <div className="flex-1 overflow-y-auto px-8 py-6">
+          <div className="max-w-[880px]">
+            <div className="mb-5">
+              <h2 className="font-display text-lg mb-1">審査スコア設定</h2>
+              <p className="font-display text-xs text-[var(--color-mute)]">各項目の判定（〇・△・✖）ごとに配点を設定します。職業・年収・年齢は申込内容から自動判定され、この配点が申込詳細の審査スコアに反映されます。</p>
+            </div>
+            <div className="card overflow-hidden mb-4">
+              <table className="w-full text-sm table-fixed">
+                <thead>
+                  <tr className="font-display text-[10px] text-[var(--color-mute)] text-left border-b border-[var(--color-line)]">
+                    <th className="px-3 py-2 w-[26%]" rowSpan={2}>項目名</th>
+                    <th className="px-2 py-2 text-center border-l border-[var(--color-line)]" colSpan={3}>男性</th>
+                    <th className="px-2 py-2 text-center border-l border-[var(--color-line)]" colSpan={3}>女性</th>
+                    <th className="px-3 py-2 w-16" rowSpan={2}></th>
+                  </tr>
+                  <tr className="font-display text-[9px] text-[var(--color-mute)] text-center border-b border-[var(--color-line)]">
+                    <th className="px-1 py-2 border-l border-[var(--color-line)]">〇</th>
+                    <th className="px-1 py-2">△</th>
+                    <th className="px-1 py-2">✖</th>
+                    <th className="px-1 py-2 border-l border-[var(--color-line)]">〇</th>
+                    <th className="px-1 py-2">△</th>
+                    <th className="px-1 py-2">✖</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--color-line)]">
+                  {scoreSettings.map(c => (
+                    <tr key={c.id}>
+                      <td className="px-3 py-3">
+                        <input value={c.name} onChange={e => updateCriterionName(c.id, e.target.value)}
+                          placeholder="項目名を入力" disabled={["job","income","age"].includes(c.id)}
+                          className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)] disabled:opacity-70 disabled:cursor-not-allowed" />
+                      </td>
+                      {(["circle","triangle","cross"] as const).map((field,i) => (
+                        <td key={`male-${field}`} className={`px-1 py-3 ${i===0?"border-l border-[var(--color-line)]":""}`}>
+                          <input type="number" value={c.male[field]} onChange={e => updateCriterionScore(c.id, "male", field, e.target.value)}
+                            className="w-full max-w-14 mx-auto block bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-1 py-1.5 text-sm text-center outline-none focus:border-[var(--color-accent)]/50" />
+                        </td>
+                      ))}
+                      {(["circle","triangle","cross"] as const).map((field,i) => (
+                        <td key={`female-${field}`} className={`px-1 py-3 ${i===0?"border-l border-[var(--color-line)]":""}`}>
+                          <input type="number" value={c.female[field]} onChange={e => updateCriterionScore(c.id, "female", field, e.target.value)}
+                            className="w-full max-w-14 mx-auto block bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-1 py-1.5 text-sm text-center outline-none focus:border-[var(--color-accent)]/50" />
+                        </td>
+                      ))}
+                      <td className="px-3 py-3 text-right">
+                        <button onClick={() => removeCriterion(c.id)} className="font-display text-[10px] px-2 py-1 rounded border border-red-400/30 text-red-400 hover:bg-red-400/8 transition whitespace-nowrap">削除</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex items-center justify-between">
+              <button onClick={addCriterion} className="btn-outline !py-2 text-xs">＋ 項目を追加する</button>
+              <div className="flex items-center gap-3">
+                {settingsSaved && <span className="font-display text-[10px] text-[var(--color-accent-deep)]">✓ 保存しました</span>}
+                <button onClick={saveSettings} className="btn-primary !py-2 text-xs">設定を保存する</button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

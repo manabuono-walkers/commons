@@ -114,7 +114,7 @@ export default function NotificationsPage() {
               className={`flex-1 py-3 font-display text-sm tracking-wide transition border-b-2 ${tab === t ? "text-[var(--color-accent-deep)]" : "text-[var(--color-mute)] border-transparent"}`}
               style={tab === t ? { borderBottomColor: "var(--color-accent-deep)" } : {}}
             >
-              {t === "global" ? "全体" : "個人"}
+              {t === "global" ? "お知らせ" : "通知"}
             </button>
           ))}
         </div>
