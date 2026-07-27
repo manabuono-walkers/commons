@@ -503,23 +503,32 @@ function StoresContent() {
             )}
           </div>
 
-          {/* 絞り込みトグル */}
-          <button
-            onClick={() => setShowFilters(v => !v)}
-            className="flex items-center gap-2 font-display text-[11px] border px-3.5 py-2 rounded-full transition"
-            style={showFilters
-              ? { background: "rgba(184,152,90,0.12)", color: "var(--color-accent-deep)", borderColor: "var(--color-accent)" }
-              : { borderColor: "var(--color-line)", color: "var(--color-mute)" }}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-            </svg>
-            絞り込み条件{hasFilter ? "（適用中）" : ""}
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-              style={{ transform: showFilters ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
+          {/* 絞り込みトグル + AI相談 */}
+          <div className="flex items-center justify-between gap-2">
+            <button
+              onClick={() => setShowFilters(v => !v)}
+              className="flex items-center gap-2 font-display text-[11px] border px-3.5 py-2 rounded-full transition"
+              style={showFilters
+                ? { background: "rgba(184,152,90,0.12)", color: "var(--color-accent-deep)", borderColor: "var(--color-accent)" }
+                : { borderColor: "var(--color-line)", color: "var(--color-mute)" }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+              </svg>
+              絞り込み条件{hasFilter ? "（適用中）" : ""}
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                style={{ transform: showFilters ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setAiOpen(true)}
+              className="flex-none font-display text-[11px] px-3.5 py-2 rounded-full text-white transition hover:brightness-110"
+              style={{ background: "linear-gradient(135deg, #a855f7, #7c3aed)", boxShadow: "0 4px 20px rgba(168,85,247,0.35)" }}
+            >
+              AIに相談する
+            </button>
+          </div>
 
           {showFilters && (<>
           {/* GENRE */}
@@ -599,20 +608,6 @@ function StoresContent() {
 
         {tab === "map"  && <MapView  stores={filtered} />}
         {tab === "list" && <ListView stores={filtered} />}
-
-        {!aiOpen && (
-        <div className="fixed bottom-[84px] left-0 right-0 z-[1200] flex justify-center pointer-events-none">
-          <div className="w-full max-w-[430px] relative">
-            <button
-              onClick={() => setAiOpen(true)}
-              className="pointer-events-auto absolute right-4 bottom-0 font-display text-xs px-4 py-3 rounded-full text-white transition hover:brightness-110"
-              style={{ background: "linear-gradient(135deg, #a855f7, #7c3aed)", boxShadow: "0 4px 20px rgba(168,85,247,0.35)" }}
-            >
-              AIに相談する
-            </button>
-          </div>
-        </div>
-        )}
 
         <AiConcierge open={aiOpen} onClose={() => setAiOpen(false)} />
 
