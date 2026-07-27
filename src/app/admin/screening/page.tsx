@@ -297,14 +297,13 @@ export default function ScreeningPage() {
                       ]).map(f => (
                         <div key={f.key}>
                           <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">{f.l}（手入力）</label>
-                          <div className="flex gap-1.5">
+                          <select value={scores[detail.id]?.[f.key] ?? ""} onChange={e => updateScore(detail.id, f.key, e.target.value as Rating)}
+                            className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--color-accent)]/50">
+                            <option value="" disabled>選択してください</option>
                             {(["circle","triangle","cross"] as const).map(rating => (
-                              <button key={rating} type="button" onClick={() => updateScore(detail.id, f.key, rating)}
-                                className={`flex-1 py-2 rounded-lg border text-sm transition ${scores[detail.id]?.[f.key]===rating ? "bg-[var(--color-accent)]/15 border-[var(--color-accent)] text-[var(--color-accent-deep)]" : "bg-[var(--color-bg)] border-[var(--color-line)] hover:border-[var(--color-accent)]/40"}`}>
-                                {RATING_SYMBOL[rating]}
-                              </button>
+                              <option key={rating} value={rating}>{RATING_SYMBOL[rating]}</option>
                             ))}
-                          </div>
+                          </select>
                         </div>
                       ))}
                       {[
