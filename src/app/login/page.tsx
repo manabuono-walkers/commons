@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -42,6 +43,11 @@ export default function LoginPage() {
               <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">パスワード</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
                 className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-3 text-sm outline-none focus:border-[var(--color-accent)]/60 placeholder-[var(--color-mute)] transition" />
+              <div className="text-right mt-1.5">
+                <Link href="/password-reset" className="font-display text-[11px] text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] transition">
+                  パスワードをお忘れの方
+                </Link>
+              </div>
             </div>
             {error && (
               <div className="px-4 py-3 rounded-xl bg-red-400/8 border border-red-400/30 font-display text-xs text-red-400">{error}</div>
@@ -54,6 +60,12 @@ export default function LoginPage() {
             <div className="font-display text-[10px] text-[var(--color-mute)] text-center">
               デモ用: member@commons.jp / commons2026
             </div>
+          </div>
+          <div className="mt-5 text-center">
+            <span className="font-display text-xs text-[var(--color-mute)]">アカウントをお持ちでない方は</span>{" "}
+            <Link href="/register" className="font-display text-xs text-[var(--color-accent-deep)] hover:underline">
+              新規アカウント作成はこちら
+            </Link>
           </div>
         </div>
         <div className="text-center mt-6">

@@ -55,6 +55,14 @@ export default function SettingsPage() {
               <span className="font-display text-sm flex-1">通知設定</span>
               <span className="text-[var(--color-mute)]">›</span>
             </Link>
+            <Link href="/mypage/password-change" className="w-full flex items-center gap-4 px-5 py-4 bg-[var(--color-bg)] hover:bg-[var(--color-bg-soft)] transition">
+              <span className="font-display text-sm flex-1">パスワード変更</span>
+              <span className="text-[var(--color-mute)]">›</span>
+            </Link>
+            <Link href="/payment-method" className="w-full flex items-center gap-4 px-5 py-4 bg-[var(--color-bg)] hover:bg-[var(--color-bg-soft)] transition">
+              <span className="font-display text-sm flex-1">お支払い方法の変更</span>
+              <span className="text-[var(--color-mute)]">›</span>
+            </Link>
             <button
               onClick={() => setShowWithdraw(true)}
               className="w-full flex items-center gap-4 px-5 py-4 bg-[var(--color-bg)] hover:bg-[var(--color-bg-soft)] transition text-left"

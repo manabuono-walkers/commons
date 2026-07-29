@@ -283,6 +283,10 @@ export default function MyPage() {
           <section>
             <div className="flex items-baseline justify-between mb-3">
               <h2 className="font-display text-sm font-semibold">キャンペーン</h2>
+              <Link href="/campaigns" className="font-display text-[10px] text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] transition flex items-center gap-1">
+                すべて見る
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </Link>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-muted">
               {campaigns.map((c) => (
