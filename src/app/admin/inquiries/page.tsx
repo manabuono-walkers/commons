@@ -57,17 +57,21 @@ function InquiriesContent() {
   const searchParams = useSearchParams();
   const initialTab = (searchParams.get("tab") as Tab) ?? "report";
   const initialUser = searchParams.get("user") ?? "";
+  const initialComposeName = searchParams.get("name") ?? "";
+  const initialCompose = searchParams.get("compose") === "1" && !!initialUser;
   const [threads, setThreads] = useState<Thread[]>(initialThreads);
   const [tab, setTab] = useState<Tab>(initialTab in catLabel ? initialTab : "report");
   const [selected, setSelected] = useState<string | null>(null);
   const [reply, setReply] = useState("");
-  const [otherUserQuery, setOtherUserQuery] = useState(initialUser);
+  const [otherUserQuery, setOtherUserQuery] = useState(initialCompose ? "" : initialUser);
   const [otherFreeQuery, setOtherFreeQuery] = useState("");
   const [otherDateFrom, setOtherDateFrom] = useState("");
   const [otherDateTo, setOtherDateTo] = useState("");
-  const [showCompose, setShowCompose] = useState(false);
+  const [showCompose, setShowCompose] = useState(initialCompose);
   const [composeQuery, setComposeQuery] = useState("");
-  const [composeMember, setComposeMember] = useState<{no:string; name:string} | null>(null);
+  const [composeMember, setComposeMember] = useState<{no:string; name:string} | null>(
+    initialCompose ? { no: initialUser, name: initialComposeName || initialUser } : null
+  );
   const [composeMessage, setComposeMessage] = useState("");
 
   const list = threads

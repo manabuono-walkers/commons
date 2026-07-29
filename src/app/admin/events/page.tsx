@@ -6,30 +6,31 @@ import TargetCondition from "@/components/TargetCondition";
 interface EventItem {
   id: string; title: string; date: string; venue: string; venueUrl?: string; type: string; format?: string;
   capM: number; capF: number; remM: number; remF: number; feeM: string; feeF: string;
+  primeCapM: number; primeCapF: number;
   applicants: number; published: boolean; description?: string; publishAt?: string;
 }
 
 const initialEvents: EventItem[] = [
-  { id: "music-bar-0715", title: "COMMONS MUSIC BAR", date: "2026.07.15", venue: "SOUND BAR HOWL", venueUrl: "https://maps.google.com/?q=SOUND+BAR+HOWL", type: "先着", format: "飲み放題", capM: 25, capF: 25, remM: 5, remF: 3, feeM: "¥7,000", feeF: "¥6,000", applicants: 42, published: true, description: "毎月開催の人気イベント。ジャズ、ソウル、R&Bが心地よく流れるバースペースで、新しい出会いと会話を楽しんでください。" },
-  { id: "wine-salon-0802", title: "COMMONS WINE SALON", date: "2026.08.02", venue: "La Cave", venueUrl: "https://maps.google.com/?q=La+Cave", type: "抽選", format: "ワインペアリング", capM: 8, capF: 8, remM: 8, remF: 8, feeM: "¥9,800", feeF: "¥9,800", applicants: 24, published: false, description: "ソムリエが厳選したボトルを囲みながら、ワインの世界を深く掘り下げるサロン。少人数制で贅沢な時間をお届けします。", publishAt: "2026.07.20 10:00" },
-  { id: "coffee-0720", title: "Coffee Cupping #7", date: "2026.07.20", venue: "Coffee Commons", venueUrl: "https://maps.google.com/?q=Coffee+Commons", type: "抽選", format: "カッピング体験", capM: 15, capF: 15, remM: 0, remF: 0, feeM: "¥4,000", feeF: "¥4,000", applicants: 38, published: true, description: "スペシャルティコーヒーの世界へ。バリスタが丁寧にカッピングの手順を教えてくれます。" },
-  { id: "photo-0727", title: "谷中フォトウォーク", date: "2026.07.27", venue: "谷中エリア", venueUrl: "", type: "先着", format: "街歩き", capM: 20, capF: 20, remM: 0, remF: 0, feeM: "¥2,000", feeF: "¥2,000", applicants: 40, published: true, description: "下町情緒あふれる谷中を歩きながら、それぞれの「好き」な瞬間をカメラに収めます。" },
+  { id: "music-bar-0715", title: "COMMONS MUSIC BAR", date: "2026.07.15", venue: "SOUND BAR HOWL", venueUrl: "https://maps.google.com/?q=SOUND+BAR+HOWL", type: "先着", format: "飲み放題", capM: 25, capF: 25, remM: 5, remF: 3, feeM: "¥7,000", feeF: "¥6,000", primeCapM: 5, primeCapF: 5, applicants: 42, published: true, description: "毎月開催の人気イベント。ジャズ、ソウル、R&Bが心地よく流れるバースペースで、新しい出会いと会話を楽しんでください。" },
+  { id: "wine-salon-0802", title: "COMMONS WINE SALON", date: "2026.08.02", venue: "La Cave", venueUrl: "https://maps.google.com/?q=La+Cave", type: "抽選", format: "ワインペアリング", capM: 8, capF: 8, remM: 8, remF: 8, feeM: "¥9,800", feeF: "¥9,800", primeCapM: 2, primeCapF: 2, applicants: 24, published: false, description: "ソムリエが厳選したボトルを囲みながら、ワインの世界を深く掘り下げるサロン。少人数制で贅沢な時間をお届けします。", publishAt: "2026.07.20 10:00" },
+  { id: "coffee-0720", title: "Coffee Cupping #7", date: "2026.07.20", venue: "Coffee Commons", venueUrl: "https://maps.google.com/?q=Coffee+Commons", type: "抽選", format: "カッピング体験", capM: 15, capF: 15, remM: 0, remF: 0, feeM: "¥4,000", feeF: "¥4,000", primeCapM: 3, primeCapF: 3, applicants: 38, published: true, description: "スペシャルティコーヒーの世界へ。バリスタが丁寧にカッピングの手順を教えてくれます。" },
+  { id: "photo-0727", title: "谷中フォトウォーク", date: "2026.07.27", venue: "谷中エリア", venueUrl: "", type: "先着", format: "街歩き", capM: 20, capF: 20, remM: 0, remF: 0, feeM: "¥2,000", feeF: "¥2,000", primeCapM: 4, primeCapF: 4, applicants: 40, published: true, description: "下町情緒あふれる谷中を歩きながら、それぞれの「好き」な瞬間をカメラに収めます。" },
 ];
 
 type CancelType = "" | "返金無し" | "半額返金";
 interface Applicant {
   no: string; name: string; gender: string; status: string; paid: boolean;
-  age: number; eventCount: number; cancelType: CancelType;
+  age: number; eventCount: number; cancelType: CancelType; isPrime: boolean;
 }
 const dummyApplicants: Applicant[] = [
-  { no: "0824", name: "青山 陸", gender: "男性", status: "確定", paid: true, age: 36, eventCount: 7, cancelType: "" },
-  { no: "0827", name: "佐藤 美咲", gender: "女性", status: "確定", paid: true, age: 31, eventCount: 18, cancelType: "" },
-  { no: "0880", name: "田中 康介", gender: "男性", status: "確定", paid: true, age: 33, eventCount: 11, cancelType: "" },
-  { no: "0885", name: "山本 彩花", gender: "女性", status: "確定", paid: true, age: 35, eventCount: 24, cancelType: "" },
-  { no: "0843", name: "山本 直", gender: "男性", status: "未払い", paid: false, age: 29, eventCount: 3, cancelType: "" },
-  { no: "0891", name: "伊藤 健", gender: "男性", status: "キャンセル", paid: true, age: 31, eventCount: 4, cancelType: "半額返金" },
-  { no: "0873", name: "村瀬 史奈", gender: "女性", status: "キャンセル", paid: true, age: 27, eventCount: 2, cancelType: "返金無し" },
-  { no: "0898", name: "中村 優一", gender: "男性", status: "確定", paid: true, age: 46, eventCount: 8, cancelType: "" },
+  { no: "0824", name: "青山 陸", gender: "男性", status: "確定", paid: true, age: 36, eventCount: 7, cancelType: "", isPrime: false },
+  { no: "0827", name: "佐藤 美咲", gender: "女性", status: "確定", paid: true, age: 31, eventCount: 18, cancelType: "", isPrime: true },
+  { no: "0880", name: "田中 康介", gender: "男性", status: "確定", paid: true, age: 33, eventCount: 11, cancelType: "", isPrime: true },
+  { no: "0885", name: "山本 彩花", gender: "女性", status: "確定", paid: true, age: 35, eventCount: 24, cancelType: "", isPrime: true },
+  { no: "0843", name: "山本 直", gender: "男性", status: "未払い", paid: false, age: 29, eventCount: 3, cancelType: "", isPrime: false },
+  { no: "0891", name: "伊藤 健", gender: "男性", status: "キャンセル", paid: true, age: 31, eventCount: 4, cancelType: "半額返金", isPrime: false },
+  { no: "0873", name: "村瀬 史奈", gender: "女性", status: "キャンセル", paid: true, age: 27, eventCount: 2, cancelType: "返金無し", isPrime: false },
+  { no: "0898", name: "中村 優一", gender: "男性", status: "確定", paid: true, age: 46, eventCount: 8, cancelType: "", isPrime: false },
 ];
 
 interface LotteryApplicant { no: string; name: string; gender: string; wins: number; engage: string; selected: boolean; checked: boolean; }
@@ -183,7 +184,7 @@ export default function AdminEventsPage() {
                 </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                {[{l:"男性 申込数",v:`${selected.capM-selected.remM}/${selected.capM}`},{l:"女性 申込数",v:`${selected.capF-selected.remF}/${selected.capF}`},{l:"申込数（合計）",v:`${selected.applicants}名`},{l:"参加費",v:`${selected.feeM}/${selected.feeF}`}].map(s=>(
+                {[{l:"男性 申込数",v:`${selected.capM-selected.remM}/${selected.capM}`},{l:"女性 申込数",v:`${selected.capF-selected.remF}/${selected.capF}`},{l:"申込数（合計）",v:`${selected.applicants}名`},{l:"参加費",v:`${selected.feeM}/${selected.feeF}`},{l:"PRIME会員上限（男性）",v:`${selected.primeCapM}名`},{l:"PRIME会員上限（女性）",v:`${selected.primeCapF}名`}].map(s=>(
                   <div key={s.l} className="card p-4"><div className="font-display text-[9px] text-[var(--color-mute)]">{s.l}</div><div className="num text-lg mt-1">{s.v}</div></div>
                 ))}
               </div>
@@ -216,6 +217,7 @@ export default function AdminEventsPage() {
                     <tr className="font-display text-[9px] text-[var(--color-mute)] text-left border-b border-[var(--color-line)]">
                       <th className="px-5 py-3">会員番号</th><th className="px-5 py-3">氏名</th><th className="px-5 py-3">性別</th>
                       <th className="px-5 py-3 text-center">年齢</th><th className="px-5 py-3 text-center">参加回数</th>
+                      <th className="px-5 py-3 text-center">PRIME</th>
                       <th className="px-5 py-3">ステータス</th><th className="px-5 py-3">決済</th><th className="px-5 py-3">操作</th>
                     </tr>
                   </thead>
@@ -227,6 +229,9 @@ export default function AdminEventsPage() {
                         <td className="px-5 py-3 font-display text-xs">{a.gender}</td>
                         <td className="px-5 py-3 num text-xs text-center">{a.age}歳</td>
                         <td className="px-5 py-3 num text-xs text-center">{a.eventCount}回</td>
+                        <td className="px-5 py-3 text-center">
+                          {a.isPrime ? <span className="tag tag-accent text-[9px]">PRIME</span> : <span className="text-xs text-[var(--color-mute)]">—</span>}
+                        </td>
                         <td className="px-5 py-3">
                           <span className={`tag text-[9px] ${a.status==="確定"?"tag-ink":a.status==="キャンセル"?"border-red-400/30 text-red-400":""}`}>{a.status}</span>
                         </td>
@@ -357,7 +362,7 @@ export default function AdminEventsPage() {
               <button onClick={() => setRightPanel("detail")} className="font-display text-[10px] text-[var(--color-mute)] hover:text-[var(--color-ink)] mb-4">← 戻る</button>
               <h2 className="font-display text-xl mb-5">編集: {selected.title}</h2>
               <div className="space-y-4">
-                {[{l:"イベント名",v:selected.title},{l:"開催日時",v:selected.date},{l:"会場",v:selected.venue},{l:"定員（男性）",v:String(selected.capM)},{l:"定員（女性）",v:String(selected.capF)},{l:"参加費（男性）",v:selected.feeM},{l:"参加費（女性）",v:selected.feeF}].map(f=>(
+                {[{l:"イベント名",v:selected.title},{l:"開催日時",v:selected.date},{l:"会場",v:selected.venue},{l:"定員（男性）",v:String(selected.capM)},{l:"定員（女性）",v:String(selected.capF)},{l:"参加費（男性）",v:selected.feeM},{l:"参加費（女性）",v:selected.feeF},{l:"PRIME会員上限（男性）",v:String(selected.primeCapM)},{l:"PRIME会員上限（女性）",v:String(selected.primeCapF)}].map(f=>(
                   <div key={f.l}>
                     <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">{f.l}</label>
                     <input defaultValue={f.v} className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50" />
@@ -446,6 +451,18 @@ export default function AdminEventsPage() {
                     <input type="number" placeholder="6000" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
                   </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">PRIME会員上限（男性）</label>
+                    <input type="number" placeholder="5" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
+                  </div>
+                  <div>
+                    <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">PRIME会員上限（女性）</label>
+                    <input type="number" placeholder="5" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]" />
+                  </div>
+                </div>
+                <p className="font-display text-[10px] text-[var(--color-mute)] -mt-2">※ 定員内でPRIME会員として受け入れる上限人数です</p>
 
                 <div>
                   <label className="font-display text-xs text-[var(--color-mute)] block mb-1.5">募集タイプ</label>
