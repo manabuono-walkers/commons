@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Shippori_Mincho, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
+import ThemeToggle from "@/components/ThemeToggle";
+
+// 描画前にテーマを適用してちらつきを防ぐ
+const THEME_INIT_SCRIPT = `try{var t=localStorage.getItem("commons-theme");if(t==="ivory"){document.documentElement.dataset.theme="ivory"}}catch(e){}`;
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -30,7 +34,13 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ja" className={`${cormorant.variable} ${shippori.variable} ${notoSans.variable}`}>
-      <body className="min-h-screen">{children}</body>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
+      <body className="min-h-screen">
+        {children}
+        <ThemeToggle />
+      </body>
     </html>
   );
 }

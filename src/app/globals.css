@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  /* ===== ネイビーベース（デフォルト・比較用に保持） ===== */
   --color-bg: #0B0F16;
   --color-bg-soft: #141A24;
   --color-ink: #F2EFE9;
@@ -9,9 +10,28 @@
   --color-accent-deep: #CBAE74;
   --color-mute: #8E8A80;
   --color-line: #272C35;
+  /* アクセント面に載せる文字色（テーマで反転させるため変数化） */
+  --color-on-accent: #0B0F16;
+
+  /* 明朝体（東京カレンダー風の見出し用） */
+  --font-mincho: var(--font-shippori), "Shippori Mincho", "Hiragino Mincho ProN", serif;
   --font-display: var(--font-noto-sans), "Noto Sans JP", sans-serif;
   --font-body: var(--font-noto-sans), "Noto Sans JP", sans-serif;
-  --font-elegant: var(--font-cormorant), "Cormorant Garamond", serif;
+  /* 英字の視認性向上のため、細身のCormorantから明朝体に変更 */
+  --font-elegant: var(--font-mincho);
+}
+
+/* ===== アイボリーベース（比較検討用・data-theme="ivory" で切替） ===== */
+:root[data-theme="ivory"] {
+  --color-bg: #F5F1E8;
+  --color-bg-soft: #FFFDF8;
+  --color-ink: #1C212B;
+  --color-ink-soft: #4A5160;
+  --color-accent: #9A7B36;
+  --color-accent-deep: #7E6229;
+  --color-mute: #7C766A;
+  --color-line: #E0D9C9;
+  --color-on-accent: #FFFDF8;
 }
 
 @theme inline {
@@ -47,8 +67,25 @@ body {
 
 .font-elegant {
   font-family: var(--font-elegant);
-  letter-spacing: -0.01em;
-  line-height: 1.2;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+/* 明朝体ユーティリティ（見出し・イベントタイトル等に使用） */
+.font-mincho {
+  font-family: var(--font-mincho);
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+}
+
+/* ===== 見出しは明朝体＋太字でメリハリをつける =====
+   .font-display クラスが付いていても要素セレクタとの複合で上書きする */
+h1, h2, h3,
+h1.font-display, h2.font-display, h3.font-display {
+  font-family: var(--font-mincho);
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 ::selection { background: var(--color-accent); color: #fff; }
@@ -57,7 +94,7 @@ body {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--color-accent-deep), var(--color-accent));
-  color: #0B0F16;
+  color: var(--color-on-accent);
   padding: 0.95rem 1.75rem;
   font-family: var(--font-display);
   font-size: 0.875rem;

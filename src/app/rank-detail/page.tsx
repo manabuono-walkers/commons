@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
@@ -87,13 +88,47 @@ const ranks = [
   },
 ];
 
-const xpActions = [
-  { action: "自己紹介投稿", xp: "100 XP", note: "最初のミッション・一回限り", href: "/community" },
-  { action: "イベント参加", xp: "300 XP", note: "支払い完了時に加算", href: "/events" },
-  { action: "タイムライン・クラブ投稿", xp: "1〜 XP", note: "発言数に応じて変動", href: "/community" },
-  { action: "CLUBイベント主催・企画", xp: "200 XP", note: "開催完了で加算", href: "/clubs" },
-  { action: "継続利用ボーナス", xp: "100 XP", note: "毎月自動加算", href: null },
-  { action: "手動付与（運営判断）", xp: "任意", note: "キャンペーン等で利用", href: null },
+type XpAction = {
+  action: string;
+  xp: string;
+  note: string;
+  href: string | null;
+  linkLabel?: string;
+  detail: string;
+  conditions: string[];
+};
+
+const xpActions: XpAction[] = [
+  {
+    action: "自己紹介投稿", xp: "100 XP", note: "最初のミッション・一回限り", href: "/community", linkLabel: "タイムラインへ",
+    detail: "COMMONSに参加したら、まずはタイムラインで自己紹介を投稿しましょう。投稿が完了した時点で100XPが加算されます。",
+    conditions: ["加算タイミング：投稿完了直後", "対象：一人につき1回限り", "テンプレートを利用して投稿できます"],
+  },
+  {
+    action: "イベント参加", xp: "300 XP", note: "支払い完了時に加算", href: "/events", linkLabel: "イベント一覧へ",
+    detail: "COMMONS主催イベントへお申し込みいただき、参加費のお支払いが完了した時点で300XPが加算されます。",
+    conditions: ["加算タイミング：支払い完了時", "対象：COMMONS主催・提携イベント", "キャンセル時はXPも取り消しとなります"],
+  },
+  {
+    action: "タイムライン・クラブ投稿", xp: "1〜 XP", note: "発言数に応じて変動", href: "/community", linkLabel: "タイムラインへ",
+    detail: "タイムラインやCOMMONS CLUB内での投稿・コメントに応じてXPが加算されます。継続的な発言がランクアップの近道です。",
+    conditions: ["加算タイミング：投稿・コメント時", "1投稿あたり1XP〜（内容により変動）", "同一内容の連投は対象外"],
+  },
+  {
+    action: "CLUBイベント主催・企画", xp: "200 XP", note: "開催完了で加算", href: "/clubs", linkLabel: "クラブ一覧へ",
+    detail: "ブロンズランク以上の会員は、COMMONS CLUB内でイベントを主催できます。開催が完了すると200XPが加算されます。",
+    conditions: ["加算タイミング：イベント開催完了後", "対象：ブロンズランク以上", "参加者2名以上の開催が条件"],
+  },
+  {
+    action: "継続利用ボーナス", xp: "100 XP", note: "毎月自動加算", href: null,
+    detail: "会員資格を継続いただいている方に、毎月自動で100XPが加算されます。手続きは不要です。",
+    conditions: ["加算タイミング：毎月1日", "対象：会費のお支払いが有効な会員", "休会期間は対象外"],
+  },
+  {
+    action: "手動付与（運営判断）", xp: "任意", note: "キャンペーン等で利用", href: null,
+    detail: "キャンペーンやコミュニティへの貢献に対して、運営の判断により任意のXPを付与する場合があります。",
+    conditions: ["加算タイミング：不定期", "対象：キャンペーン参加者・貢献会員", "付与時は通知でお知らせします"],
+  },
 ];
 
 const CURRENT_XP = 1840;
@@ -102,6 +137,7 @@ const PROGRESS = Math.min(Math.round((CURRENT_XP / NEXT_XP) * 100), 100);
 
 export default function RankDetailPage() {
   const router = useRouter();
+  const [detail, setDetail] = useState<XpAction | null>(null);
   return (
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
       <div className="w-full max-w-[430px] pb-24">
@@ -150,26 +186,21 @@ export default function RankDetailPage() {
             <div className="font-display text-xs text-[var(--color-mute)] mb-3">XPを獲得する方法</div>
             <div className="card overflow-hidden divide-y divide-[var(--color-line)]">
               {xpActions.map((a, i) => (
-                a.href ? (
-                  <Link key={i} href={a.href} className="flex items-center justify-between px-4 py-3 hover:bg-[var(--color-bg-soft)] transition">
-                    <div>
-                      <div className="font-display text-sm">{a.action}</div>
-                      <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">{a.note}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="tag tag-accent font-display text-[10px]">{a.xp}</span>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-mute)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                    </div>
-                  </Link>
-                ) : (
-                  <div key={i} className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <div className="font-display text-sm">{a.action}</div>
-                      <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">{a.note}</div>
-                    </div>
-                    <span className="tag font-display text-[10px]">{a.xp}</span>
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setDetail(a)}
+                  className="w-full text-left flex items-center justify-between px-4 py-3 hover:bg-[var(--color-bg-soft)] transition"
+                >
+                  <div className="min-w-0 pr-2">
+                    <div className="font-display text-sm">{a.action}</div>
+                    <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">{a.note}</div>
                   </div>
-                )
+                  <div className="flex-none flex items-center gap-2">
+                    <span className={`tag font-display text-[10px] ${a.href ? "tag-accent" : ""}`}>{a.xp}</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-mute)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </div>
+                </button>
               ))}
             </div>
           </section>
@@ -213,6 +244,60 @@ export default function RankDetailPage() {
             </p>
           </section>
         </main>
+
+        {/* XP獲得方法 詳細モーダル */}
+        {detail && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setDetail(null)}>
+            <div
+              className="w-full max-w-[360px] rounded-2xl bg-[var(--color-bg-soft)] border border-[var(--color-line)] p-5"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="min-w-0">
+                  <div className="font-display text-[10px] tracking-[0.2em] text-[var(--color-accent-deep)] mb-1">XP ACTION</div>
+                  <h2 className="font-display text-lg leading-snug">{detail.action}</h2>
+                </div>
+                <button
+                  onClick={() => setDetail(null)}
+                  aria-label="閉じる"
+                  className="flex-none w-7 h-7 flex items-center justify-center rounded-full text-[var(--color-mute)] hover:text-[var(--color-ink)] transition"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 mb-3">
+                <span className="tag tag-accent font-display text-[10px]">{detail.xp}</span>
+                <span className="font-display text-[10px] text-[var(--color-mute)]">{detail.note}</span>
+              </div>
+
+              <p className="text-xs text-[var(--color-mute)] leading-relaxed">{detail.detail}</p>
+
+              <ul className="mt-3 space-y-1.5 border-t border-[var(--color-line)] pt-3">
+                {detail.conditions.map((c, i) => (
+                  <li key={i} className="flex items-start gap-2 text-[11px] text-[var(--color-mute)] leading-relaxed">
+                    <span className="flex-none mt-0.5 text-[var(--color-accent-deep)]">·</span>
+                    {c}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-5 flex gap-2">
+                {detail.href && (
+                  <Link href={detail.href} className="flex-1 btn-primary justify-center text-center text-sm">
+                    {detail.linkLabel ?? "移動する"}
+                  </Link>
+                )}
+                <button
+                  onClick={() => setDetail(null)}
+                  className="flex-1 btn-outline justify-center text-sm"
+                >
+                  閉じる
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <BottomNav />
       </div>

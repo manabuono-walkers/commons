@@ -14,6 +14,131 @@ const steps = [
 
 export default function ApplyPage() {
   const [step, setStep] = useState(0);
+  const [agreed, setAgreed] = useState(true);
+  const [submitted, setSubmitted] = useState(false);
+
+  const goToStep = (next: number) => {
+    setStep(next);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!agreed) return;
+    setSubmitted(true);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  if (submitted) {
+    return (
+      <>
+        <main>
+          <section className="border-b border-[var(--color-line)] bg-[var(--color-ink)] text-[var(--color-bg)]">
+            <div className="mx-auto max-w-[1400px] px-6 py-16 md:px-10 md:py-24">
+              <Link href="/" className="font-display text-2xl tracking-[0.18em]">COMMONS</Link>
+              <div className="mt-12">
+                <div className="animate-fade-up font-display text-xs text-[var(--color-accent)]">
+                  お申込ありがとうございます
+                </div>
+                <h1 className="mt-4 animate-fade-up delay-1 font-display text-[clamp(2rem,4vw,3.5rem)] leading-[1.2]">
+                  審査結果をお待ちください
+                </h1>
+              </div>
+            </div>
+          </section>
+
+          <section className="mx-auto max-w-[1400px] px-6 py-16 md:px-10">
+            <div className="grid grid-cols-1 gap-12 lg:grid-cols-[2fr_1fr]">
+              <div className="space-y-10 animate-fade-up">
+                <div className="card p-8 md:p-10">
+                  <div className="flex items-start gap-5">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-deep)] text-[var(--color-bg)]">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-display text-xs text-[var(--color-accent-deep)]">申込受付完了</div>
+                      <div className="mt-2 font-display text-2xl md:text-3xl">お申込を受け付けました</div>
+                      <p className="mt-4 text-sm text-[var(--color-mute)] leading-relaxed">
+                        ご記入いただいた内容は運営チームに送信されました。ただいま審査を行っております。
+                      </p>
+                      <div className="mt-5 flex items-center gap-3">
+                        <span className="tag tag-ink">審査中</span>
+                        <span className="text-xs text-[var(--color-mute)]">現在のステータス</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="card p-8 md:p-10">
+                  <div className="font-display text-xs text-[var(--color-accent-deep)]">審査の流れ</div>
+                  <ol className="mt-6 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-line)] md:grid-cols-3">
+                    {[
+                      { n: "01", t: "申込受付", d: "完了", state: "done" },
+                      { n: "02", t: "審査中", d: "運営チームが確認しています", state: "current" },
+                      { n: "03", t: "審査結果のご連絡", d: "メール / LINE でお知らせ", state: "todo" },
+                    ].map((s) => (
+                      <li
+                        key={s.n}
+                        className={`flex flex-col gap-2 px-6 py-6 ${s.state === "current" ? "bg-[var(--color-bg-soft)]" : "bg-[var(--color-bg)]"}`}
+                      >
+                        <span className={`num text-sm ${s.state === "done" ? "text-[var(--color-accent-deep)]" : s.state === "current" ? "text-[var(--color-ink)]" : "text-[var(--color-mute)]"}`}>{s.n}</span>
+                        <span className={`font-display text-base ${s.state === "todo" ? "text-[var(--color-mute)]" : "text-[var(--color-ink)]"}`}>{s.t}</span>
+                        <span className="text-xs text-[var(--color-mute)] leading-relaxed">{s.d}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+
+                <div className="card p-8 md:p-10">
+                  <div className="font-display text-xs text-[var(--color-accent-deep)]">審査結果のご連絡</div>
+                  <div className="mt-4 font-display text-2xl">原則7日以内にご連絡します</div>
+                  <ul className="mt-5 space-y-3 text-sm text-[var(--color-mute)] leading-relaxed">
+                    <li>・ご登録のメールアドレス（riku@example.com）宛にご連絡します</li>
+                    <li>・LINE 連携済みの場合は LINE でも通知が届きます</li>
+                    <li>・承認後、初回会費（月額 ¥500）のお支払いに進みます</li>
+                    <li>・追加確認が必要な場合、運営からご連絡することがあります</li>
+                  </ul>
+                </div>
+
+                <div className="border-t border-[var(--color-line)] pt-8">
+                  <Link href="/" className="btn-primary inline-block">
+                    ホームへ戻る
+                  </Link>
+                </div>
+              </div>
+
+              <aside className="space-y-8">
+                <div className="card p-8">
+                  <div className="font-display text-xs text-[var(--color-accent-deep)]">受付番号</div>
+                  <div className="mt-4 num text-4xl">No.0612-0841</div>
+                  <div className="mt-3 text-xs text-[var(--color-mute)] leading-relaxed">
+                    お問い合わせの際は、こちらの受付番号をお伝えください。
+                  </div>
+                </div>
+                <div className="card p-8">
+                  <div className="font-display text-xs text-[var(--color-accent-deep)]">月額会費</div>
+                  <div className="mt-4 font-display text-2xl">会費のご案内</div>
+                  <div className="mt-4 flex items-baseline gap-2">
+                    <span className="num text-5xl">¥500</span>
+                    <span className="text-xs text-[var(--color-mute)]">／ 月</span>
+                  </div>
+                  <div className="mt-3 text-xs text-[var(--color-mute)] leading-relaxed">
+                    年額一括は ¥5,000（2ヶ月分お得）。お支払いは Stripe による安全な決済です。
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </section>
+        </main>
+        <SiteFooter />
+      </>
+    );
+  }
 
   return (
     <>
@@ -150,53 +275,71 @@ export default function ApplyPage() {
                     </dl>
                   </div>
                   <label className="flex items-start gap-3 text-sm">
-                    <input type="checkbox" className="mt-1 accent-[var(--color-accent-deep)]" defaultChecked />
+                    <input
+                      type="checkbox"
+                      className="mt-1 accent-[var(--color-accent-deep)]"
+                      checked={agreed}
+                      onChange={(e) => setAgreed(e.target.checked)}
+                    />
                     <span>COMMONS 会員規約・プライバシーポリシーに同意します。</span>
                   </label>
                 </div>
               )}
 
-              {/* Step navigation */}
-              <div className="flex items-center justify-between border-t border-[var(--color-line)] pt-8">
-                <button type="button" onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0} className="font-display text-sm link-underline disabled:opacity-30">
-                  ← 前のステップへ
-                </button>
-                {step < steps.length - 1 ? (
-                  <button type="button" onClick={() => setStep(step + 1)} className="btn-primary">
-                    次のステップへ →
-                  </button>
-                ) : (
-                  <button type="button" className="btn-primary">
-                    審査を申し込む
-                  </button>
-                )}
-              </div>
             </form>
 
-            {/* Aside */}
-            <aside className="space-y-8">
-              <div className="card p-8">
-                <div className="font-display text-xs text-[var(--color-accent-deep)]">審査について</div>
-                <div className="mt-4 font-display text-2xl">審査の流れ</div>
-                <ul className="mt-5 space-y-3 text-sm text-[var(--color-mute)] leading-relaxed">
-                  <li>・原則7日以内に運営からご連絡</li>
-                  <li>・既存会員からの推薦があると審査が円滑</li>
-                  <li>・東京 / 大阪のいずれかから所属支部を選択</li>
-                  <li>・承認後、初回会費のお支払いに進みます</li>
-                </ul>
-              </div>
-              <div className="card p-8">
-                <div className="font-display text-xs text-[var(--color-accent-deep)]">月額会費</div>
-                <div className="mt-4 font-display text-2xl">会費のご案内</div>
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span className="num text-5xl">¥500</span>
-                  <span className="text-xs text-[var(--color-mute)]">／ 月</span>
+            {/* Aside — 最初のステップでのみ表示 */}
+            {step === 0 && (
+              <aside className="space-y-8">
+                <div className="card p-8">
+                  <div className="font-display text-xs text-[var(--color-accent-deep)]">審査について</div>
+                  <div className="mt-4 font-display text-2xl">審査の流れ</div>
+                  <ul className="mt-5 space-y-3 text-sm text-[var(--color-mute)] leading-relaxed">
+                    <li>・原則7日以内に運営からご連絡</li>
+                    <li>・既存会員からの推薦があると審査が円滑</li>
+                    <li>・東京 / 大阪のいずれかから所属支部を選択</li>
+                    <li>・承認後、初回会費のお支払いに進みます</li>
+                  </ul>
                 </div>
-                <div className="mt-3 text-xs text-[var(--color-mute)] leading-relaxed">
-                  年額一括は ¥5,000（2ヶ月分お得）。お支払いは Stripe による安全な決済です。
+                <div className="card p-8">
+                  <div className="font-display text-xs text-[var(--color-accent-deep)]">月額会費</div>
+                  <div className="mt-4 font-display text-2xl">会費のご案内</div>
+                  <div className="mt-4 flex items-baseline gap-2">
+                    <span className="num text-5xl">¥500</span>
+                    <span className="text-xs text-[var(--color-mute)]">／ 月</span>
+                  </div>
+                  <div className="mt-3 text-xs text-[var(--color-mute)] leading-relaxed">
+                    年額一括は ¥5,000（2ヶ月分お得）。お支払いは Stripe による安全な決済です。
+                  </div>
                 </div>
-              </div>
-            </aside>
+              </aside>
+            )}
+          </div>
+
+          {/* Step navigation — 案内カードより下、ページ最下部に配置 */}
+          <div className="mt-12 flex items-center justify-between gap-4 border-t border-[var(--color-line)] pt-8">
+            <button
+              type="button"
+              onClick={() => goToStep(Math.max(0, step - 1))}
+              disabled={step === 0}
+              className="font-display text-sm link-underline disabled:opacity-30"
+            >
+              ← 前のステップへ
+            </button>
+            {step < steps.length - 1 ? (
+              <button type="button" onClick={() => goToStep(step + 1)} className="btn-primary">
+                次のステップへ →
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={!agreed}
+                className="btn-primary disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                審査を申し込む
+              </button>
+            )}
           </div>
         </section>
       </main>

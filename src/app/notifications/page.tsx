@@ -86,11 +86,21 @@ const badgeColors: Record<string, string> = {
   "お支払い":       "",
 };
 
+type Notification = {
+  id: number;
+  badge: string;
+  title: string;
+  body: string;
+  time: string;
+  read: boolean;
+  pinned?: boolean;
+};
+
 export default function NotificationsPage() {
   const [tab, setTab] = useState<"global" | "personal">("global");
-  const [expanded, setExpanded] = useState<number | null>(null);
+  const [selected, setSelected] = useState<Notification | null>(null);
 
-  const list = tab === "global" ? globalNotifications : personalNotifications;
+  const list: Notification[] = tab === "global" ? globalNotifications : personalNotifications;
   const unread = list.filter(n => !n.read).length;
 
   return (
@@ -110,7 +120,7 @@ export default function NotificationsPage() {
           {(["global", "personal"] as const).map(t => (
             <button
               key={t}
-              onClick={() => { setTab(t); setExpanded(null); }}
+              onClick={() => { setTab(t); setSelected(null); }}
               className={`flex-1 py-3 font-display text-sm tracking-wide transition border-b-2 ${tab === t ? "text-[var(--color-accent-deep)]" : "text-[var(--color-mute)] border-transparent"}`}
               style={tab === t ? { borderBottomColor: "var(--color-accent-deep)" } : {}}
             >
@@ -120,43 +130,62 @@ export default function NotificationsPage() {
         </div>
 
         <div className="px-5 space-y-2">
-          {list.map((n) => {
-            const isOpen = expanded === n.id;
-            return (
-              <div
-                key={n.id}
-                className={`card relative transition-all cursor-pointer ${!n.read ? "border-[var(--color-accent)]/40" : ""}`}
-                onClick={() => setExpanded(isOpen ? null : n.id)}
-              >
-                {!n.read && (
-                  <span className="absolute top-4 right-10 w-2 h-2 rounded-full bg-[var(--color-accent)]" />
-                )}
-                <div className="flex items-start justify-between gap-3 p-5">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className={`tag text-[10px] ${badgeColors[n.badge] || ""}`}>{n.badge}</span>
-                      <span className="font-display text-[10px] text-[var(--color-mute)]">{n.time}</span>
-                    </div>
-                    <h3 className="font-display text-sm leading-snug">{n.title}</h3>
+          {list.map((n) => (
+            <button
+              key={n.id}
+              type="button"
+              onClick={() => setSelected(n)}
+              className={`card relative w-full text-left transition-all ${!n.read ? "border-[var(--color-accent)]/40" : ""}`}
+            >
+              {!n.read && (
+                <span className="absolute top-4 right-10 w-2 h-2 rounded-full bg-[var(--color-accent)]" />
+              )}
+              <div className="flex items-start justify-between gap-3 p-5">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className={`tag text-[10px] ${badgeColors[n.badge] || ""}`}>{n.badge}</span>
+                    <span className="font-display text-[10px] text-[var(--color-mute)]">{n.time}</span>
                   </div>
-                  <span
-                    className="flex-none mt-0.5 text-[var(--color-mute)] transition-transform duration-200"
-                    style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", display: "inline-block" }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </span>
+                  <h3 className="font-display text-sm leading-snug">{n.title}</h3>
                 </div>
-                {isOpen && (
-                  <div className="px-5 pb-5 border-t border-[var(--color-line)] pt-3">
-                    <p className="text-xs text-[var(--color-mute)] leading-relaxed whitespace-pre-line">{n.body}</p>
-                  </div>
-                )}
+                <span className="flex-none mt-0.5 text-[var(--color-mute)]">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </span>
               </div>
-            );
-          })}
+            </button>
+          ))}
         </div>
+
+        {/* 通知詳細モーダル */}
+        {selected && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setSelected(null)}>
+            <div
+              className="w-full max-w-[360px] max-h-[80vh] overflow-y-auto rounded-2xl bg-[var(--color-bg-soft)] border border-[var(--color-line)] p-5"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  <span className={`tag text-[10px] ${badgeColors[selected.badge] || ""}`}>{selected.badge}</span>
+                  <span className="font-display text-[10px] text-[var(--color-mute)]">{selected.time}</span>
+                </div>
+                <button onClick={() => setSelected(null)} aria-label="閉じる"
+                  className="flex-none w-7 h-7 flex items-center justify-center rounded-full text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">✕</button>
+              </div>
+
+              <h2 className="font-display text-base leading-snug mt-2.5">{selected.title}</h2>
+
+              <p className="mt-3 border-t border-[var(--color-line)] pt-3 text-xs text-[var(--color-mute)] leading-relaxed whitespace-pre-line">
+                {selected.body}
+              </p>
+
+              <button onClick={() => setSelected(null)} className="w-full mt-5 btn-outline justify-center text-sm">
+                閉じる
+              </button>
+            </div>
+          </div>
+        )}
 
         <BottomNav />
       </div>

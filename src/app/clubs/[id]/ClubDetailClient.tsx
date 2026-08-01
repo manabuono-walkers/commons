@@ -227,15 +227,15 @@ export default function ClubDetailClient({ id }: { id: string }) {
       onClick={() => { setMenuOpen(null); setRxPicker(null); }}>
       <div className="w-full max-w-[430px] pb-24">
         <AppHeader backHref="/clubs" rightSlot={
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <div className="font-display text-sm">{club.name}</div>
+          <div className="flex items-center gap-2 flex-none min-w-0">
+            <div className="text-right min-w-0">
+              <div className="font-display text-sm truncate">{club.name}</div>
               <div className="font-display text-[10px] text-[var(--color-mute)]">{club.members}人参加中</div>
             </div>
             {joined && !leftClub && (
               <button
                 onClick={e => { e.stopPropagation(); setShowLeaveMenu(true); }}
-                className="w-8 h-8 flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-ink)] transition"
+                className="w-8 h-8 flex-none flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-ink)] transition"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
@@ -256,7 +256,7 @@ export default function ClubDetailClient({ id }: { id: string }) {
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5">
             {club.reports.map(r => (
-              <div key={r.id} className="flex-none w-[200px] rounded-2xl overflow-hidden border border-[var(--color-line)] hover:border-[var(--color-accent)]/60 transition cursor-pointer">
+              <Link key={r.id} href={`/clubs/${id}/reports#report-${r.id}`} className="flex-none w-[200px] rounded-2xl overflow-hidden border border-[var(--color-line)] hover:border-[var(--color-accent)]/60 transition cursor-pointer">
                 <div className="relative h-[100px] bg-[var(--color-bg-soft)] flex items-center justify-center">
                   <div className="flex gap-1.5 p-2">
                     {Array.from({ length: Math.min(r.images, 3) }).map((_, i) => (
@@ -270,15 +270,45 @@ export default function ClubDetailClient({ id }: { id: string }) {
                 <div className="p-3 bg-[var(--color-bg-soft)]">
                   <div className="font-display text-[10px] text-[var(--color-mute)] mb-0.5">{r.date}</div>
                   <div className="font-display text-sm leading-snug">{r.title}</div>
+                  <div className="font-display text-[10px] text-[var(--color-accent-deep)] mt-1.5">レポートを読む →</div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
 
         {/* 未参加 */}
         {!joined && (
-          <div className="px-5 pt-6 pb-10">
+          <div className="px-5 pt-6 pb-10 space-y-4">
+            {/* 参加前でも見られる参加メンバー */}
+            <div className="card p-5">
+              <div className="flex items-center justify-between mb-3">
+                <p className="font-display text-xs text-[var(--color-accent-deep)]">参加メンバー</p>
+                <span className="font-display text-[10px] text-[var(--color-mute)]"><span className="num">{club.members}</span>人参加中</span>
+              </div>
+              <div className="flex items-center gap-2 mb-4">
+                {club.memberList.slice(0, 6).map((m, i) => (
+                  <SmAvatar key={i} src={m.avatar} name={m.name} />
+                ))}
+                {club.members > Math.min(club.memberList.length, 6) && (
+                  <div className="w-8 h-8 rounded-full flex-none flex items-center justify-center border border-[var(--color-line)] font-display text-[10px] text-[var(--color-mute)]">
+                    +{club.members - Math.min(club.memberList.length, 6)}
+                  </div>
+                )}
+              </div>
+              <div className="space-y-1">
+                {club.memberList.slice(0, 4).map((m, i) => (
+                  <div key={i} className="flex items-center gap-3 py-2 border-b border-[var(--color-line)] last:border-0">
+                    <SmAvatar src={m.avatar} name={m.name} />
+                    <div className="flex-1 min-w-0">
+                      <span className="font-display text-sm">{m.name}</span>
+                      <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">参加：{m.join}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="card p-6 text-center">
               <div className="font-display text-sm text-[var(--color-mute)] mb-1">このクラブのメンバーになりませんか？</div>
               <div className="text-xs text-[var(--color-mute)] leading-relaxed mb-5">参加するとチャット・イベント・メンバーリストにアクセスできます。</div>
@@ -321,6 +351,7 @@ export default function ClubDetailClient({ id }: { id: string }) {
                             <span className="font-display text-[10px] text-[var(--color-mute)]">· {m.time}</span>
                           </div>
                           {/* ⋮ menu */}
+                          {m.isOwn && (
                           <div className="relative flex-none">
                             <button onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === m.id ? null : m.id); setRxPicker(null); }}
                               className="text-[var(--color-mute)] hover:text-[var(--color-ink)] transition w-6 h-6 flex items-center justify-center">
@@ -330,19 +361,14 @@ export default function ClubDetailClient({ id }: { id: string }) {
                             </button>
                             {menuOpen === m.id && (
                               <div className="absolute right-0 top-7 z-50 w-44 bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-xl shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
-                                <button onClick={() => { navigator.clipboard.writeText(m.body).catch(() => {}); setMenuOpen(null); }}
-                                  className="w-full text-left px-4 py-3 font-display text-xs hover:bg-[var(--color-line)] transition">
-                                  テキストをコピー
+                                <button onClick={() => deleteMsg(m.id)}
+                                  className="w-full text-left px-4 py-3 font-display text-xs text-red-400 hover:bg-[var(--color-line)] transition">
+                                  送信取消
                                 </button>
-                                {m.isOwn && (
-                                  <button onClick={() => deleteMsg(m.id)}
-                                    className="w-full text-left px-4 py-3 font-display text-xs text-red-400 hover:bg-[var(--color-line)] transition">
-                                    送信取消
-                                  </button>
-                                )}
                               </div>
                             )}
                           </div>
+                          )}
                         </div>
 
                         {/* Body */}
@@ -411,11 +437,13 @@ export default function ClubDetailClient({ id }: { id: string }) {
                           </button>
 
                           {/* Share */}
-                          <button onClick={() => setShareSheet(m)} className="ml-auto text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] transition">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                          <button onClick={() => setShareSheet(m)}
+                            className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[var(--color-line)] text-[10px] font-display text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] hover:border-[var(--color-accent)] transition">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/>
+                              <polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
                             </svg>
+                            共有
                           </button>
                         </div>
 
@@ -618,7 +646,6 @@ export default function ClubDetailClient({ id }: { id: string }) {
               <div className="space-y-2">
                 {[
                   { label: "リンクをコピー", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> },
-                  { label: "DM で送る", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> },
                 ].map(item => (
                   <button key={item.label} onClick={() => setShareSheet(null)}
                     className="w-full flex items-center gap-4 px-5 py-3.5 rounded-xl bg-[var(--color-bg)] hover:bg-[var(--color-line)] transition text-left">

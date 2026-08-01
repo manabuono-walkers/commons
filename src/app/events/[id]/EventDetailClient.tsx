@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
-import { events, CommonsLogo } from "../page";
+import { events, CommonsLogo, recruitStatusOf, attendanceOf } from "../page";
 
 const TERMS_TEXT = `【COMMONSイベント参加規約】
 
@@ -41,7 +41,12 @@ export default function EventDetailClient({ id }: { id: string }) {
   const [showCancelSheet, setShowCancelSheet] = useState(false);
   const [cancelled, setCancelled] = useState(false);
   const [cancelWaitCancelled, setCancelWaitCancelled] = useState(false);
+  const [saved, setSaved] = useState(false);
   const router = useRouter();
+
+  const applied = ev.state === "申込済み";
+  const status = recruitStatusOf(ev);
+  const { joined, capacity } = attendanceOf(ev);
 
   const showMaleRemaining = ev.remaining_male < ev.alert_threshold;
   const showFemaleRemaining = ev.remaining_female < ev.alert_threshold;
@@ -61,22 +66,65 @@ export default function EventDetailClient({ id }: { id: string }) {
               ← 戻る
             </Link>
             <CommonsLogo size={20} />
-            <span className="inline-block bg-[var(--color-accent)] text-[var(--color-bg)] font-display text-[10px] tracking-wider px-3 py-1 rounded">
-              {ev.state}
+            <span className="inline-block flex-none whitespace-nowrap bg-[var(--color-accent)] text-[var(--color-bg)] font-display text-[10px] tracking-wider px-2.5 py-1 rounded">
+              {applied ? "申込済み" : status.allFull ? "キャンセル待ち" : "募集中"}
             </span>
           </div>
         </header>
 
-        {/* Hero — photo only, no text overlay */}
-        <div
-          className="h-[260px] bg-cover bg-center"
-          style={heroImg.startsWith("/") ? { backgroundImage: `url(${heroImg})` } : { background: heroImg }}
-        />
+        {/* Hero — 画像上のテキストが見切れないよう下部にセーフエリアを確保 */}
+        <div className="relative">
+          <div
+            className="h-[220px] bg-cover bg-center"
+            style={heroImg.startsWith("/") ? { backgroundImage: `url(${heroImg})` } : { background: heroImg }}
+          />
+          <div
+            className="absolute inset-x-0 bottom-0 px-5 pt-10 pb-4"
+            style={{ background: "linear-gradient(to top, rgba(11,15,22,0.92) 0%, rgba(11,15,22,0) 100%)" }}
+          >
+            <div className="flex flex-wrap items-center gap-1.5">
+              {ev.genres.map(g => (
+                <span key={g} className="tag tag-accent text-[10px]">{g}</span>
+              ))}
+            </div>
+            <p className="font-display text-[11px] text-white/75 mt-2 break-words leading-snug">
+              {ev.date.month}{ev.date.day}日（{ev.date.weekday}）{ev.time} · {ev.venue}
+            </p>
+          </div>
+
+          {/* 気になる */}
+          <button
+            type="button"
+            aria-label="気になる"
+            aria-pressed={saved}
+            onClick={() => setSaved(v => !v)}
+            className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition"
+            style={{
+              background: "rgba(11,15,22,0.6)",
+              border: `1px solid ${saved ? "rgba(203,174,116,0.8)" : "rgba(242,239,233,0.25)"}`,
+              backdropFilter: "blur(4px)",
+              color: saved ? "#CBAE74" : "rgba(242,239,233,0.85)",
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
+        </div>
 
         {/* Title */}
-        <div className="px-5 pt-7 pb-5 border-b border-[var(--color-line)]">
-          <p className="font-display text-[10px] tracking-[0.2em] text-[var(--color-accent-deep)] mb-1.5">COMMONS EVENT</p>
-          <h1 className="font-display text-3xl leading-tight">{ev.title}</h1>
+        <div className="px-5 pt-6 pb-5 border-b border-[var(--color-line)]">
+          <p className="font-display text-[10px] tracking-[0.2em] text-[var(--color-accent-deep)] mb-2">COMMONS EVENT</p>
+          <h1
+            className="text-xl leading-snug font-medium break-words"
+            style={{ fontFamily: "var(--font-shippori)" }}
+          >
+            {ev.title}
+          </h1>
+          <p className="font-display text-[11px] text-[var(--color-mute)] mt-2.5">
+            参加予定 <span className="num text-[var(--color-ink-soft)]">{joined}</span>/<span className="num">{capacity}</span>名 ·{" "}
+            <span className={status.allFull ? "" : "text-[var(--color-accent-deep)]"}>{status.label}</span>
+          </p>
         </div>
 
         {/* Description */}
@@ -118,14 +166,14 @@ export default function EventDetailClient({ id }: { id: string }) {
                 <span>男性</span>
                 <span className="num">
                   {ev.capacity_male}名定員
-                  {ev.remaining_male <= 0 && <span className="ml-2 text-xs text-[var(--color-mute)]">（満席）</span>}
+                  {ev.remaining_male <= 0 && <span className="ml-2 text-xs text-[var(--color-mute)]">（キャンセル待ち）</span>}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span>女性</span>
                 <span className="num">
                   {ev.capacity_female}名定員
-                  {ev.remaining_female <= 0 && <span className="ml-2 text-xs text-[var(--color-mute)]">（満席）</span>}
+                  {ev.remaining_female <= 0 && <span className="ml-2 text-xs text-[var(--color-mute)]">（キャンセル待ち）</span>}
                 </span>
               </div>
             </div>
@@ -135,6 +183,7 @@ export default function EventDetailClient({ id }: { id: string }) {
             <p>{ev.deadline}</p>
           </DetailRow>
 
+          {!applied && (
           <DetailRow label="お支払い方法">
             <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed">
               以下の参加規約をご確認の上、同意いただいた後にお支払いへ進んでください。
@@ -181,15 +230,22 @@ export default function EventDetailClient({ id }: { id: string }) {
               </span>
             </label>
           </DetailRow>
+          )}
         </div>
 
-        {/* Payment */}
+        {/* Payment（申込済みの場合は決済UIを表示しない） */}
         <div className="px-5 py-8">
-          <p className="font-display text-[10px] tracking-[0.2em] text-[var(--color-accent-deep)] text-center mb-1">Payment</p>
-          <h2 className="font-display text-2xl text-center mb-3">お支払い</h2>
+          {!applied && (
+            <>
+              <p className="font-display text-[10px] tracking-[0.2em] text-[var(--color-accent-deep)] text-center mb-1">Payment</p>
+              <h2 className="font-display text-2xl text-center mb-3 font-semibold">お支払い</h2>
+            </>
+          )}
 
-          {ev.state === "申込済み" ? (
-            <div className="mt-4 space-y-3">
+          {applied ? (
+            <div className="space-y-3">
+              <p className="font-display text-[10px] tracking-[0.2em] text-[var(--color-accent-deep)] text-center mb-1">Your Booking</p>
+              <h2 className="font-display text-xl text-center font-semibold mb-2">参加予定のイベント</h2>
               {cancelled ? (
                 <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-bg-soft)] px-5 py-5 text-center space-y-2">
                   <div className="font-display text-sm text-[var(--color-mute)]">キャンセルが完了しました</div>
@@ -228,7 +284,7 @@ export default function EventDetailClient({ id }: { id: string }) {
                   <span className="font-display text-xs">
                     <span className="text-[var(--color-mute)]">男性</span>{" "}
                     {maleSoldOut
-                      ? <span className="text-[var(--color-mute)]">満席</span>
+                      ? <span className="text-[var(--color-mute)]">キャンセル待ち</span>
                       : showMaleRemaining
                         ? <span className="text-[var(--color-accent-deep)]">残り{ev.remaining_male}名</span>
                         : <span className="text-[var(--color-mute)]">受付中</span>}
@@ -237,7 +293,7 @@ export default function EventDetailClient({ id }: { id: string }) {
                   <span className="font-display text-xs">
                     <span className="text-[var(--color-mute)]">女性</span>{" "}
                     {femaleSoldOut
-                      ? <span className="text-[var(--color-mute)]">満席</span>
+                      ? <span className="text-[var(--color-mute)]">キャンセル待ち</span>
                       : showFemaleRemaining
                         ? <span className="text-[var(--color-accent-deep)]">残り{ev.remaining_female}名</span>
                         : <span className="text-[var(--color-mute)]">受付中</span>}
@@ -298,7 +354,7 @@ export default function EventDetailClient({ id }: { id: string }) {
 
                 {femaleSoldOut ? (
                   <button disabled className="w-full py-4 rounded-full font-display text-base bg-[var(--color-bg-soft)] text-[var(--color-mute)] border border-[var(--color-line)] cursor-not-allowed">
-                    女性 — 満席
+                    女性 — キャンセル待ち受付準備中
                   </button>
                 ) : (
                   <button

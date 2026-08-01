@@ -7,20 +7,78 @@ type Reward = {
   id: string;
   title: string;
   point: number;
+  /** 有効期限 */
+  expiry: string;
+  /** 利用方法 */
+  howTo: string;
+  /** 対象店舗・対象イベント */
+  where: string;
+  /** 注意事項 */
+  notes: string[];
 };
 
 // 累計ポイントごとの獲得クーポン
 const rewards: Reward[] = [
-  { id: "r1", title: "500円OFFクーポン", point: 1 },
-  { id: "r2", title: "1,000円OFFクーポン", point: 3 },
-  { id: "r3", title: "1,000円OFFクーポン", point: 5 },
-  { id: "r4", title: "1,000円OFFクーポン", point: 7 },
-  { id: "r5", title: "2,000円OFFクーポン", point: 10 },
-  { id: "r6", title: "1,000円OFFクーポン", point: 12 },
-  { id: "r7", title: "1,000円OFFクーポン", point: 14 },
-  { id: "r8", title: "1,000円OFFクーポン", point: 16 },
-  { id: "r9", title: "1,000円OFFクーポン", point: 18 },
-  { id: "r10", title: "2,000円OFFクーポン", point: 20 },
+  {
+    id: "r1", title: "500円OFFクーポン", point: 1, expiry: "2026年9月30日まで",
+    howTo: "会計時にマイページ＞クーポンから本クーポンを提示してください。",
+    where: "COMMONS提携店舗（全12店舗）",
+    notes: ["1会計につき1枚まで利用可能", "他クーポンとの併用不可"],
+  },
+  {
+    id: "r2", title: "1,000円OFFクーポン", point: 3, expiry: "2026年10月31日まで",
+    howTo: "イベント申込画面のクーポン欄で選択すると参加費から自動割引されます。",
+    where: "COMMONS主催イベント（参加費3,000円以上）",
+    notes: ["1イベントにつき1枚まで利用可能", "キャンセル時は返却されません"],
+  },
+  {
+    id: "r3", title: "1,000円OFFクーポン", point: 5, expiry: "2026年10月31日まで",
+    howTo: "会計時にマイページ＞クーポンから本クーポンを提示してください。",
+    where: "COMMONS提携飲食店（渋谷・麻布十番エリア）",
+    notes: ["1会計につき1枚まで利用可能", "他クーポンとの併用不可"],
+  },
+  {
+    id: "r4", title: "1,000円OFFクーポン", point: 7, expiry: "2026年11月30日まで",
+    howTo: "イベント申込画面のクーポン欄で選択すると参加費から自動割引されます。",
+    where: "COMMONS WINE SALON シリーズ",
+    notes: ["1イベントにつき1枚まで利用可能", "先着枠のみ対象"],
+  },
+  {
+    id: "r5", title: "2,000円OFFクーポン", point: 10, expiry: "2026年12月31日まで",
+    howTo: "イベント申込画面のクーポン欄で選択すると参加費から自動割引されます。",
+    where: "COMMONS主催イベント全般（参加費5,000円以上）",
+    notes: ["1イベントにつき1枚まで利用可能", "抽選イベントは当選後に適用"],
+  },
+  {
+    id: "r6", title: "1,000円OFFクーポン", point: 12, expiry: "2026年12月31日まで",
+    howTo: "会計時にマイページ＞クーポンから本クーポンを提示してください。",
+    where: "COMMONS提携店舗（全12店舗）",
+    notes: ["1会計につき1枚まで利用可能", "他クーポンとの併用不可"],
+  },
+  {
+    id: "r7", title: "1,000円OFFクーポン", point: 14, expiry: "2027年1月31日まで",
+    howTo: "イベント申込画面のクーポン欄で選択すると参加費から自動割引されます。",
+    where: "COMMONS MUSIC BAR シリーズ",
+    notes: ["1イベントにつき1枚まで利用可能", "同伴者分には利用できません"],
+  },
+  {
+    id: "r8", title: "1,000円OFFクーポン", point: 16, expiry: "2027年1月31日まで",
+    howTo: "会計時にマイページ＞クーポンから本クーポンを提示してください。",
+    where: "COMMONS提携飲食店（渋谷・麻布十番エリア）",
+    notes: ["1会計につき1枚まで利用可能", "ディナータイムのみ対象"],
+  },
+  {
+    id: "r9", title: "1,000円OFFクーポン", point: 18, expiry: "2027年2月28日まで",
+    howTo: "イベント申込画面のクーポン欄で選択すると参加費から自動割引されます。",
+    where: "COMMONS CLUB主催イベント",
+    notes: ["1イベントにつき1枚まで利用可能", "主催者側での利用は不可"],
+  },
+  {
+    id: "r10", title: "2,000円OFFクーポン", point: 20, expiry: "2027年3月31日まで",
+    howTo: "イベント申込画面のクーポン欄で選択、または提携店舗の会計時に提示してください。",
+    where: "COMMONS主催イベント・提携店舗の両方で利用可",
+    notes: ["1会計・1イベントにつき1枚まで", "他クーポンとの併用不可"],
+  },
 ];
 
 const HELD_POINT = 20;
@@ -29,9 +87,13 @@ export default function PointRewardsPage() {
   const router = useRouter();
   const [redeemed, setRedeemed] = useState<Set<string>>(new Set(["r1"]));
   const [toast, setToast] = useState<string | null>(null);
+  const [detail, setDetail] = useState<Reward | null>(null);
+  const [confirming, setConfirming] = useState<Reward | null>(null);
 
   function redeem(r: Reward) {
     setRedeemed(prev => new Set(prev).add(r.id));
+    setConfirming(null);
+    setDetail(null);
     setToast(`${r.title}と交換しました`);
     setTimeout(() => setToast(null), 2500);
   }
@@ -68,15 +130,25 @@ export default function PointRewardsPage() {
               const canRedeem = HELD_POINT >= r.point && !isRedeemed;
               return (
                 <div key={r.id} className="card p-4 flex items-center gap-4" style={isRedeemed ? { opacity: 0.5 } : undefined}>
-                  <div className="flex-1 min-w-0">
+                  <button type="button" onClick={() => setDetail(r)} className="flex-1 min-w-0 text-left">
                     <div className="font-display text-[11px] text-[var(--color-mute)] mb-1">累計 {r.point}pt</div>
                     <div className="font-display text-sm leading-snug">{r.title}</div>
-                  </div>
+                    <div className="font-display text-[10px] text-[var(--color-mute)] mt-1.5 leading-relaxed">
+                      有効期限：{r.expiry}
+                    </div>
+                    <div className="font-display text-[10px] text-[var(--color-mute)] leading-relaxed truncate">
+                      利用先：{r.where}
+                    </div>
+                    <div className="font-display text-[10px] text-[var(--color-accent-deep)] mt-1 flex items-center gap-1">
+                      詳細を見る
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </div>
+                  </button>
                   <div className="flex-none flex flex-col items-end gap-1.5">
                     <div className="num text-base text-[var(--color-accent-deep)]">{r.point}<span className="text-[10px] text-[var(--color-mute)] ml-0.5">pt</span></div>
                     <button
                       disabled={!canRedeem}
-                      onClick={() => redeem(r)}
+                      onClick={() => setConfirming(r)}
                       className="font-display text-[11px] px-3 py-1.5 rounded-full transition disabled:cursor-not-allowed"
                       style={isRedeemed
                         ? { border: "1px solid var(--color-accent)", color: "var(--color-accent-deep)" }
@@ -101,6 +173,106 @@ export default function PointRewardsPage() {
             </p>
           </div>
         </main>
+
+        {/* 景品 詳細モーダル */}
+        {detail && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setDetail(null)}>
+            <div className="w-full max-w-[360px] rounded-2xl bg-[var(--color-bg-soft)] border border-[var(--color-line)] p-5" onClick={e => e.stopPropagation()}>
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="min-w-0">
+                  <div className="font-display text-[10px] tracking-[0.2em] text-[var(--color-accent-deep)] mb-1">COUPON DETAIL</div>
+                  <h2 className="font-display text-lg leading-snug">{detail.title}</h2>
+                </div>
+                <button onClick={() => setDetail(null)} aria-label="閉じる"
+                  className="flex-none w-7 h-7 flex items-center justify-center rounded-full text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">✕</button>
+              </div>
+
+              <div className="flex items-center gap-2 mb-4">
+                <span className="tag tag-accent text-[10px]">必要 {detail.point}pt</span>
+                {redeemed.has(detail.id) && <span className="tag text-[10px]">交換済み</span>}
+              </div>
+
+              <dl className="space-y-3 border-t border-[var(--color-line)] pt-3">
+                <div>
+                  <dt className="font-display text-[10px] text-[var(--color-mute)] mb-0.5">有効期限</dt>
+                  <dd className="font-display text-xs leading-relaxed">{detail.expiry}</dd>
+                </div>
+                <div>
+                  <dt className="font-display text-[10px] text-[var(--color-mute)] mb-0.5">利用方法</dt>
+                  <dd className="font-display text-xs leading-relaxed">{detail.howTo}</dd>
+                </div>
+                <div>
+                  <dt className="font-display text-[10px] text-[var(--color-mute)] mb-0.5">利用できる場所</dt>
+                  <dd className="font-display text-xs leading-relaxed">{detail.where}</dd>
+                </div>
+                <div>
+                  <dt className="font-display text-[10px] text-[var(--color-mute)] mb-0.5">注意事項</dt>
+                  <dd>
+                    <ul className="space-y-1">
+                      {detail.notes.map((n, i) => (
+                        <li key={i} className="flex items-start gap-2 text-[11px] text-[var(--color-mute)] leading-relaxed">
+                          <span className="flex-none mt-0.5 text-[var(--color-accent-deep)]">·</span>{n}
+                        </li>
+                      ))}
+                    </ul>
+                  </dd>
+                </div>
+              </dl>
+
+              <div className="mt-5 flex gap-2">
+                {HELD_POINT >= detail.point && !redeemed.has(detail.id) && (
+                  <button onClick={() => { setConfirming(detail); setDetail(null); }} className="flex-1 btn-primary justify-center text-sm">
+                    交換する
+                  </button>
+                )}
+                <button onClick={() => setDetail(null)} className="flex-1 btn-outline justify-center text-sm">閉じる</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 交換確認モーダル */}
+        {confirming && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setConfirming(null)}>
+            <div className="w-full max-w-[340px] rounded-2xl bg-[var(--color-bg-soft)] border border-[var(--color-line)] p-5" onClick={e => e.stopPropagation()}>
+              <div className="font-display text-[10px] tracking-[0.2em] text-[var(--color-accent-deep)] mb-1">CONFIRM</div>
+              <h2 className="font-display text-lg leading-snug mb-4">この景品と交換しますか？</h2>
+
+              <div className="rounded-xl border border-[var(--color-line)] p-4 space-y-2.5">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="font-display text-[11px] text-[var(--color-mute)] flex-none">景品</span>
+                  <span className="font-display text-xs text-right">{confirming.title}</span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="font-display text-[11px] text-[var(--color-mute)] flex-none">必要ポイント</span>
+                  <span className="num text-sm text-[var(--color-accent-deep)]">{confirming.point}<span className="text-[10px] text-[var(--color-mute)] ml-0.5">pt</span></span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="font-display text-[11px] text-[var(--color-mute)] flex-none">交換後の保有ポイント</span>
+                  <span className="num text-sm">{HELD_POINT}<span className="text-[10px] text-[var(--color-mute)] ml-0.5">pt</span></span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="font-display text-[11px] text-[var(--color-mute)] flex-none">有効期限</span>
+                  <span className="font-display text-xs text-right">{confirming.expiry}</span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="font-display text-[11px] text-[var(--color-mute)] flex-none">利用先</span>
+                  <span className="font-display text-xs text-right">{confirming.where}</span>
+                </div>
+              </div>
+
+              <p className="mt-3 text-[11px] text-[var(--color-mute)] leading-relaxed">
+                ※ ポイントは累積式のため、交換しても保有ポイントは減少しません。<br />
+                ※ 交換後のキャンセルはできません。
+              </p>
+
+              <div className="mt-5 flex gap-2">
+                <button onClick={() => redeem(confirming)} className="flex-1 btn-primary justify-center text-sm">交換する</button>
+                <button onClick={() => setConfirming(null)} className="flex-1 btn-outline justify-center text-sm">キャンセル</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 交換完了トースト */}
         {toast && (

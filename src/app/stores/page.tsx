@@ -156,7 +156,7 @@ function MapView({ stores }: { stores: Store[] }) {
         zoomControl: false,
       });
 
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
         subdomains: "abcd", maxZoom: 19,
       }).addTo(map);
 
@@ -209,13 +209,14 @@ function MapView({ stores }: { stores: Store[] }) {
               width: 32, height: 32,
               borderRadius: "50% 50% 50% 0",
               transform: "rotate(-45deg)",
-              background: s.isPartner ? (isSelected ? "#CBAE74" : "#B8985A") : "#4a5568",
-              border: `2px solid ${s.active ? "#CBAE74" : "#6b7280"}`,
+              background: s.isPartner ? (isSelected ? "#8C6B2F" : "#B8985A") : "#5A6470",
+              border: "2px solid #FFFFFF",
               display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: isSelected ? "0 0 0 3px rgba(203,174,116,0.4), 0 2px 8px rgba(0,0,0,0.6)" : "0 2px 8px rgba(0,0,0,0.5)",
+              boxShadow: isSelected ? "0 0 0 3px rgba(140,107,47,0.35), 0 2px 8px rgba(0,0,0,0.35)" : "0 2px 6px rgba(0,0,0,0.3)",
               transition: "all 0.15s",
+              opacity: s.active ? 1 : 0.65,
             }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.active ? "#0B0F16" : "#2d3748", transform: "rotate(45deg)" }} />
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFFFFF", transform: "rotate(45deg)" }} />
             </div>
           </button>
         );
@@ -256,6 +257,45 @@ function MapView({ stores }: { stores: Store[] }) {
           </a>
         </div>
       )}
+    </div>
+  );
+}
+
+// ---- COMMONS MAPとは？（折りたたみ） ----
+const ABOUT_MAP_PARAGRAPHS = [
+  "実は、COMMONSを運営する株式会社ONE LIKEは、総フォロワー数100万人を超えるお店やお出かけスポットの紹介メディアを運営しています。",
+  "COMMONS MAPでは、メディア運営を通じて蓄積した一次情報や知見をもとに、COMMONS運営メンバーが “本当におすすめしたい” 飲食店やスポットを厳選してご紹介しています。",
+  "「現在地の近くで、素敵なお店を見つけたい」\n「行くエリアは決まっているけれど、お店がまだ決まっていない」",
+  "そんなときに、ぜひ「COMMONS MAP」を開いてみてください。",
+  "いつもの街で、まだ知らないお気に入りに出会ったり。迷いがちなお店選びも、大切な人との時間も、よりスマートに。",
+  "皆さまのお出かけがもっと充実するよう、これからもおすすめの場所を随時追加していきます。",
+  "ぜひ、日々のお店選びやお出かけにご活用くださいませ。",
+];
+
+function AboutMap() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="px-4 pt-4">
+      <div className="card overflow-hidden">
+        <button
+          onClick={() => setOpen(v => !v)}
+          className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left"
+        >
+          <span className="font-display text-sm text-[var(--color-accent-deep)]">COMMONS MAPとは？</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            className="flex-none text-[var(--color-mute)]"
+            style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+        {open && (
+          <div className="px-4 pb-4 pt-1 space-y-3 border-t border-[var(--color-line)]">
+            {ABOUT_MAP_PARAGRAPHS.map((p, i) => (
+              <p key={i} className="text-xs text-[var(--color-mute)] leading-relaxed whitespace-pre-line">{p}</p>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -477,6 +517,9 @@ function StoresContent() {
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
       <div className="w-full max-w-[430px] pb-24">
         <AppHeader />
+
+        {/* ===== COMMONS MAPとは？ ===== */}
+        <AboutMap />
 
         {/* ===== 検索パネル ===== */}
         <div className="px-4 pt-4 pb-3 space-y-4 border-b border-[var(--color-line)]">

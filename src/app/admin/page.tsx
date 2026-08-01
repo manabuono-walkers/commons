@@ -42,6 +42,75 @@ const segments = [
   { level:"低", label:"エンゲージ低", description:"直近90日以上活動なし or 参加3回未満", count:313, pct:22.2, churnRate:"2.8%", avgMonths:5.1, avgCouponUse:0.8, tagClass:"bg-red-400/10 text-red-400 border-red-400/20", barClass:"bg-red-400" },
 ];
 
+// ===== コホート分析（月別入会コホートの継続率） =====
+type Cohort = { month: string; label: string; size: number; retention: number[] };
+const cohorts: Cohort[] = [
+  { month: "2026-01", label: "2026年1月", size: 62, retention: [100, 93.5, 88.7, 83.9, 80.6, 77.4, 74.2] },
+  { month: "2026-02", label: "2026年2月", size: 38, retention: [100, 92.1, 86.8, 84.2, 78.9, 76.3, 73.7] },
+  { month: "2026-03", label: "2026年3月", size: 61, retention: [100, 95.1, 90.2, 86.9, 83.6, 80.3] },
+  { month: "2026-04", label: "2026年4月", size: 43, retention: [100, 90.7, 86.0, 81.4, 79.1] },
+  { month: "2026-05", label: "2026年5月", size: 55, retention: [100, 94.5, 89.1, 85.5] },
+  { month: "2026-06", label: "2026年6月", size: 48, retention: [100, 91.7, 87.5] },
+  { month: "2026-07", label: "2026年7月", size: 51, retention: [100, 96.1] },
+];
+const COHORT_MONTHS = [0, 1, 2, 3, 4, 5, 6];
+
+function cohortAverageAt(rows: Cohort[], idx: number) {
+  const vals = rows.map(c => c.retention[idx]).filter((v): v is number => typeof v === "number");
+  if (vals.length === 0) return null;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+function retentionCellStyle(v: number) {
+  // 継続率の高低で var(--color-accent) の透明度を変えるヒートマップ
+  const t = Math.max(0, Math.min(1, (v - 60) / 40));
+  return {
+    backgroundColor: `color-mix(in srgb, var(--color-accent) ${(6 + t * 44).toFixed(0)}%, transparent)`,
+  };
+}
+
+// ===== 予測LTV =====
+const ltvInput = {
+  monthly: {
+    members: 1180,
+    avgFee: 11000,            // 平均月額会費
+    eventRevenue: 18468000,   // 月額会員のイベント売上合計
+    memberMonths: 4860,       // 延べ在籍月数
+    churnRate: 0.019,         // 月次解約率
+  },
+  annual: {
+    members: 232,
+    avgFee: 110000,           // 平均年会費
+    eventRevenue: 6732000,    // 年間会員のイベント売上合計
+    memberMonths: 1530,       // 延べ在籍月数
+    nonRenewalRate: 0.22,     // 年間非更新率
+    hasRenewalRecord: true,   // 更新実績の有無
+  },
+};
+
+const mo = ltvInput.monthly;
+const an = ltvInput.annual;
+const monthlyEventPerMonth = mo.eventRevenue / mo.memberMonths;
+const monthlyLTV = (mo.avgFee + monthlyEventPerMonth) / mo.churnRate;
+const annualEventPerMonth = an.eventRevenue / an.memberMonths;
+const annualFirstYearRevenue = an.avgFee + annualEventPerMonth * 12;
+const annualLTV = an.hasRenewalRecord ? annualFirstYearRevenue / an.nonRenewalRate : null;
+const blendedLTV =
+  annualLTV === null
+    ? null
+    : (monthlyLTV * mo.members + annualLTV * an.members) / (mo.members + an.members);
+
+const yen = (v: number) => "¥" + Math.round(v).toLocaleString();
+
+// 属性・流入経路別LTV（ダミー）
+const ltvBySegment = [
+  { group: "性別", name: "男性", members: 780, monthlyLTV: 742000, annualLTV: 705000, blended: 736000, cpa: 245000 },
+  { group: "性別", name: "女性", members: 632, monthlyLTV: 824000, annualLTV: 781000, blended: 817000, cpa: 272000 },
+  { group: "流入経路", name: "Instagram", members: 496, monthlyLTV: 698000, annualLTV: 664000, blended: 692000, cpa: 231000 },
+  { group: "流入経路", name: "紹介", members: 612, monthlyLTV: 912000, annualLTV: 868000, blended: 905000, cpa: 302000 },
+  { group: "流入経路", name: "その他", members: 304, monthlyLTV: 631000, annualLTV: 602000, blended: 626000, cpa: 209000 },
+];
+
 function LineChart({ data, color, gradientId }: { data: number[]; color: string; gradientId: string }) {
   const W = 480, H = 100, pad = 8;
   const min = Math.min(...data) * 0.95;
@@ -114,7 +183,7 @@ function BarChart({ data, color }: { data: number[]; color: string }) {
   );
 }
 
-type MainTab = "analytics" | "coupon" | "segments";
+type MainTab = "analytics" | "coupon" | "segments" | "cohort" | "ltv";
 type ChartTab = "members" | "coupon" | "revenue";
 type PeriodGranularity = "daily" | "weekly" | "monthly" | "custom";
 
@@ -138,6 +207,37 @@ export default function AnalyticsPage() {
   const maleRate = ((totalM / maleMembers) * 100).toFixed(1);
   const femaleRate = ((totalF / femaleMembers) * 100).toFixed(1);
 
+  const periodLabelText = period === "custom" ? `${customFrom} 〜 ${customTo}` : PERIOD_LABELS[period];
+
+  // 期間指定フィルタ（モック: 任意期間のときは対象コホートを絞り込む）
+  const filteredCohorts = period === "custom"
+    ? cohorts.filter(c => c.month >= customFrom.slice(0, 7) && c.month <= customTo.slice(0, 7))
+    : cohorts;
+  const cohortRows = filteredCohorts.length > 0 ? filteredCohorts : cohorts;
+
+  const periodFilter = (
+    <div className="card p-4 flex items-center gap-4 flex-wrap">
+      <span className="font-display text-[10px] text-[var(--color-mute)] flex-none">期間指定</span>
+      <div className="flex gap-1.5 flex-wrap">
+        {(Object.keys(PERIOD_LABELS) as PeriodGranularity[]).map(p => (
+          <button key={p} onClick={() => setPeriod(p)}
+            className={`font-display text-xs px-3.5 py-1.5 rounded-full border transition ${period === p ? "bg-[var(--color-accent)]/15 border-[var(--color-accent)] text-[var(--color-accent-deep)]" : "border-[var(--color-line)] text-[var(--color-mute)]"}`}>
+            {PERIOD_LABELS[p]}
+          </button>
+        ))}
+      </div>
+      {period === "custom" && (
+        <div className="flex items-center gap-2">
+          <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+            className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[var(--color-accent)]/60" />
+          <span className="font-display text-xs text-[var(--color-mute)]">〜</span>
+          <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+            className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[var(--color-accent)]/60" />
+        </div>
+      )}
+    </div>
+  );
+
   function downloadDashboardCSV() {
     const header = "月,新規入会,解約,退会率,売上,平均P,クーポン利用";
     const rows = kpiTable.map(r => `${r.month},${r.newMembers},${r.churned},${r.churnRate},${r.revenue},${r.avgPoint},${r.couponUse}`);
@@ -147,6 +247,51 @@ export default function AnalyticsPage() {
     const a = document.createElement("a");
     a.href = url; a.download = "dashboard_summary.csv"; a.click();
     URL.revokeObjectURL(url);
+  }
+
+  function saveCSV(csv: string, filename: string) {
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function downloadCohortCSV() {
+    const header = ["入会月", "入会者数", ...COHORT_MONTHS.map(i => `${i}ヶ月目`)].join(",");
+    const rows = cohortRows.map(c =>
+      [c.label, c.size, ...COHORT_MONTHS.map(i => (c.retention[i] === undefined ? "" : `${c.retention[i]}%`))].join(",")
+    );
+    const avg = ["平均", cohortRows.reduce((a, c) => a + c.size, 0),
+      ...COHORT_MONTHS.map(i => { const v = cohortAverageAt(cohortRows, i); return v === null ? "" : `${v.toFixed(1)}%`; })].join(",");
+    saveCSV([`期間,${periodLabelText}`, "", header, ...rows, avg].join("\n"), "cohort_retention.csv");
+  }
+
+  function downloadLtvCSV() {
+    const lines: string[] = [];
+    lines.push("区分,項目,値");
+    lines.push(`月額会員,会員数,${mo.members}`);
+    lines.push(`月額会員,平均月額会費,${mo.avgFee}`);
+    lines.push(`月額会員,イベント売上合計,${mo.eventRevenue}`);
+    lines.push(`月額会員,延べ在籍月数,${mo.memberMonths}`);
+    lines.push(`月額会員,平均月間イベント売上,${Math.round(monthlyEventPerMonth)}`);
+    lines.push(`月額会員,月次解約率,${(mo.churnRate * 100).toFixed(1)}%`);
+    lines.push(`月額会員,月額会員LTV,${Math.round(monthlyLTV)}`);
+    lines.push(`年間会員,会員数,${an.members}`);
+    lines.push(`年間会員,平均年会費,${an.avgFee}`);
+    lines.push(`年間会員,イベント売上合計,${an.eventRevenue}`);
+    lines.push(`年間会員,延べ在籍月数,${an.memberMonths}`);
+    lines.push(`年間会員,平均月間イベント売上,${Math.round(annualEventPerMonth)}`);
+    lines.push(`年間会員,初年度予測売上,${Math.round(annualFirstYearRevenue)}`);
+    lines.push(`年間会員,年間非更新率,${(an.nonRenewalRate * 100).toFixed(1)}%`);
+    lines.push(`年間会員,年間会員LTV,${annualLTV === null ? "算出不可（更新実績なし）" : Math.round(annualLTV)}`);
+    lines.push(`統合,統合LTV,${blendedLTV === null ? "算出不可" : Math.round(blendedLTV)}`);
+    lines.push("");
+    lines.push("区分,セグメント,会員数,月額会員LTV,年間会員LTV,統合LTV,許容CPA(1/3)");
+    ltvBySegment.forEach(s => {
+      lines.push([s.group, s.name, s.members, s.monthlyLTV, s.annualLTV, s.blended, s.cpa].join(","));
+    });
+    saveCSV(lines.join("\n"), "ltv_forecast.csv");
   }
 
   return (
@@ -161,9 +306,9 @@ export default function AnalyticsPage() {
 
       {/* Main inline tabs */}
       <div className="px-8 border-b border-[var(--color-line)] flex gap-6 flex-none">
-        {([["analytics","概要ダッシュボード"],["coupon","クーポン分析"],["segments","会員セグメント"]] as const).map(([k,l])=>(
+        {([["analytics","概要ダッシュボード"],["coupon","クーポン分析"],["segments","会員セグメント"],["cohort","コホート分析"],["ltv","予測LTV"]] as const).map(([k,l])=>(
           <button key={k} onClick={() => setTab(k)}
-            className={`font-display text-sm py-4 border-b-2 transition ${tab===k?"border-[var(--color-accent)] text-[var(--color-accent-deep)]":"border-transparent text-[var(--color-mute)]"}`}>
+            className={`font-display text-sm py-4 border-b-2 transition whitespace-nowrap ${tab===k?"border-[var(--color-accent)] text-[var(--color-accent-deep)]":"border-transparent text-[var(--color-mute)]"}`}>
             {l}
           </button>
         ))}
@@ -556,6 +701,307 @@ export default function AnalyticsPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {tab === "cohort" && (
+          <div className="max-w-[1100px] space-y-6">
+            {periodFilter}
+
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-1">COHORT RETENTION</div>
+                <h3 className="font-display text-base">月別入会コホートの継続率</h3>
+                <div className="font-display text-[10px] text-[var(--color-mute)] mt-1">
+                  対象期間: {periodLabelText} ／ {cohortRows.length}コホート・計{cohortRows.reduce((a, c) => a + c.size, 0)}名
+                </div>
+              </div>
+              <button onClick={downloadCohortCSV} className="btn-outline !py-2 text-xs">CSV出力</button>
+            </div>
+
+            {/* コホートテーブル */}
+            <div className="card overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--color-line)] flex items-center justify-between">
+                <div className="font-display text-[10px] text-[var(--color-accent-deep)]">継続率ヒートマップ</div>
+                <div className="flex items-center gap-2 font-display text-[9px] text-[var(--color-mute)]">
+                  <span>低</span>
+                  <span className="flex">
+                    {[60, 70, 80, 90, 100].map(v => (
+                      <span key={v} className="w-5 h-2.5 inline-block" style={retentionCellStyle(v)} />
+                    ))}
+                  </span>
+                  <span>高</span>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[760px]">
+                  <thead>
+                    <tr className="font-display text-[10px] text-[var(--color-mute)] border-b border-[var(--color-line)]">
+                      <th className="px-5 py-3 text-left whitespace-nowrap">入会月</th>
+                      <th className="px-5 py-3 text-center whitespace-nowrap">入会者数</th>
+                      {COHORT_MONTHS.map(i => (
+                        <th key={i} className="px-3 py-3 text-center whitespace-nowrap">{i}ヶ月目</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--color-line)]">
+                    {cohortRows.map(c => (
+                      <tr key={c.month} className="hover:bg-[var(--color-bg-soft)] transition">
+                        <td className="px-5 py-3 font-display text-xs whitespace-nowrap">{c.label}</td>
+                        <td className="px-5 py-3 num text-xs text-center whitespace-nowrap">{c.size}名</td>
+                        {COHORT_MONTHS.map(i => {
+                          const v = c.retention[i];
+                          if (v === undefined) {
+                            return <td key={i} className="px-3 py-3 text-center font-display text-[10px] text-[var(--color-line)]">—</td>;
+                          }
+                          return (
+                            <td key={i} className="px-3 py-3 text-center num text-xs" style={retentionCellStyle(v)}>
+                              {v.toFixed(1)}%
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                    <tr className="bg-[var(--color-bg-soft)]">
+                      <td className="px-5 py-3 font-display text-xs">平均</td>
+                      <td className="px-5 py-3 num text-xs text-center">{cohortRows.reduce((a, c) => a + c.size, 0)}名</td>
+                      {COHORT_MONTHS.map(i => {
+                        const v = cohortAverageAt(cohortRows, i);
+                        return (
+                          <td key={i} className="px-3 py-3 text-center num text-xs text-[var(--color-accent-deep)]">
+                            {v === null ? "—" : `${v.toFixed(1)}%`}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 平均継続率サマリー */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                { l: "平均継続率（1ヶ月後）", idx: 1 },
+                { l: "平均継続率（3ヶ月後）", idx: 3 },
+                { l: "平均継続率（6ヶ月後）", idx: 6 },
+              ].map(k => {
+                const v = cohortAverageAt(cohortRows, k.idx);
+                const n = cohortRows.filter(c => c.retention[k.idx] !== undefined).length;
+                return (
+                  <div key={k.l} className="card p-5">
+                    <div className="font-display text-[10px] text-[var(--color-mute)] mb-2">{k.l}</div>
+                    <div className="num text-3xl mb-1 text-[var(--color-accent-deep)]">{v === null ? "—" : `${v.toFixed(1)}%`}</div>
+                    <div className="font-display text-xs text-[var(--color-mute)]">対象 {n}コホート</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="card p-5">
+              <div className="font-display text-[10px] text-[var(--color-mute)] leading-relaxed">
+                ※ 継続率 ＝ 各コホートの入会者のうち、経過月時点で在籍している会員の割合。0ヶ月目は入会月のため常に100%。
+                セルの濃淡は継続率の高低を表す（濃いほど高い）。「—」は経過月数に到達していない未確定期間。
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === "ltv" && (
+          <div className="max-w-[1100px] space-y-6">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-1">PREDICTED LTV</div>
+                <h3 className="font-display text-base">会員属性別の予測LTV</h3>
+                <div className="font-display text-[10px] text-[var(--color-mute)] mt-1">許容CPA判断用の参考指標（2026年7月時点）</div>
+              </div>
+              <button onClick={downloadLtvCSV} className="btn-outline !py-2 text-xs">CSV出力</button>
+            </div>
+
+            {/* LTV KPIカード */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="card p-6">
+                <div className="font-display text-[10px] text-[var(--color-mute)] mb-2">月額会員LTV</div>
+                <div className="num text-4xl mb-2">{yen(monthlyLTV)}</div>
+                <div className="font-display text-[10px] text-[var(--color-mute)]">
+                  月額会員 {mo.members.toLocaleString()}名 ／ 許容CPA目安 {yen(monthlyLTV / 3)}
+                </div>
+              </div>
+              <div className="card p-6">
+                <div className="font-display text-[10px] text-[var(--color-mute)] mb-2">
+                  {annualLTV === null ? "年間会員 初年度予測売上" : "年間会員LTV"}
+                </div>
+                <div className="num text-4xl mb-2">{yen(annualLTV === null ? annualFirstYearRevenue : annualLTV)}</div>
+                <div className="font-display text-[10px] text-[var(--color-mute)]">
+                  年間会員 {an.members.toLocaleString()}名 ／ 許容CPA目安 {yen((annualLTV === null ? annualFirstYearRevenue : annualLTV) / 3)}
+                </div>
+              </div>
+              <div className="card p-6 border-[var(--color-accent)]/30">
+                <div className="font-display text-[10px] text-[var(--color-mute)] mb-2">統合LTV</div>
+                <div className="num text-4xl mb-2 text-[var(--color-accent-deep)]">
+                  {blendedLTV === null ? "算出不可" : yen(blendedLTV)}
+                </div>
+                <div className="font-display text-[10px] text-[var(--color-mute)]">
+                  全会員 {(mo.members + an.members).toLocaleString()}名 ／ 許容CPA目安 {blendedLTV === null ? "—" : yen(blendedLTV / 3)}
+                </div>
+              </div>
+            </div>
+
+            {annualLTV === null && (
+              <div className="card p-5 border-[var(--color-accent)]/30">
+                <div className="font-display text-xs text-[var(--color-accent-deep)] mb-1">注記: 年間会員LTVは未算出</div>
+                <div className="font-display text-[10px] text-[var(--color-mute)] leading-relaxed">
+                  年間会員の更新実績（更新／非更新の確定データ）がまだ無いため、年間非更新率を確定できません。
+                  現時点では「年間会員LTV」ではなく「初年度予測売上」までしか算出できません。統合LTVも同様に確定値を出せません。
+                </div>
+              </div>
+            )}
+
+            {/* 月額会員LTV 内訳 */}
+            <div className="card overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--color-line)] font-display text-[10px] text-[var(--color-accent-deep)]">① 月額会員LTV の計算内訳</div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[560px]">
+                  <thead>
+                    <tr className="font-display text-[10px] text-[var(--color-mute)] text-left border-b border-[var(--color-line)]">
+                      <th className="px-5 py-3">項目</th>
+                      <th className="px-5 py-3 text-right">値</th>
+                      <th className="px-5 py-3">算出根拠</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--color-line)]">
+                    {[
+                      { l: "月額会員数", v: `${mo.members.toLocaleString()}名`, s: "在籍中の月額プラン会員" },
+                      { l: "平均月額会費", v: yen(mo.avgFee), s: "月額会費の会員平均" },
+                      { l: "月額会員のイベント売上合計", v: yen(mo.eventRevenue), s: "集計期間の実績合計" },
+                      { l: "月額会員の延べ在籍月数", v: `${mo.memberMonths.toLocaleString()}ヶ月`, s: "会員 × 在籍月数の合計" },
+                      { l: "平均月間イベント売上", v: yen(monthlyEventPerMonth), s: "イベント売上合計 ÷ 延べ在籍月数" },
+                      { l: "月次解約率", v: `${(mo.churnRate * 100).toFixed(1)}%`, s: "直近12ヶ月の平均月次解約率" },
+                      { l: "月額会員LTV", v: yen(monthlyLTV), s: "（平均月額会費 ＋ 平均月間イベント売上）÷ 月次解約率" },
+                    ].map((r, i, arr) => (
+                      <tr key={r.l} className={i === arr.length - 1 ? "bg-[var(--color-bg-soft)]" : "hover:bg-[var(--color-bg-soft)] transition"}>
+                        <td className="px-5 py-3 font-display text-xs">{r.l}</td>
+                        <td className="px-5 py-3 num text-xs text-right whitespace-nowrap">{r.v}</td>
+                        <td className="px-5 py-3 font-display text-[10px] text-[var(--color-mute)]">{r.s}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="px-5 py-3 border-t border-[var(--color-line)] font-display text-[10px] text-[var(--color-mute)] leading-relaxed">
+                ※ 平均月間イベント売上 ＝ イベント売上合計 ÷ 延べ在籍月数<br />
+                ※ 月額会員LTV ＝（平均月額会費 ＋ 平均月間イベント売上）÷ 月次解約率
+              </div>
+            </div>
+
+            {/* 年間会員LTV 内訳 */}
+            <div className="card overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--color-line)] font-display text-[10px] text-[var(--color-accent-deep)]">② 年間会員LTV の計算内訳</div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[560px]">
+                  <thead>
+                    <tr className="font-display text-[10px] text-[var(--color-mute)] text-left border-b border-[var(--color-line)]">
+                      <th className="px-5 py-3">項目</th>
+                      <th className="px-5 py-3 text-right">値</th>
+                      <th className="px-5 py-3">算出根拠</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--color-line)]">
+                    {[
+                      { l: "年間会員数", v: `${an.members.toLocaleString()}名`, s: "在籍中の年間プラン会員" },
+                      { l: "平均年会費", v: yen(an.avgFee), s: "年会費の会員平均" },
+                      { l: "年間会員のイベント売上合計", v: yen(an.eventRevenue), s: "集計期間の実績合計" },
+                      { l: "年間会員の延べ在籍月数", v: `${an.memberMonths.toLocaleString()}ヶ月`, s: "会員 × 在籍月数の合計" },
+                      { l: "平均月間イベント売上", v: yen(annualEventPerMonth), s: "イベント売上合計 ÷ 延べ在籍月数" },
+                      { l: "初年度予測売上", v: yen(annualFirstYearRevenue), s: "平均年会費 ＋ 平均月間イベント売上 × 12" },
+                      { l: "年間非更新率", v: an.hasRenewalRecord ? `${(an.nonRenewalRate * 100).toFixed(1)}%` : "未確定（更新実績なし）", s: "更新期を迎えた会員のうち非更新の割合" },
+                      { l: "年間会員LTV", v: annualLTV === null ? "算出不可" : yen(annualLTV), s: "初年度予測売上 ÷ 年間非更新率" },
+                    ].map((r, i, arr) => (
+                      <tr key={r.l} className={i === arr.length - 1 ? "bg-[var(--color-bg-soft)]" : "hover:bg-[var(--color-bg-soft)] transition"}>
+                        <td className="px-5 py-3 font-display text-xs">{r.l}</td>
+                        <td className="px-5 py-3 num text-xs text-right whitespace-nowrap">{r.v}</td>
+                        <td className="px-5 py-3 font-display text-[10px] text-[var(--color-mute)]">{r.s}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="px-5 py-3 border-t border-[var(--color-line)] font-display text-[10px] text-[var(--color-mute)] leading-relaxed">
+                ※ 平均月間イベント売上 ＝ イベント売上合計 ÷ 延べ在籍月数<br />
+                ※ 初年度予測売上 ＝ 平均年会費 ＋ 平均月間イベント売上 × 12<br />
+                ※ 年間会員LTV ＝ 初年度予測売上 ÷ 年間非更新率（更新実績が出た後にのみ算出可能。更新者がいない場合は初年度予測売上までしか出せません）
+              </div>
+            </div>
+
+            {/* 統合LTV 内訳 */}
+            <div className="card overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--color-line)] font-display text-[10px] text-[var(--color-accent-deep)]">③ 統合LTV の計算内訳</div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[560px]">
+                  <thead>
+                    <tr className="font-display text-[10px] text-[var(--color-mute)] text-left border-b border-[var(--color-line)]">
+                      <th className="px-5 py-3">項目</th>
+                      <th className="px-5 py-3 text-right">値</th>
+                      <th className="px-5 py-3">算出根拠</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--color-line)]">
+                    {[
+                      { l: "月額会員LTV × 月額会員数", v: yen(monthlyLTV * mo.members), s: `${yen(monthlyLTV)} × ${mo.members.toLocaleString()}名` },
+                      { l: "年間会員LTV × 年間会員数", v: annualLTV === null ? "算出不可" : yen(annualLTV * an.members), s: annualLTV === null ? "年間会員LTV未確定のため算出不可" : `${yen(annualLTV)} × ${an.members.toLocaleString()}名` },
+                      { l: "会員数合計", v: `${(mo.members + an.members).toLocaleString()}名`, s: "月額会員数 ＋ 年間会員数" },
+                      { l: "統合LTV", v: blendedLTV === null ? "算出不可" : yen(blendedLTV), s: "｛月額LTV×月額会員数 ＋ 年間LTV×年間会員数｝÷ 会員数合計" },
+                    ].map((r, i, arr) => (
+                      <tr key={r.l} className={i === arr.length - 1 ? "bg-[var(--color-bg-soft)]" : "hover:bg-[var(--color-bg-soft)] transition"}>
+                        <td className="px-5 py-3 font-display text-xs">{r.l}</td>
+                        <td className="px-5 py-3 num text-xs text-right whitespace-nowrap">{r.v}</td>
+                        <td className="px-5 py-3 font-display text-[10px] text-[var(--color-mute)]">{r.s}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="px-5 py-3 border-t border-[var(--color-line)] font-display text-[10px] text-[var(--color-mute)] leading-relaxed">
+                ※ 統合LTV ＝｛月額会員LTV × 月額会員数 ＋ 年間会員LTV × 年間会員数｝÷（月額会員数 ＋ 年間会員数）<br />
+                ※ 許容CPA目安は統合LTVの 1/3（{blendedLTV === null ? "—" : yen(blendedLTV / 3)}）。回収期間を重視する場合は 1/4（{blendedLTV === null ? "—" : yen(blendedLTV / 4)}）も併用します。
+              </div>
+            </div>
+
+            {/* 属性・流入経路別 LTV比較 */}
+            <div className="card overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--color-line)] flex items-center justify-between">
+                <div className="font-display text-[10px] text-[var(--color-accent-deep)]">会員属性・流入経路別 LTV比較</div>
+                <div className="font-display text-[10px] text-[var(--color-mute)]">許容CPA ＝ 統合LTV × 1/3</div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[720px]">
+                  <thead>
+                    <tr className="font-display text-[10px] text-[var(--color-mute)] text-left border-b border-[var(--color-line)]">
+                      <th className="px-5 py-3">区分</th>
+                      <th className="px-5 py-3">セグメント</th>
+                      <th className="px-5 py-3 text-center">会員数</th>
+                      <th className="px-5 py-3 text-right">月額会員LTV</th>
+                      <th className="px-5 py-3 text-right">年間会員LTV</th>
+                      <th className="px-5 py-3 text-right">統合LTV</th>
+                      <th className="px-5 py-3 text-right">許容CPA</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--color-line)]">
+                    {ltvBySegment.map(s => (
+                      <tr key={`${s.group}-${s.name}`} className="hover:bg-[var(--color-bg-soft)] transition">
+                        <td className="px-5 py-3 font-display text-[10px] text-[var(--color-mute)] whitespace-nowrap">{s.group}</td>
+                        <td className="px-5 py-3 font-display text-xs whitespace-nowrap">{s.name}</td>
+                        <td className="px-5 py-3 num text-xs text-center">{s.members.toLocaleString()}名</td>
+                        <td className="px-5 py-3 num text-xs text-right whitespace-nowrap">{yen(s.monthlyLTV)}</td>
+                        <td className="px-5 py-3 num text-xs text-right whitespace-nowrap">{yen(s.annualLTV)}</td>
+                        <td className="px-5 py-3 num text-xs text-right whitespace-nowrap text-[var(--color-accent-deep)]">{yen(s.blended)}</td>
+                        <td className="px-5 py-3 num text-xs text-right whitespace-nowrap">{yen(s.cpa)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}

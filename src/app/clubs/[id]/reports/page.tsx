@@ -1,20 +1,61 @@
+"use client";
+import { useEffect, useState } from "react";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 
-const allReports: Record<string, { id: number; title: string; date: string; body: string; images: number }[]> = {
+interface Report { id: number; title: string; date: string; body: string; images: number; article: string[]; }
+
+const allReports: Record<string, Report[]> = {
   wine: [
-    { id: 1, title: "ブルゴーニュナイト Vol.12 レポート", date: "2026.06.02", body: "12名が参加し、ポマール・ジュブレシャンベルタン・モレサンドニの3種を縦飲み。大盛況でした。", images: 6 },
-    { id: 2, title: "春のロゼワイン会", date: "2026.04.20", body: "プロヴァンスのロゼを中心に5種をテイスティング。次回はスパークリングを加える案が出ました。", images: 4 },
-    { id: 3, title: "ニューワールドワイン入門会", date: "2026.03.08", body: "チリ・アルゼンチン・南アフリカの3カ国をテーマに開催。コスパの高さに驚く声が多数。", images: 5 },
-    { id: 4, title: "年末ワインガラ 2025", date: "2025.12.20", body: "年末特別企画として20名が参加。シャンパーニュ・ブルゴーニュ・ボルドーを飲み比べした豪華な回でした。", images: 10 },
+    { id: 1, title: "ブルゴーニュナイト Vol.12 レポート", date: "2026.06.02", body: "12名が参加し、ポマール・ジュブレシャンベルタン・モレサンドニの3種を縦飲み。大盛況でした。", images: 6, article: [
+      "6月最初の週末、麻布十番の La Cave にて「ブルゴーニュナイト Vol.12」を開催しました。今回は定員12名に対して申込が20名を超え、シリーズ最多の応募をいただいた回となりました。",
+      "テーマは「ブルゴーニュ赤の村格を飲み比べる」。ポマール、ジュブレシャンベルタン、モレサンドニの3村を、いずれも2019年ヴィンテージで揃えて縦に並べました。同じ年・同じ造り手の思想でも、村が変わるだけで香りの立ち方がここまで違うのかと驚く声が続出。",
+      "ソムリエの解説では、土壌の石灰質の比率と斜面の向きが果実味と酸のバランスに与える影響を、実際のグラスと照らし合わせながら説明いただきました。初参加の方からも「味わいの違いが言葉で理解できた」と好評でした。",
+      "後半はチーズとの相性を試すセッション。コンテ24ヶ月とエポワスを用意し、それぞれのワインと合わせて全員で投票。ポマール×エポワスの組み合わせが最多票を集めました。",
+      "次回 Vol.13 は9月6日、同会場にて開催予定です。今回参加できなかった方も、ぜひクラブ会ページからお申し込みください。",
+    ] },
+    { id: 2, title: "春のロゼワイン会", date: "2026.04.20", body: "プロヴァンスのロゼを中心に5種をテイスティング。次回はスパークリングを加える案が出ました。", images: 4, article: [
+      "桜が終わり、少し汗ばむ陽気になってきた4月下旬。「春のロゼワイン会」を開催しました。参加者は9名、うち3名がクラブ初参加でした。",
+      "用意したのはプロヴァンス産を中心とした5種類のロゼ。淡いサーモンピンクから、しっかり色づいたものまで色調を並べて比較し、色と味わいの関係を体感するところからスタートしました。",
+      "「ロゼは甘い」というイメージを持って来られた方が多かったのですが、実際に飲んでみるとどれも辛口。food-friendly な一本として、日常使いしやすいという感想が多く聞かれました。",
+      "会の終盤では「次回はスパークリングのロゼも加えたい」という提案が出て、その場で盛り上がりました。夏前にもう一度、泡を中心とした会を企画する予定です。",
+    ] },
+    { id: 3, title: "ニューワールドワイン入門会", date: "2026.03.08", body: "チリ・アルゼンチン・南アフリカの3カ国をテーマに開催。コスパの高さに驚く声が多数。", images: 5, article: [
+      "3月の定例会は「ニューワールド入門」。チリ、アルゼンチン、南アフリカの3カ国から、いずれも3,000円台で購入できるボトルを選びました。",
+      "アルゼンチンのマルベックは、その凝縮した果実味と価格のギャップに驚きの声。南アフリカのシュナン・ブランは、参加者アンケートでこの日の一番人気となりました。",
+      "「普段スーパーで手に取らない棚を見るきっかけになった」という感想をいただき、入門会としての目的は十分に果たせた回だったと思います。",
+    ] },
+    { id: 4, title: "年末ワインガラ 2025", date: "2025.12.20", body: "年末特別企画として20名が参加。シャンパーニュ・ブルゴーニュ・ボルドーを飲み比べした豪華な回でした。", images: 10, article: [
+      "2025年の締めくくりとして、クラブ史上最大規模となる20名参加の「年末ワインガラ」を開催しました。",
+      "乾杯のシャンパーニュに始まり、ブルゴーニュの白・赤、ボルドー左岸右岸と、この日のために持ち寄られたボトルは全12本。メンバー各自が1本ずつ持ち寄る形式にしたことで、選んだ理由を語る時間そのものが会の中心になりました。",
+      "後半はブラインドテイスティング大会を実施。産地と品種を当てるゲームでは、入部半年の方が最高得点を出すという波乱の展開になりました。",
+      "1年間の活動を振り返るスライドも上映し、和やかに閉会。2026年もどうぞよろしくお願いいたします。",
+    ] },
   ],
   coffee: [
-    { id: 1, title: "エチオピア×コロンビア飲み比べ", date: "2026.06.14", body: "シングルオリジン2種を丁寧にカッピング。風味の違いを体感できる充実した回でした。", images: 3 },
-    { id: 2, title: "スペシャルティコーヒー基礎講座", date: "2026.04.05", body: "精製プロセス（ウォッシュド/ナチュラル/ハニー）について学ぶ座学＋実践の回。", images: 2 },
+    { id: 1, title: "エチオピア×コロンビア飲み比べ", date: "2026.06.14", body: "シングルオリジン2種を丁寧にカッピング。風味の違いを体感できる充実した回でした。", images: 3, article: [
+      "渋谷の COFFEE LAB をお借りして、シングルオリジン2種の飲み比べ会を開催しました。参加者は7名です。",
+      "エチオピア イルガチェフェとコロンビア ウイラを、同じ焙煎度・同じレシピで抽出して比較。エチオピアの華やかな柑橘感と、コロンビアのナッツ的な甘さの対比がはっきりと出ました。",
+      "後半は湯温だけを変えて同じ豆を抽出する実験。88度と94度で味わいがどう変わるかを全員で確認し、「家でも試せる」と好評でした。",
+    ] },
+    { id: 2, title: "スペシャルティコーヒー基礎講座", date: "2026.04.05", body: "精製プロセス（ウォッシュド/ナチュラル/ハニー）について学ぶ座学＋実践の回。", images: 2, article: [
+      "コーヒー部として初めての座学中心の会を開催しました。テーマは精製プロセスです。",
+      "ウォッシュド、ナチュラル、ハニーの3つの製法について、生豆の状態の写真を見ながら工程を確認。その後、同じ農園の3種の豆を実際に飲み比べました。",
+      "「同じ産地でも製法でこんなに変わるのか」という驚きが、参加者全員から出た回でした。",
+    ] },
   ],
   travel: [
-    { id: 1, title: "春の京都旅レポート", date: "2026.04.05", body: "祇園・東山エリアを中心に、隠れ家的なお店を6軒巡りました。写真80枚のアルバムを共有中。", images: 12 },
-    { id: 2, title: "冬の箱根温泉旅", date: "2025.12.15", body: "4名で箱根へ。宿のチョイスから食事まで全てCOMMONSメンバーのおすすめで巡りました。", images: 8 },
+    { id: 1, title: "春の京都旅レポート", date: "2026.04.05", body: "祇園・東山エリアを中心に、隠れ家的なお店を6軒巡りました。写真80枚のアルバムを共有中。", images: 12, article: [
+      "桜のピークに合わせて、旅部として1泊2日の京都旅を実施しました。参加は6名です。",
+      "初日は祇園・東山エリアを中心に散策。観光地の混雑を避けるため、朝7時集合という早起きプランにしたのが功を奏し、人の少ない時間帯の風景をゆっくり楽しむことができました。",
+      "昼食は事前予約していた町家の蕎麦店へ。夜はメンバーの知人が営むカウンター割烹で、京野菜を中心としたコースをいただきました。",
+      "2日目は各自の自由行動としつつ、希望者で一澤信三郎帆布と骨董市を巡りました。全行程で撮影した写真80枚は、クラブのアルバムで共有しています。",
+    ] },
+    { id: 2, title: "冬の箱根温泉旅", date: "2025.12.15", body: "4名で箱根へ。宿のチョイスから食事まで全てCOMMONSメンバーのおすすめで巡りました。", images: 8, article: [
+      "年末の慌ただしさの前に、少人数で箱根へ。宿も食事処も、すべてCOMMONSメンバーからの推薦だけで組んだ行程です。",
+      "宿は強羅の小規模旅館。全室露天風呂付きで、他のお客様と顔を合わせずゆっくり過ごせる造りでした。",
+      "翌日はポーラ美術館と、メンバー推薦の蕎麦店へ。移動を詰め込みすぎない、ゆとりのある旅程が今回の学びでした。",
+    ] },
   ],
 };
 
@@ -27,6 +68,17 @@ const clubNames: Record<string, string> = {
 export default function ClubReportsPage({ params }: { params: { id: string } }) {
   const reports = allReports[params.id] ?? allReports.wine;
   const clubName = clubNames[params.id] ?? "クラブ";
+  const [openId, setOpenId] = useState<number | null>(null);
+
+  // クラブ詳細から #report-{id} で遷移してきた場合は記事を自動で開く
+  useEffect(() => {
+    const m = /^#report-(\d+)$/.exec(window.location.hash);
+    if (!m) return;
+    const t = window.setTimeout(() => setOpenId(Number(m[1])), 0);
+    return () => window.clearTimeout(t);
+  }, []);
+
+  const open = reports.find(r => r.id === openId) ?? null;
 
   return (
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
@@ -38,7 +90,7 @@ export default function ClubReportsPage({ params }: { params: { id: string } }) 
         </div>
         <div className="px-5 pt-5 space-y-4">
           {reports.map(r => (
-            <div key={r.id} className="card p-5">
+            <button key={r.id} onClick={() => setOpenId(r.id)} className="card p-5 w-full text-left hover:border-[var(--color-accent)]/60 transition">
               <div className="font-display text-xs text-[var(--color-mute)] mb-2">{r.date}</div>
               <h3 className="font-display text-lg">{r.title}</h3>
               <p className="mt-2 text-sm text-[var(--color-mute)] leading-relaxed">{r.body}</p>
@@ -50,9 +102,50 @@ export default function ClubReportsPage({ params }: { params: { id: string } }) 
                   <div className="w-[70px] h-[70px] rounded-lg bg-[var(--color-line)] flex items-center justify-center text-xs text-[var(--color-mute)]">+{r.images - 4}</div>
                 )}
               </div>
-            </div>
+              <div className="mt-4 font-display text-xs text-[var(--color-accent-deep)]">レポートを読む →</div>
+            </button>
           ))}
         </div>
+
+        {/* ===== レポート記事モーダル ===== */}
+        {open && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60" onClick={() => setOpenId(null)}>
+            <div className="w-full max-w-[430px] max-h-[88vh] overflow-y-auto bg-[var(--color-bg-soft)] rounded-t-3xl px-5 pt-4 pb-24" onClick={e => e.stopPropagation()}>
+              <div className="w-10 h-1 bg-[var(--color-line)] rounded-full mx-auto mb-5" />
+              <p className="font-display text-[10px] tracking-[0.2em] text-[var(--color-accent-deep)] mb-1">{clubName}・活動レポート</p>
+              <h2 className="font-display text-xl leading-snug">{open.title}</h2>
+              <div className="font-display text-xs text-[var(--color-mute)] mt-2">{open.date}</div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {Array.from({ length: Math.min(open.images, 3) }).map((_, i) => (
+                  <div key={i} className="w-[118px] h-[90px] rounded-lg bg-[var(--color-line)] flex items-center justify-center text-lg">📷</div>
+                ))}
+              </div>
+
+              <div className="mt-5 space-y-4">
+                {open.article.map((para, i) => (
+                  <p key={i} className="text-sm text-[var(--color-ink-soft)] leading-relaxed">{para}</p>
+                ))}
+              </div>
+
+              {open.images > 3 && (
+                <div className="mt-5">
+                  <div className="font-display text-xs text-[var(--color-mute)] mb-2">当日の写真（<span className="num">{open.images}</span>枚）</div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from({ length: Math.min(open.images - 3, 6) }).map((_, i) => (
+                      <div key={i} className="w-[70px] h-[70px] rounded-lg bg-[var(--color-line)] flex items-center justify-center text-xs text-[var(--color-mute)]">📷</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <button onClick={() => setOpenId(null)} className="w-full mt-6 py-3.5 rounded-xl font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] border border-[var(--color-line)] transition">
+                閉じる
+              </button>
+            </div>
+          </div>
+        )}
+
         <BottomNav />
       </div>
     </div>

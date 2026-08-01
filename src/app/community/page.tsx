@@ -322,13 +322,13 @@ export default function CommunityPage() {
 
   // DM icon slot for AppHeader
   const dmIconSlot = (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-none">
       <button
         onClick={() => { setShowDm(v => !v); setActiveDm(null); }}
-        className="relative w-9 h-9 flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-ink)] transition"
+        className="relative w-8 h-8 flex-none flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-ink)] transition"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/icondm.png" alt="DM" className="w-9 h-9 object-contain opacity-60 hover:opacity-100 transition" />
+        <img src="/images/icondm.png" alt="DM" className="w-8 h-8 object-contain opacity-60 hover:opacity-100 transition" />
         {dmUnread > 0 && (
           <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[9px] font-display flex items-center justify-center leading-none"
             style={{ background: "var(--color-accent)", color: "#0B0F16" }}>
@@ -336,15 +336,15 @@ export default function CommunityPage() {
           </span>
         )}
       </button>
-      <a href="/notifications" className="relative w-8 h-8 flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">
+      <a href="/notifications" className="relative w-8 h-8 flex-none flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
         <span className="absolute top-0 right-0 w-4 h-4 rounded-full text-[9px] font-display flex items-center justify-center leading-none" style={{ background: "var(--color-accent)", color: "#0B0F16" }}>3</span>
       </a>
-      <a href="/mypage">
+      <a href="/mypage" className="flex-none">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/icon.png" alt="マイページ" className="w-8 h-8 rounded-full object-cover border border-[var(--color-line)]" />
+        <img src="/images/icon.png" alt="マイページ" className="w-8 h-8 flex-none rounded-full object-cover border border-[var(--color-line)]" />
       </a>
     </div>
   );
@@ -697,6 +697,7 @@ export default function CommunityPage() {
                             </button>
                           )}
                           {/* ⋮ menu */}
+                          {p.isOwn && (
                           <div className="relative">
                             <button onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === p.id ? null : p.id); }}
                               className="text-[var(--color-mute)] hover:text-[var(--color-ink)] transition w-6 h-6 flex items-center justify-center">
@@ -706,19 +707,14 @@ export default function CommunityPage() {
                             </button>
                             {menuOpen === p.id && (
                               <div className="absolute right-0 top-7 z-50 w-44 bg-[var(--color-bg-soft)] border border-[var(--color-line)] rounded-xl shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
-                                <button onClick={() => { navigator.clipboard.writeText(p.body).catch(() => {}); setMenuOpen(null); }}
-                                  className="w-full text-left px-4 py-3 font-display text-xs hover:bg-[var(--color-line)] transition">
-                                  テキストをコピー
+                                <button onClick={() => { setPosts(prev => prev.map(pp => pp.id === p.id ? { ...pp, deleted: true } : pp)); setMenuOpen(null); }}
+                                  className="w-full text-left px-4 py-3 font-display text-xs text-red-400 hover:bg-[var(--color-line)] transition">
+                                  送信取消
                                 </button>
-                                {p.isOwn && (
-                                  <button onClick={() => { setPosts(prev => prev.map(pp => pp.id === p.id ? { ...pp, deleted: true } : pp)); setMenuOpen(null); }}
-                                    className="w-full text-left px-4 py-3 font-display text-xs text-red-400 hover:bg-[var(--color-line)] transition">
-                                    送信取消
-                                  </button>
-                                )}
                               </div>
                             )}
                           </div>
+                          )}
                         </div>
                       </div>
 
@@ -774,11 +770,13 @@ export default function CommunityPage() {
                         </button>
 
                         {/* Share */}
-                        <button onClick={() => setShareSheet(p)} className="ml-auto text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] transition">
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                        <button onClick={() => setShareSheet(p)}
+                          className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[var(--color-line)] text-[10px] font-display text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] hover:border-[var(--color-accent)] transition">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
+                            <polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" />
                           </svg>
+                          共有
                         </button>
                       </div>
 
@@ -971,7 +969,6 @@ export default function CommunityPage() {
               <div className="space-y-2">
                 {[
                   { label: "リンクをコピー", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg> },
-                  { label: "DM で送る", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg> },
                 ].map(item => (
                   <button key={item.label} onClick={() => setShareSheet(null)}
                     className="w-full flex items-center gap-4 px-5 py-3.5 rounded-xl bg-[var(--color-bg)] hover:bg-[var(--color-line)] transition text-left">

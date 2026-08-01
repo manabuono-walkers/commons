@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
 import AppHeader from "@/components/AppHeader";
@@ -39,10 +39,34 @@ const onboardingTasks = [
   { id: "club",     label: "興味のあるクラブに参加しよう",      href: "/clubs",          done: false },
 ];
 
+const SCROLL_KEY = "mypage:scrollY";
+
 export default function MyPage() {
   const rc = rankConfig[currentRank];
   const [tasks, setTasks] = useState(onboardingTasks);
   const [tasksDismissed, setTasksDismissed] = useState(false);
+
+  // 下層ページから戻ってきた際にスクロール位置を復元する
+  useEffect(() => {
+    const saved = sessionStorage.getItem(SCROLL_KEY);
+    const y = saved ? Number.parseInt(saved, 10) : 0;
+    let raf = 0;
+    let timer = 0;
+    if (Number.isFinite(y) && y > 0) {
+      // レイアウト確定後に復元
+      raf = requestAnimationFrame(() => window.scrollTo(0, y));
+      timer = window.setTimeout(() => window.scrollTo(0, y), 120);
+    }
+    const save = () => sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+    window.addEventListener("scroll", save, { passive: true });
+    window.addEventListener("pagehide", save);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      if (timer) window.clearTimeout(timer);
+      window.removeEventListener("scroll", save);
+      window.removeEventListener("pagehide", save);
+    };
+  }, []);
 
   const remainingTasks = tasks.filter(t => !t.done);
 

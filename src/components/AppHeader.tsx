@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 interface Props {
   backHref?: string;
@@ -10,9 +9,9 @@ interface Props {
 export default function AppHeader({ backHref, rightSlot }: Props) {
   return (
     <header className="sticky top-0 z-40 bg-[var(--color-bg)]/95 backdrop-blur-md border-b border-[var(--color-line)] px-5 py-3">
-      <div className="relative flex items-center justify-between">
+      <div className="flex items-center gap-3">
         {/* Left */}
-        <div className="flex-1">
+        <div className="flex-none">
           {backHref && (
             <Link href={backHref} className="font-display text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition whitespace-nowrap">
               ← 戻る
@@ -21,11 +20,13 @@ export default function AppHeader({ backHref, rightSlot }: Props) {
         </div>
 
         {/* Center: logo always */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", objectFit: "contain" }} className="absolute left-1/2 -translate-x-1/2" />
+        <div className="flex-1 min-w-0 flex justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/logo.png" alt="COMMONS" style={{ height: 24, width: "auto", maxWidth: "100%", objectFit: "contain" }} />
+        </div>
 
         {/* Right */}
-        <div className="flex-1 flex items-center gap-3 justify-end">
+        <div className="flex-none flex items-center gap-2 justify-end">
           {rightSlot ?? (backHref ? <span className="w-8" /> : <DefaultNavIcons />)}
         </div>
       </div>
@@ -37,7 +38,7 @@ export function DefaultNavIcons() {
   return (
     <>
       {/* Bell icon */}
-      <Link href="/notifications" className="relative w-8 h-8 flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">
+      <Link href="/notifications" className="relative w-8 h-8 flex-none flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
@@ -47,9 +48,9 @@ export function DefaultNavIcons() {
         </span>
       </Link>
       {/* Avatar */}
-      <Link href="/mypage" className="block">
+      <Link href="/mypage" className="block flex-none">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/icon.png" alt="アカウント" className="w-8 h-8 rounded-full object-cover border border-[var(--color-line)]" />
+        <img src="/images/icon.png" alt="アカウント" className="w-8 h-8 flex-none rounded-full object-cover border border-[var(--color-line)]" />
       </Link>
     </>
   );
