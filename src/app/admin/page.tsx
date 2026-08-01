@@ -56,10 +56,47 @@ const cohorts: Cohort[] = [
 ];
 const COHORT_MONTHS = [0, 1, 2, 3, 4, 5, 6];
 
+// 平均継続率は各コホートの入会者数で加重平均する（粒度を変えても同じ値になる）
 function cohortAverageAt(rows: Cohort[], idx: number) {
-  const vals = rows.map(c => c.retention[idx]).filter((v): v is number => typeof v === "number");
-  if (vals.length === 0) return null;
-  return vals.reduce((a, b) => a + b, 0) / vals.length;
+  let sum = 0;
+  let weight = 0;
+  rows.forEach(c => {
+    const v = c.retention[idx];
+    if (typeof v === "number") {
+      sum += v * c.size;
+      weight += c.size;
+    }
+  });
+  return weight === 0 ? null : sum / weight;
+}
+
+// コホート粒度。日次・週次は1コホートが1〜13名にしかならず継続率が成立しないため設けない
+type CohortGrain = "month" | "quarter";
+const COHORT_GRAIN_LABELS: Record<CohortGrain, string> = { month: "月別", quarter: "四半期別" };
+
+// 月別コホートを四半期別に集約（継続率は入会者数による加重平均）
+function aggregateToQuarters(rows: Cohort[]): Cohort[] {
+  const map = new Map<string, { label: string; size: number; sums: number[]; weights: number[] }>();
+  rows.forEach(c => {
+    const [y, m] = c.month.split("-").map(Number);
+    const q = Math.floor((m - 1) / 3) + 1;
+    const key = `${y}-Q${q}`;
+    const entry = map.get(key) ?? { label: `${y}年 第${q}四半期`, size: 0, sums: [], weights: [] };
+    entry.size += c.size;
+    c.retention.forEach((v, i) => {
+      entry.sums[i] = (entry.sums[i] ?? 0) + v * c.size;
+      entry.weights[i] = (entry.weights[i] ?? 0) + c.size;
+    });
+    map.set(key, entry);
+  });
+  return [...map.entries()]
+    .map(([key, e]) => ({
+      month: key,
+      label: e.label,
+      size: e.size,
+      retention: e.sums.map((s, i) => s / e.weights[i]),
+    }))
+    .sort((a, b) => a.month.localeCompare(b.month));
 }
 
 function retentionCellStyle(v: number) {
@@ -200,6 +237,10 @@ export default function AnalyticsPage() {
   const [period, setPeriod] = useState<PeriodGranularity>("monthly");
   const [customFrom, setCustomFrom] = useState("2026-07-01");
   const [customTo, setCustomTo] = useState("2026-07-31");
+  // コホート分析は概要ダッシュボードとは別の軸（粒度＋入会月レンジ）で絞り込む
+  const [cohortGrain, setCohortGrain] = useState<CohortGrain>("month");
+  const [cohortFrom, setCohortFrom] = useState("2026-01");
+  const [cohortTo, setCohortTo] = useState("2026-07");
 
   // Gender usage rate for current month
   const totalM = couponUseMale[couponUseMale.length - 1];
@@ -208,34 +249,32 @@ export default function AnalyticsPage() {
   const maleRate = ((totalM / maleMembers) * 100).toFixed(1);
   const femaleRate = ((totalF / femaleMembers) * 100).toFixed(1);
 
-  const periodLabelText = period === "custom" ? `${customFrom} 〜 ${customTo}` : PERIOD_LABELS[period];
+  // コホート: 入会月レンジで絞り込み → 粒度に応じて集約
+  const cohortRangeText = `${cohortFrom} 〜 ${cohortTo}`;
+  const cohortsInRange = cohorts.filter(c => c.month >= cohortFrom && c.month <= cohortTo);
+  const cohortRows = cohortGrain === "quarter" ? aggregateToQuarters(cohortsInRange) : cohortsInRange;
+  const cohortTotal = cohortRows.reduce((a, c) => a + c.size, 0);
+  const cohortUnitLabel = cohortGrain === "quarter" ? "入会四半期" : "入会月";
 
-  // 期間指定フィルタ（モック: 任意期間のときは対象コホートを絞り込む）
-  const filteredCohorts = period === "custom"
-    ? cohorts.filter(c => c.month >= customFrom.slice(0, 7) && c.month <= customTo.slice(0, 7))
-    : cohorts;
-  const cohortRows = filteredCohorts.length > 0 ? filteredCohorts : cohorts;
-
-  const periodFilter = (
+  const cohortFilter = (
     <div className="card p-4 flex items-center gap-4 flex-wrap">
-      <span className="font-display text-[10px] text-[var(--color-mute)] flex-none">期間指定</span>
-      <div className="flex gap-1.5 flex-wrap">
-        {(Object.keys(PERIOD_LABELS) as PeriodGranularity[]).map(p => (
-          <button key={p} onClick={() => setPeriod(p)}
-            className={`font-display text-xs px-3.5 py-1.5 rounded-full border transition ${period === p ? "bg-[var(--color-accent)]/15 border-[var(--color-accent)] text-[var(--color-accent-deep)]" : "border-[var(--color-line)] text-[var(--color-mute)]"}`}>
-            {PERIOD_LABELS[p]}
+      <span className="font-display text-[10px] text-[var(--color-mute)] flex-none">コホート粒度</span>
+      <div className="flex gap-1.5">
+        {(Object.keys(COHORT_GRAIN_LABELS) as CohortGrain[]).map(g => (
+          <button key={g} onClick={() => setCohortGrain(g)}
+            className={`font-display text-xs px-3.5 py-1.5 rounded-full border transition ${cohortGrain === g ? "bg-[var(--color-accent)]/15 border-[var(--color-accent)] text-[var(--color-accent-deep)]" : "border-[var(--color-line)] text-[var(--color-mute)]"}`}>
+            {COHORT_GRAIN_LABELS[g]}
           </button>
         ))}
       </div>
-      {period === "custom" && (
-        <div className="flex items-center gap-2">
-          <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
-            className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[var(--color-accent)]/60" />
-          <span className="font-display text-xs text-[var(--color-mute)]">〜</span>
-          <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
-            className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[var(--color-accent)]/60" />
-        </div>
-      )}
+      <span className="font-display text-[10px] text-[var(--color-mute)] flex-none ml-2">対象期間（入会月）</span>
+      <div className="flex items-center gap-2">
+        <input type="month" value={cohortFrom} onChange={e => setCohortFrom(e.target.value)}
+          className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[var(--color-accent)]/60" />
+        <span className="font-display text-xs text-[var(--color-mute)]">〜</span>
+        <input type="month" value={cohortTo} onChange={e => setCohortTo(e.target.value)}
+          className="bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[var(--color-accent)]/60" />
+      </div>
     </div>
   );
 
@@ -259,13 +298,20 @@ export default function AnalyticsPage() {
   }
 
   function downloadCohortCSV() {
-    const header = ["入会月", "入会者数", ...COHORT_MONTHS.map(i => `${i}ヶ月目`)].join(",");
+    const header = [cohortUnitLabel, "入会者数", ...COHORT_MONTHS.map(i => `${i}ヶ月目`)].join(",");
     const rows = cohortRows.map(c =>
-      [c.label, c.size, ...COHORT_MONTHS.map(i => (c.retention[i] === undefined ? "" : `${c.retention[i]}%`))].join(",")
+      [c.label, c.size, ...COHORT_MONTHS.map(i => {
+        const v = c.retention[i];
+        return v === undefined ? "" : `${v.toFixed(1)}%`;
+      })].join(",")
     );
-    const avg = ["平均", cohortRows.reduce((a, c) => a + c.size, 0),
-      ...COHORT_MONTHS.map(i => { const v = cohortAverageAt(cohortRows, i); return v === null ? "" : `${v.toFixed(1)}%`; })].join(",");
-    saveCSV([`期間,${periodLabelText}`, "", header, ...rows, avg].join("\n"), "cohort_retention.csv");
+    const avg = ["平均", cohortTotal,
+      ...COHORT_MONTHS.map(i => { const v = cohortAverageAt(cohortsInRange, i); return v === null ? "" : `${v.toFixed(1)}%`; })].join(",");
+    saveCSV([
+      `粒度,${COHORT_GRAIN_LABELS[cohortGrain]}`,
+      `対象期間（入会月）,${cohortRangeText}`,
+      "", header, ...rows, avg,
+    ].join("\n"), "cohort_retention.csv");
   }
 
   function downloadLtvCSV() {
@@ -712,19 +758,25 @@ export default function AnalyticsPage() {
 
         {tab === "cohort" && (
           <div className="max-w-[1100px] space-y-6">
-            {periodFilter}
+            {cohortFilter}
 
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
                 <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-1">COHORT RETENTION</div>
-                <h3 className="font-display text-base">月別入会コホートの継続率</h3>
+                <h3 className="font-display text-base">{COHORT_GRAIN_LABELS[cohortGrain]}入会コホートの継続率</h3>
                 <div className="font-display text-[10px] text-[var(--color-mute)] mt-1">
-                  対象期間: {periodLabelText} ／ {cohortRows.length}コホート・計{cohortRows.reduce((a, c) => a + c.size, 0)}名
+                  対象期間（入会月）: {cohortRangeText} ／ {cohortRows.length}コホート・計{cohortTotal}名
                 </div>
               </div>
               <button onClick={downloadCohortCSV} className="btn-outline !py-2 text-xs">CSV出力</button>
             </div>
 
+            {cohortRows.length === 0 ? (
+              <div className="card p-8 text-center font-display text-xs text-[var(--color-mute)]">
+                対象期間に該当する入会コホートがありません。対象期間（入会月）を広げてください。
+              </div>
+            ) : (
+              <>
             {/* コホートテーブル */}
             <div className="card overflow-hidden">
               <div className="px-5 py-4 border-b border-[var(--color-line)] flex items-center justify-between">
@@ -743,7 +795,7 @@ export default function AnalyticsPage() {
                 <table className="w-full text-sm min-w-[760px]">
                   <thead>
                     <tr className="font-display text-[10px] text-[var(--color-mute)] border-b border-[var(--color-line)]">
-                      <th className="px-5 py-3 text-left whitespace-nowrap">入会月</th>
+                      <th className="px-5 py-3 text-left whitespace-nowrap">{cohortUnitLabel}</th>
                       <th className="px-5 py-3 text-center whitespace-nowrap">入会者数</th>
                       {COHORT_MONTHS.map(i => (
                         <th key={i} className="px-3 py-3 text-center whitespace-nowrap">{i}ヶ月目</th>
@@ -770,9 +822,9 @@ export default function AnalyticsPage() {
                     ))}
                     <tr className="bg-[var(--color-bg-soft)]">
                       <td className="px-5 py-3 font-display text-xs">平均</td>
-                      <td className="px-5 py-3 num text-xs text-center">{cohortRows.reduce((a, c) => a + c.size, 0)}名</td>
+                      <td className="px-5 py-3 num text-xs text-center">{cohortTotal}名</td>
                       {COHORT_MONTHS.map(i => {
-                        const v = cohortAverageAt(cohortRows, i);
+                        const v = cohortAverageAt(cohortsInRange, i);
                         return (
                           <td key={i} className="px-3 py-3 text-center num text-xs text-[var(--color-accent-deep)]">
                             {v === null ? "—" : `${v.toFixed(1)}%`}
@@ -792,22 +844,28 @@ export default function AnalyticsPage() {
                 { l: "平均継続率（3ヶ月後）", idx: 3 },
                 { l: "平均継続率（6ヶ月後）", idx: 6 },
               ].map(k => {
-                const v = cohortAverageAt(cohortRows, k.idx);
-                const n = cohortRows.filter(c => c.retention[k.idx] !== undefined).length;
+                const v = cohortAverageAt(cohortsInRange, k.idx);
+                const n = cohortsInRange.filter(c => c.retention[k.idx] !== undefined).length;
                 return (
                   <div key={k.l} className="card p-5">
                     <div className="font-display text-[10px] text-[var(--color-mute)] mb-2">{k.l}</div>
                     <div className="num text-3xl mb-1 text-[var(--color-accent-deep)]">{v === null ? "—" : `${v.toFixed(1)}%`}</div>
-                    <div className="font-display text-xs text-[var(--color-mute)]">対象 {n}コホート</div>
+                    <div className="font-display text-xs text-[var(--color-mute)]">対象 {n}入会月</div>
                   </div>
                 );
               })}
             </div>
+              </>
+            )}
 
             <div className="card p-5">
               <div className="font-display text-[10px] text-[var(--color-mute)] leading-relaxed">
                 ※ 継続率 ＝ 各コホートの入会者のうち、経過月時点で在籍している会員の割合。0ヶ月目は入会月のため常に100%。
-                セルの濃淡は継続率の高低を表す（濃いほど高い）。「—」は経過月数に到達していない未確定期間。
+                セルの濃淡は継続率の高低を表す（濃いほど高い）。「—」は経過月数に到達していない未確定期間。<br />
+                ※ 経過軸は月単位。会費の請求サイクルが月次のため、日次・週次のコホートは1コホートあたりの人数が少なすぎて継続率が成立しません。
+                {cohortGrain === "quarter" && <>
+                  <br />※ 四半期別は、該当四半期に含まれる各月コホートを入会者数で加重平均した値です。
+                </>}
               </div>
             </div>
           </div>

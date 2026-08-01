@@ -8,6 +8,7 @@ const JOBS = ["経営者・役員","会社員（総合職）","会社員（一�
 const INCOMES = ["〜300万円","300万円〜500万円","500万円〜700万円","700万円〜900万円","900万円〜1200万円","1200万円〜1500万円","1500万円〜2000万円","2000万円〜"];
 const ENTRY_REASONS = ["異性・同性問わず新しい友人づくり","ビジネスやキャリアに関するつながり","趣味や興味が合う人との交流","新しい体験・イベントを楽しみたい","職場・既存コミュニティ以外の居場所づくり"];
 const HOW_FOUND = ["COMMONS Instagram","COMMONS TikTok","COMMONS YouTube","COMMONS X","COMMONS Threads","その他"];
+const INFLOW_CHANNELS = ["Instagram","X","TikTok","YouTube","Threads","紹介","その他"];
 
 function Field({ label, required, children, note }: { label: string; required?: boolean; children: React.ReactNode; note?: string }) {
   return (
@@ -143,6 +144,13 @@ export default function MemberAddPage() {
                 <Select><option value="">選択</option>{HOW_FOUND.map(h=><option key={h}>{h}</option>)}</Select>
               </Field>
             </div>
+
+            <Field label="流入経路" required note="LTV・許容CPAの集計単位">
+              <Select><option value="">選択</option>{INFLOW_CHANNELS.map(c=><option key={c}>{c}</option>)}</Select>
+            </Field>
+            <Field label="流入経路ID" note="広告・投稿のトラッキングID（紹介の場合は紹介コード）">
+              <Input placeholder="例）IG-202608-R012" />
+            </Field>
 
             <div className="col-span-2">
               <Field label="自己紹介" required note="審査参考情報（200文字以上）">

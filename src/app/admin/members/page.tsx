@@ -36,9 +36,11 @@ function formatMemberNo(no: string): string {
 }
 
 function searchHaystack(m: Member): string {
+  const inflow = inflowOf(m);
   return [
     m.name, m.kana, m.no, formatMemberNo(m.no), `#${formatMemberNo(m.no)}`, `U-${formatMemberNo(m.no)}`,
     m.email, m.univaPayId, m.pay, m.status,
+    inflow.channel, inflow.id,
     ...m.eventHistory.map(e => e.title),
   ].join(" ").toLowerCase();
 }
@@ -49,6 +51,32 @@ function calcEngage(m: Member): EngageLevel {
   if (m.events >= 8) return "高";
   if (m.events >= 3) return "中";
   return "低";
+}
+
+// 流入経路・流入経路ID（※仮のデータ）
+// 実装時は申込フォームの選択値（Instagram / X / TikTok / YouTube / Threads / 紹介 / その他）と、
+// 広告・投稿のトラッキングID（紹介の場合は紹介コード）を会員レコードに保持する
+const INFLOW_CHANNELS = ["Instagram","X","TikTok","YouTube","Threads","紹介","その他"];
+
+const inflowById: Record<string, { channel: string; id: string }> = {
+  "00824": { channel: "Instagram", id: "IG-202506-R012" },
+  "00827": { channel: "Instagram", id: "IG-202505-R008" },
+  "00830": { channel: "X",         id: "X-202505-P031" },
+  "00843": { channel: "Instagram", id: "IG-202507-AD03" },
+  "00851": { channel: "TikTok",    id: "TT-202508-V004" },
+  "00873": { channel: "Instagram", id: "IG-202601-R026" },
+  "00880": { channel: "YouTube",   id: "YT-202602-S002" },
+  "00885": { channel: "Threads",   id: "TH-202503-P005" },
+  "00891": { channel: "Instagram", id: "IG-202509-AD07" },
+  "00898": { channel: "X",         id: "X-202511-P044" },
+  "00902": { channel: "Instagram", id: "IG-202510-R019" },
+  "00907": { channel: "X",         id: "X-202512-P049" },
+  "00913": { channel: "Threads",   id: "TH-202504-P002" },
+  "00919": { channel: "YouTube",   id: "YT-202502-S001" },
+};
+
+function inflowOf(m: Member): { channel: string; id: string } {
+  return inflowById[m.no] ?? { channel: "その他", id: "—" };
 }
 
 function calcMonths(joined: string): number {
@@ -95,6 +123,7 @@ export default function MembersPage() {
   const [fApproveFrom,setFApproveFrom]=useState(""); const [fApproveTo,setFApproveTo]=useState("");
   const [fIncome,setFIncome]=useState(""); const [fPref,setFPref]=useState("");
   const [fJob,setFJob]=useState(""); const [fVip,setFVip]=useState(false); const [fEngage,setFEngage]=useState("");
+  const [fInflow,setFInflow]=useState("");
 
   const filtered = allMembers.filter(m=>{
     if(search && !searchHaystack(m).includes(search.trim().toLowerCase())) return false;
@@ -109,6 +138,7 @@ export default function MembersPage() {
     if(fIncome && m.income!==fIncome) return false;
     if(fPref && m.pref!==fPref) return false;
     if(fJob && m.job!==fJob) return false;
+    if(fInflow && inflowOf(m).channel!==fInflow) return false;
     if(fVip && !m.vip) return false;
     if(fEngage && calcEngage(m)!==fEngage) return false;
     return true;
@@ -127,8 +157,8 @@ export default function MembersPage() {
   });
 
   const detail=selected?allMembers.find(m=>m.no===selected):null;
-  function clearFilters(){setFBranch("");setFRank("");setFStatus("");setFPay("");setFJoinFrom("");setFJoinTo("");setFApproveFrom("");setFApproveTo("");setFIncome("");setFPref("");setFJob("");setFVip(false);setFEngage("");}
-  const activeFilterCount=[fBranch,fRank,fStatus,fPay,fJoinFrom,fJoinTo,fApproveFrom,fApproveTo,fIncome,fPref,fJob,fEngage].filter(Boolean).length+(fVip?1:0);
+  function clearFilters(){setFBranch("");setFRank("");setFStatus("");setFPay("");setFJoinFrom("");setFJoinTo("");setFApproveFrom("");setFApproveTo("");setFIncome("");setFPref("");setFJob("");setFInflow("");setFVip(false);setFEngage("");}
+  const activeFilterCount=[fBranch,fRank,fStatus,fPay,fJoinFrom,fJoinTo,fApproveFrom,fApproveTo,fIncome,fPref,fJob,fInflow,fEngage].filter(Boolean).length+(fVip?1:0);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -174,9 +204,9 @@ export default function MembersPage() {
             <div className="grid grid-cols-4 gap-4 max-w-[900px]">
               {/* Search in filter */}
               <div className="col-span-4">
-                <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">横断検索（氏名・会員番号・メール・イベント名・決済情報）</label>
+                <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">横断検索（氏名・会員番号・メール・イベント名・決済情報・流入経路・流入経路ID）</label>
                 <input className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)]"
-                  placeholder="氏名・会員番号・メール・イベント名・決済情報で検索" value={search} onChange={e=>setSearch(e.target.value)} />
+                  placeholder="氏名・会員番号・メール・イベント名・決済情報・流入経路（例: IG-202506）で検索" value={search} onChange={e=>setSearch(e.target.value)} />
               </div>
               <div>
                 <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">ステータス</label>
@@ -192,6 +222,7 @@ export default function MembersPage() {
                 {l:"年収",v:fIncome,set:setFIncome,opts:["","400万未満","400〜600万","600〜800万","800〜1000万","1000〜1500万","1500〜2000万","2000万以上"]},
                 {l:"都道府県",v:fPref,set:setFPref,opts:["","東京","大阪","神奈川","愛知","福岡","その他"]},
                 {l:"職業",v:fJob,set:setFJob,opts:["",...JOBS]},
+                {l:"流入経路",v:fInflow,set:setFInflow,opts:["",...INFLOW_CHANNELS]},
               ].map(f=>(
                 <div key={f.l}>
                   <label className="font-display text-[10px] text-[var(--color-mute)] block mb-1">{f.l}</label>
@@ -235,7 +266,7 @@ export default function MembersPage() {
         )}
 
         <div className="flex-1 overflow-auto px-8 py-4">
-          <table className="w-full text-sm min-w-[1100px]">
+          <table className="w-full text-sm min-w-[1240px]">
             <thead>
               <tr className="font-display text-[10px] text-[var(--color-mute)] text-left border-b border-[var(--color-line)]">
                 <th className="pb-3 pr-3">会員番号</th><th className="pb-3 pr-3">氏名</th>
@@ -246,6 +277,7 @@ export default function MembersPage() {
                 <th className="pb-3 pr-3">支払い</th>
                 <th className="pb-3 pr-3">入会日</th>
                 <th className="pb-3 pr-3">承認日</th>
+                <th className="pb-3 pr-3">流入経路</th>
                 <th className="pb-3 pr-3">退会日</th>
                 <th className="pb-3 pr-3">最終活動日</th>
                 <th className="pb-3 pr-3">参加クラブ</th>
@@ -257,6 +289,7 @@ export default function MembersPage() {
             <tbody className="divide-y divide-[var(--color-line)]">
               {sorted.map(m=>{
                 const engage = calcEngage(m);
+                const inflow = inflowOf(m);
                 return (
                   <tr key={m.no} onClick={()=>{ setSelected(selected===m.no?null:m.no); setDetailTab("basic"); }}
                     className={`cursor-pointer transition ${selected===m.no?"bg-[var(--color-accent)]/8":"hover:bg-[var(--color-bg-soft)]"}`}>
@@ -278,6 +311,10 @@ export default function MembersPage() {
                     <td className="py-3 pr-3"><span className={`text-xs ${m.pay==="遅延"?"text-red-400 font-medium":"text-[var(--color-mute)]"}`}>{m.pay}</span></td>
                     <td className="py-3 pr-3 num text-xs text-[var(--color-mute)]">{m.joined}</td>
                     <td className="py-3 pr-3 num text-xs text-[var(--color-mute)]">{m.approvedDate}</td>
+                    <td className="py-3 pr-3">
+                      <div className="font-display text-xs">{inflow.channel}</div>
+                      <div className="num text-[10px] text-[var(--color-mute)] mt-0.5">{inflow.id}</div>
+                    </td>
                     <td className="py-3 pr-3 num text-xs text-[var(--color-mute)]">{m.withdrawDate??"—"}</td>
                     <td className="py-3 pr-3 num text-xs text-[var(--color-mute)]">{m.lastActivity}</td>
                     <td className="py-3 pr-3 text-xs text-[var(--color-mute)]">{m.clubs.length>0?m.clubs.join("、"):"—"}</td>
@@ -303,6 +340,7 @@ export default function MembersPage() {
       {detail&&(()=>{
         const engage = calcEngage(detail);
         const months = calcMonths(detail.joined);
+        const detailInflow = inflowOf(detail);
         return (
           <div className="w-[420px] border-l border-[var(--color-line)] flex flex-col overflow-hidden bg-[var(--color-bg-soft)] flex-none">
             <div className="px-6 py-4 border-b border-[var(--color-line)] flex items-center justify-between">
@@ -411,6 +449,8 @@ export default function MembersPage() {
                     {l:"勤務先",v:detail.company||"—"},{l:"役職・肩書き",v:detail.title||"—"},
                     {l:"年収",v:detail.income},{l:"紹介者",v:detail.referee},
                     {l:"知ったきっかけ",v:detail.howFound},
+                    {l:"流入経路",v:detailInflow.channel},
+                    {l:"流入経路ID",v:detailInflow.id},
                   ].map(r=>(
                     <div key={r.l} className="flex items-start justify-between border-b border-[var(--color-line)] pb-2">
                       <span className="font-display text-xs text-[var(--color-mute)] flex-none w-28">{r.l}</span>
