@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { usePrimeCapacity, type PrimeArea } from "@/lib/primeCapacity";
 
 type AppStatus = "approved" | "rejected" | "pending";
 
@@ -32,7 +33,40 @@ const rejectedHistory: (Application & { rejectedAt: string; reason: string })[] 
   { id:"A-0801", name:"石田 明", kana:"イシダ アキラ", dob:"1990.02.11", gender:"男性", email:"akira.ishida@example.com", tel:"09055556666", job:"会社員（一般職）", industry:"製造業", company:"△△製造", title:"", area:"埼玉県さいたま市", pref:"埼玉県", region:"東京", income:"300万円〜500万円", referee:"なし", applied:"2026.02.20 10:03", docs:true, interests:["コーヒー"], insta:"akira_ishida", entryReasons:["異性・同性問わず新しい友人づくり"], howFound:"COMMONS X", selfIntro:"近所だから入ってみたい。特にこれといった趣味はないですが交流を楽しみたいです。", lifestyle:"近所で気軽に行ける場所を探していた。", desired:"近くに友人を作りたい。", rejectedAt:"2026.02.26", reason:"申請動機が不十分" },
 ];
 
-type Tab = "list" | "rejected" | "settings";
+interface PrimeApplication {
+  id: string; no: string; name: string; kana: string; area: PrimeArea; email: string;
+  joinedDate: string; eventCount: number; hasUnpaid: boolean; source: "招待" | "申請"; applied: string;
+}
+
+const primeApplications: PrimeApplication[] = [
+  { id: "P-0031", no: "0880", name: "田中 康介", kana: "タナカ コウスケ", area: "東京", email: "kosuke.tanaka@example.com", joinedDate: "2025.11.02", eventCount: 6, hasUnpaid: false, source: "申請", applied: "2026.07.20 10:12" },
+  { id: "P-0032", no: "0885", name: "山本 彩花", kana: "ヤマモト アヤカ", area: "東京", email: "ayaka.yamamoto@example.com", joinedDate: "2025.03.01", eventCount: 24, hasUnpaid: false, source: "招待", applied: "2026.07.18 09:00" },
+  { id: "P-0033", no: "0851", name: "森田 桂", kana: "モリタ カツラ", area: "大阪", email: "katsura.morita@example.com", joinedDate: "2026.07.10", eventCount: 1, hasUnpaid: false, source: "申請", applied: "2026.07.22 15:40" },
+  { id: "P-0034", no: "0843", name: "山本 直", kana: "ヤマモト ナオ", area: "福岡", email: "nao.yamamoto@example.com", joinedDate: "2025.09.15", eventCount: 3, hasUnpaid: true, source: "申請", applied: "2026.07.15 12:00" },
+];
+
+interface SuspendApplication {
+  id: string; no: string; name: string; kana: string; email: string;
+  joinedDate: string; lastSuspendEnd: string | null;
+  reason: string; reasonDetail: string; duration: string; applied: string;
+}
+
+const suspendApplications: SuspendApplication[] = [
+  { id: "S-0011", no: "0842", name: "小林 誠", kana: "コバヤシ マコト", email: "makoto.kobayashi@example.com", joinedDate: "2025.10.01", lastSuspendEnd: null, reason: "長期出張・海外赴任", reasonDetail: "海外拠点への赴任が決まったため、半年ほど日本を離れる予定です。", duration: "6ヶ月", applied: "2026.07.20 10:00" },
+  { id: "S-0012", no: "0803", name: "西村 彩", kana: "ニシムラ アヤ", email: "aya.nishimura@example.com", joinedDate: "2024.05.15", lastSuspendEnd: "2026.02.28", reason: "病気・けが", reasonDetail: "療養のため、しばらくイベント参加が難しい状況です。", duration: "3ヶ月", applied: "2026.07.22 14:30" },
+  { id: "S-0013", no: "0790", name: "岡田 悠人", kana: "オカダ ユウト", email: "yuto.okada@example.com", joinedDate: "2026.06.01", lastSuspendEnd: null, reason: "試験や長期的な繁忙", reasonDetail: "資格試験の勉強のため参加が難しくなりました。", duration: "2ヶ月", applied: "2026.07.24 09:15" },
+];
+
+// COMMONS入会日（YYYY.MM.DD）から経過月数を計算
+function monthsSince(dateStr: string): number {
+  const [y, m, d] = dateStr.split(".").map(Number);
+  const today = new Date();
+  let months = (today.getFullYear() - y) * 12 + (today.getMonth() - (m - 1));
+  if (today.getDate() < d) months--;
+  return months;
+}
+
+type Tab = "list" | "prime" | "suspend" | "rejected" | "settings";
 type Rating = "circle" | "triangle" | "cross";
 
 interface GenderScores { circle: number; triangle: number; cross: number; }
@@ -115,6 +149,45 @@ export default function ScreeningPage() {
   const [scoreSettings, setScoreSettings] = useState<ScoreCriterion[]>(DEFAULT_SCORE_SETTINGS);
   const [settingsSaved, setSettingsSaved] = useState(false);
 
+  // PRIME申込一覧
+  const { areas: primeAreaCapacity, totalCurrent: primeTotalCurrent, totalLimit: primeTotalLimit } = usePrimeCapacity();
+  const [primeSelected, setPrimeSelected] = useState<string>(primeApplications[0].id);
+  const [primeDone, setPrimeDone] = useState<Record<string, AppStatus>>({});
+  const [primeViolationChecked, setPrimeViolationChecked] = useState<Record<string, boolean>>({});
+  const [primeRejectModal, setPrimeRejectModal] = useState<string | null>(null);
+  const [primeRejectComment, setPrimeRejectComment] = useState("");
+
+  function primeApprove(id: string) { setPrimeDone(prev => ({ ...prev, [id]: "approved" })); }
+  function primeReject(id: string) { setPrimeDone(prev => ({ ...prev, [id]: "rejected" })); }
+  function confirmPrimeReject() {
+    if (!primeRejectModal) return;
+    primeReject(primeRejectModal);
+    setPrimeRejectModal(null);
+    setPrimeRejectComment("");
+  }
+  function toggleViolationCheck(id: string) {
+    setPrimeViolationChecked(prev => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  // 休会申請一覧
+  const [suspendSelected, setSuspendSelected] = useState<string>(suspendApplications[0].id);
+  const [suspendDone, setSuspendDone] = useState<Record<string, AppStatus>>({});
+  const [suspendViolationChecked, setSuspendViolationChecked] = useState<Record<string, boolean>>({});
+  const [suspendRejectModal, setSuspendRejectModal] = useState<string | null>(null);
+  const [suspendRejectComment, setSuspendRejectComment] = useState("");
+
+  function suspendApprove(id: string) { setSuspendDone(prev => ({ ...prev, [id]: "approved" })); }
+  function suspendReject(id: string) { setSuspendDone(prev => ({ ...prev, [id]: "rejected" })); }
+  function confirmSuspendReject() {
+    if (!suspendRejectModal) return;
+    suspendReject(suspendRejectModal);
+    setSuspendRejectModal(null);
+    setSuspendRejectComment("");
+  }
+  function toggleSuspendViolationCheck(id: string) {
+    setSuspendViolationChecked(prev => ({ ...prev, [id]: !prev[id] }));
+  }
+
   function saveScore(id: string) {
     setSavedIds(prev => new Set([...prev, id]));
   }
@@ -185,6 +258,8 @@ export default function ScreeningPage() {
 
   const detail = apps.find(a => a.id === selected);
   const rejDetail = rejectedHistory.find(r => r.id === rejectedSelected);
+  const primeDetail = primeApplications.find(p => p.id === primeSelected);
+  const suspendDetail = suspendApplications.find(s => s.id === suspendSelected);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -196,11 +271,16 @@ export default function ScreeningPage() {
         {tab === "rejected" && (
           <button onClick={downloadCSV} className="btn-outline !py-2 text-xs">CSV出力</button>
         )}
+        {tab === "prime" && (
+          <div className="font-display text-xs text-[var(--color-mute)]">
+            現在のPRIME会員数 <span className="num text-[var(--color-accent-deep)]">{primeTotalCurrent}</span> / 定員 <span className="num">{primeTotalLimit}</span>名
+          </div>
+        )}
       </div>
 
       {/* Inline tabs */}
       <div className="px-8 border-b border-[var(--color-line)] flex gap-6 flex-none">
-        {([["list","申込一覧"],["rejected","否決履歴"],["settings","審査スコア設定"]] as const).map(([k,l])=>(
+        {([["list","申込一覧"],["prime","PRIME申込一覧"],["suspend","休会申請一覧"],["rejected","否決履歴"],["settings","審査スコア設定"]] as const).map(([k,l])=>(
           <button key={k} onClick={()=>setTab(k)}
             className={`font-display text-sm py-4 border-b-2 transition ${tab===k?"border-[var(--color-accent)] text-[var(--color-accent-deep)]":"border-transparent text-[var(--color-mute)]"}`}>
             {l}
@@ -385,6 +465,235 @@ export default function ScreeningPage() {
                     ) : (
                       <div className="font-display text-xs text-red-400">⚠ 書類未提出</div>
                     )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {tab === "prime" && (
+        <div className="flex flex-1 overflow-hidden">
+          <div className="w-[260px] border-r border-[var(--color-line)] overflow-y-auto flex-none">
+            {primeApplications.map(p => (
+              <button key={p.id} onClick={() => setPrimeSelected(p.id)}
+                className={`w-full text-left px-5 py-4 border-b border-[var(--color-line)] transition ${primeSelected===p.id?"bg-[var(--color-accent)]/8":"hover:bg-[var(--color-bg-soft)]"}`}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-display text-sm">{p.name}</span>
+                  {primeDone[p.id] ? (
+                    <span className={`tag text-[9px] ${primeDone[p.id]==="approved"?"tag-accent":""}`}>{primeDone[p.id]==="approved"?"承認済":"否決済"}</span>
+                  ) : (
+                    <span className="tag text-[9px]">審査中</span>
+                  )}
+                </div>
+                <div className="font-display text-[10px] text-[var(--color-mute)]">{p.id} · {p.applied}</div>
+                <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">{p.area} · {p.source}</div>
+              </button>
+            ))}
+          </div>
+
+          {primeDetail && (() => {
+            const joinCheck = monthsSince(primeDetail.joinedDate) >= 1;
+            const eventCheck = primeDetail.eventCount >= 2;
+            const paidCheck = !primeDetail.hasUnpaid;
+            const capacity = primeAreaCapacity.find(a => a.area === primeDetail.area);
+            const capacityCheck = !!capacity?.hasSpace;
+            const violationChecked = primeViolationChecked[primeDetail.id] ?? false;
+            const status = primeDone[primeDetail.id];
+            const canApprove = capacityCheck && violationChecked && !status;
+            return (
+              <div className="flex-1 overflow-y-auto px-8 py-6">
+                <div className="max-w-[720px]">
+                  <div className="flex items-center justify-end mb-5">
+                    {!status ? (
+                      <div className="flex gap-2">
+                        <button onClick={() => setPrimeRejectModal(primeDetail.id)} className="btn-outline !py-2 text-xs border-red-400/40 text-red-400 hover:bg-red-400/8">否決</button>
+                        <button onClick={() => canApprove && primeApprove(primeDetail.id)} disabled={!canApprove}
+                          title={!capacityCheck ? "定員に空きがないため承認できません" : !violationChecked ? "規約違反・迷惑行為の確認チェックが必要です" : undefined}
+                          className="btn-primary !py-2 text-xs disabled:opacity-40 disabled:cursor-not-allowed">
+                          承認
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <span className={`tag ${status==="approved"?"tag-accent":""}`}>{status==="approved"?"✓ 承認済み":"✗ 否決済み"}</span>
+                        <a href={`/admin/inquiries?tab=other&compose=1&user=${primeDetail.no}&name=${encodeURIComponent(primeDetail.name)}`}
+                          className="btn-primary !py-2 text-xs">DMを送付する</a>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="num text-xs text-[var(--color-mute)] mb-1">{primeDetail.id} · #{primeDetail.no}</div>
+                    <h2 className="font-display text-2xl">{primeDetail.name}</h2>
+                    <div className="font-display text-xs text-[var(--color-mute)] mt-1">{primeDetail.kana} · {primeDetail.applied} 申込</div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3 mb-5">
+                    {[{l:"エリア",v:primeDetail.area},{l:"メールアドレス",v:primeDetail.email},{l:"申込経路",v:primeDetail.source}].map(r=>(
+                      <div key={r.l} className="card p-4">
+                        <div className="font-display text-[10px] text-[var(--color-mute)] mb-1">{r.l}</div>
+                        <div className="text-sm break-all">{r.v}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* 審査条件 */}
+                  <div className="card p-5 mb-5">
+                    <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-3">PRIME審査条件</div>
+                    <div className="divide-y divide-[var(--color-line)]">
+                      <div className="flex items-center justify-between py-3">
+                        <div>
+                          <div className="text-sm">COMMONSへの入会から1ヶ月以上経過している</div>
+                          <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">入会日 {primeDetail.joinedDate}（自動判定）</div>
+                        </div>
+                        <span className={`font-display text-sm ${joinCheck?"text-green-400":"text-red-400"}`}>{joinCheck?"〇":"✖"}</span>
+                      </div>
+                      <div className="flex items-center justify-between py-3">
+                        <div>
+                          <div className="text-sm">COMMONSのイベントに2回以上参加している</div>
+                          <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">参加実績 {primeDetail.eventCount}回（自動判定）</div>
+                        </div>
+                        <span className={`font-display text-sm ${eventCheck?"text-green-400":"text-red-400"}`}>{eventCheck?"〇":"✖"}</span>
+                      </div>
+                      <div className="flex items-center justify-between py-3">
+                        <div>
+                          <div className="text-sm">未払い料金がない</div>
+                          <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">（自動判定）</div>
+                        </div>
+                        <span className={`font-display text-sm ${paidCheck?"text-green-400":"text-red-400"}`}>{paidCheck?"〇":"✖"}</span>
+                      </div>
+                      <div className="flex items-center justify-between py-3">
+                        <div>
+                          <div className="text-sm">PRIMEの定員に空きがある（{primeDetail.area}）</div>
+                          <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">
+                            {capacity ? `${capacity.current}名 / 定員${capacity.limit}名（残${capacity.remaining}名）` : "—"}（PRIME管理の設定を自動参照）
+                          </div>
+                        </div>
+                        <span className={`font-display text-sm ${capacityCheck?"text-green-400":"text-red-400"}`}>{capacityCheck?"〇":"✖"}</span>
+                      </div>
+                      <label className="flex items-center justify-between py-3 cursor-pointer">
+                        <div>
+                          <div className="text-sm">重大な規約違反や迷惑行為がない</div>
+                          <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">運営が目視確認のうえチェックしてください</div>
+                        </div>
+                        <input type="checkbox" checked={violationChecked} onChange={() => toggleViolationCheck(primeDetail.id)}
+                          disabled={!!status} className="w-5 h-5 accent-[var(--color-accent)]" />
+                      </label>
+                      <div className="flex items-center justify-between py-3">
+                        <div>
+                          <div className="text-sm">運営からの招待、またはユーザー申請後に運営の承認を受けている</div>
+                          <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">経路: {primeDetail.source}</div>
+                        </div>
+                        <span className="font-display text-sm">{status==="approved"?"〇":status==="rejected"?"✖":"審査中"}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {tab === "suspend" && (
+        <div className="flex flex-1 overflow-hidden">
+          <div className="w-[260px] border-r border-[var(--color-line)] overflow-y-auto flex-none">
+            {suspendApplications.map(s => (
+              <button key={s.id} onClick={() => setSuspendSelected(s.id)}
+                className={`w-full text-left px-5 py-4 border-b border-[var(--color-line)] transition ${suspendSelected===s.id?"bg-[var(--color-accent)]/8":"hover:bg-[var(--color-bg-soft)]"}`}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-display text-sm">{s.name}</span>
+                  {suspendDone[s.id] ? (
+                    <span className={`tag text-[9px] ${suspendDone[s.id]==="approved"?"tag-accent":""}`}>{suspendDone[s.id]==="approved"?"承認済":"否決済"}</span>
+                  ) : (
+                    <span className="tag text-[9px]">審査中</span>
+                  )}
+                </div>
+                <div className="font-display text-[10px] text-[var(--color-mute)]">{s.id} · {s.applied}</div>
+                <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">{s.reason} · {s.duration}</div>
+              </button>
+            ))}
+          </div>
+
+          {suspendDetail && (() => {
+            const joinCheck = monthsSince(suspendDetail.joinedDate) >= 3;
+            const reuseCheck = suspendDetail.lastSuspendEnd === null || monthsSince(suspendDetail.lastSuspendEnd) >= 12;
+            const violationChecked = suspendViolationChecked[suspendDetail.id] ?? false;
+            const status = suspendDone[suspendDetail.id];
+            const canApprove = joinCheck && reuseCheck && violationChecked && !status;
+            return (
+              <div className="flex-1 overflow-y-auto px-8 py-6">
+                <div className="max-w-[720px]">
+                  <div className="flex items-center justify-end mb-5">
+                    {!status ? (
+                      <div className="flex gap-2">
+                        <button onClick={() => setSuspendRejectModal(suspendDetail.id)} className="btn-outline !py-2 text-xs border-red-400/40 text-red-400 hover:bg-red-400/8">否決</button>
+                        <button onClick={() => canApprove && suspendApprove(suspendDetail.id)} disabled={!canApprove}
+                          title={!joinCheck ? "入会から3ヶ月経過していないため承認できません" : !reuseCheck ? "前回休会終了から12ヶ月経過していないため承認できません" : !violationChecked ? "規約違反・不正利用の確認チェックが必要です" : undefined}
+                          className="btn-primary !py-2 text-xs disabled:opacity-40 disabled:cursor-not-allowed">
+                          承認
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <span className={`tag ${status==="approved"?"tag-accent":""}`}>{status==="approved"?"✓ 承認済み":"✗ 否決済み"}</span>
+                        <a href={`/admin/inquiries?tab=other&compose=1&user=${suspendDetail.no}&name=${encodeURIComponent(suspendDetail.name)}`}
+                          className="btn-primary !py-2 text-xs">DMを送付する</a>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="num text-xs text-[var(--color-mute)] mb-1">{suspendDetail.id} · #{suspendDetail.no}</div>
+                    <h2 className="font-display text-2xl">{suspendDetail.name}</h2>
+                    <div className="font-display text-xs text-[var(--color-mute)] mt-1">{suspendDetail.kana} · {suspendDetail.applied} 申請</div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3 mb-5">
+                    {[{l:"メールアドレス",v:suspendDetail.email},{l:"休会理由",v:suspendDetail.reason},{l:"希望休会期間",v:suspendDetail.duration}].map(r=>(
+                      <div key={r.l} className="card p-4">
+                        <div className="font-display text-[10px] text-[var(--color-mute)] mb-1">{r.l}</div>
+                        <div className="text-sm break-all">{r.v}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="card p-5 mb-5">
+                    <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-2">理由の詳細</div>
+                    <p className="text-sm leading-relaxed text-[var(--color-mute)]">{suspendDetail.reasonDetail}</p>
+                  </div>
+
+                  {/* 審査条件 */}
+                  <div className="card p-5 mb-5">
+                    <div className="font-display text-[10px] text-[var(--color-accent-deep)] mb-3">休会審査条件</div>
+                    <div className="divide-y divide-[var(--color-line)]">
+                      <div className="flex items-center justify-between py-3">
+                        <div>
+                          <div className="text-sm">入会から3ヶ月以上経過している</div>
+                          <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">入会日 {suspendDetail.joinedDate}（自動判定）</div>
+                        </div>
+                        <span className={`font-display text-sm ${joinCheck?"text-green-400":"text-red-400"}`}>{joinCheck?"〇":"✖"}</span>
+                      </div>
+                      <div className="flex items-center justify-between py-3">
+                        <div>
+                          <div className="text-sm">前回の休会終了から12ヶ月以上経過している（原則12ヶ月に1回まで）</div>
+                          <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">
+                            {suspendDetail.lastSuspendEnd ? `前回休会終了 ${suspendDetail.lastSuspendEnd}（自動判定）` : "休会履歴なし（自動判定）"}
+                          </div>
+                        </div>
+                        <span className={`font-display text-sm ${reuseCheck?"text-green-400":"text-red-400"}`}>{reuseCheck?"〇":"✖"}</span>
+                      </div>
+                      <label className="flex items-center justify-between py-3 cursor-pointer">
+                        <div>
+                          <div className="text-sm">未払い料金・規約違反の調査中でない、不正利用の疑いがない</div>
+                          <div className="font-display text-[10px] text-[var(--color-mute)] mt-0.5">運営が目視確認のうえチェックしてください</div>
+                        </div>
+                        <input type="checkbox" checked={violationChecked} onChange={() => toggleSuspendViolationCheck(suspendDetail.id)}
+                          disabled={!!status} className="w-5 h-5 accent-[var(--color-accent)]" />
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -578,6 +887,34 @@ export default function ScreeningPage() {
             <div className="flex gap-3 mt-5">
               <button onClick={confirmReject} className="flex-1 btn-primary justify-center text-sm !bg-red-500 !from-red-500 !to-red-600">否決を確定する</button>
               <button onClick={()=>{setRejectModal(null);setRejectComment("");}} className="flex-1 btn-outline justify-center text-sm">キャンセル</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {suspendRejectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={()=>{setSuspendRejectModal(null);setSuspendRejectComment("");}}>
+          <div className="bg-[var(--color-bg-soft)] rounded-2xl p-8 w-[480px]" onClick={e=>e.stopPropagation()}>
+            <h2 className="font-display text-xl mb-2">否決コメント</h2>
+            <p className="font-display text-xs text-[var(--color-mute)] mb-5">休会申請の否決理由を入力してください。</p>
+            <textarea value={suspendRejectComment} onChange={e=>setSuspendRejectComment(e.target.value)} rows={4} placeholder="例: 未払い料金があるため" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-3 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)] resize-none" />
+            <div className="flex gap-3 mt-5">
+              <button onClick={confirmSuspendReject} className="flex-1 btn-primary justify-center text-sm !bg-red-500 !from-red-500 !to-red-600">否決を確定する</button>
+              <button onClick={()=>{setSuspendRejectModal(null);setSuspendRejectComment("");}} className="flex-1 btn-outline justify-center text-sm">キャンセル</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {primeRejectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={()=>{setPrimeRejectModal(null);setPrimeRejectComment("");}}>
+          <div className="bg-[var(--color-bg-soft)] rounded-2xl p-8 w-[480px]" onClick={e=>e.stopPropagation()}>
+            <h2 className="font-display text-xl mb-2">否決コメント</h2>
+            <p className="font-display text-xs text-[var(--color-mute)] mb-5">PRIME申込の否決理由を入力してください。</p>
+            <textarea value={primeRejectComment} onChange={e=>setPrimeRejectComment(e.target.value)} rows={4} placeholder="例: 定員に空きがないため" className="w-full bg-[var(--color-bg)] border border-[var(--color-line)] rounded-xl px-4 py-3 text-sm outline-none focus:border-[var(--color-accent)]/50 placeholder-[var(--color-mute)] resize-none" />
+            <div className="flex gap-3 mt-5">
+              <button onClick={confirmPrimeReject} className="flex-1 btn-primary justify-center text-sm !bg-red-500 !from-red-500 !to-red-600">否決を確定する</button>
+              <button onClick={()=>{setPrimeRejectModal(null);setPrimeRejectComment("");}} className="flex-1 btn-outline justify-center text-sm">キャンセル</button>
             </div>
           </div>
         </div>

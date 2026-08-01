@@ -16,6 +16,10 @@ const rankConfig: Record<Rank, { bg: string; border: string; textAccent: string;
 
 const currentRank: Rank = "GOLD";
 
+// 休会中会員のマイページ表示を確認する場合は "suspended" に切り替える
+const memberStatus: "active" | "suspended" = "active";
+const suspension = { start: "2026/07/01", end: "2026/09/30" };
+
 const upcomingEvents = [
   { id: "music-bar-0715", month: "7月", day: "15", weekday: "土", name: "COMMONS MUSIC BAR", venue: "SOUND BAR HOWL · 渋谷", time: "18:00〜" },
   { id: "wine-salon-0802", month: "8月", day: "2",  weekday: "土", name: "COMMONS WINE SALON", venue: "La Cave · 麻布十番",    time: "19:00〜" },
@@ -155,7 +159,33 @@ export default function MyPage() {
                 <div className="font-elegant text-[9px]" style={{ color: `${rc.textAccent}99` }}>{rc.label}</div>
               </div>
             </div>
+            {memberStatus === "suspended" && (
+              <div className="relative mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: "rgba(184,152,90,0.15)", border: "1px solid rgba(184,152,90,0.4)" }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: rc.textAccent }} />
+                <span className="font-display text-[10px]" style={{ color: rc.textAccent }}>休会中</span>
+              </div>
+            )}
           </section>
+
+          {memberStatus === "suspended" && (
+            <section className="card p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="font-display text-xs font-semibold text-[var(--color-accent-deep)]">休会中</div>
+                <Link href="/mypage/suspend" className="font-display text-[10px] text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] transition">
+                  延長を申請する ›
+                </Link>
+              </div>
+              <p className="font-display text-xs text-[var(--color-mute)]">
+                {suspension.start} 〜 {suspension.end}（期間終了で自動的に復帰します）
+              </p>
+              <p className="font-display text-[11px] text-[var(--color-mute)] leading-relaxed">
+                休会中はイベント一覧の閲覧のみご利用いただけます。タイムライン・DM・クラブ・クーポンはご利用いただけません。
+              </p>
+              <Link href="/events" className="mt-1 w-full btn-outline justify-center py-2.5 text-sm">
+                イベント一覧を見る
+              </Link>
+            </section>
+          )}
 
           {/* 2. プロフィール */}
           <section className="card p-4">
@@ -253,6 +283,7 @@ export default function MyPage() {
           </Link>
 
           {/* 6. PRIMEにアップグレード */}
+          {memberStatus === "active" && (
           <Link
             href="/vip"
             className="block rounded-2xl overflow-hidden relative"
@@ -277,8 +308,10 @@ export default function MyPage() {
               </svg>
             </div>
           </Link>
+          )}
 
           {/* 7. 契約プラン */}
+          {memberStatus === "active" && (
           <section className="card p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="font-display text-xs font-semibold text-[var(--color-accent-deep)]">契約プラン</div>
@@ -302,11 +335,16 @@ export default function MyPage() {
               </div>
             </div>
           </section>
+          )}
 
           {/* キャンペーン */}
           <section>
             <div className="flex items-baseline justify-between mb-3">
               <h2 className="font-display text-sm font-semibold">キャンペーン</h2>
+              <Link href="/campaigns" className="font-display text-[10px] text-[var(--color-mute)] hover:text-[var(--color-accent-deep)] transition flex items-center gap-1">
+                すべて見る
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </Link>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-muted">
               {campaigns.map((c) => (
@@ -330,17 +368,28 @@ export default function MyPage() {
           {/* 8. メニュー */}
           <section>
             <div className="space-y-px bg-[var(--color-line)] rounded-2xl overflow-hidden border border-[var(--color-line)]">
-              {mainMenuItems.map((m) => (
-                <Link
-                  key={m.label}
-                  href={m.href}
-                  className="w-full flex items-center gap-4 px-5 py-4 bg-[var(--color-bg)] hover:bg-[var(--color-bg-soft)] transition"
-                >
-                  <span className="font-display text-sm flex-1">{m.label}</span>
-                  {m.badge && <span className="tag tag-accent">{m.badge}</span>}
-                  <span className="text-[var(--color-mute)]">›</span>
-                </Link>
-              ))}
+              {mainMenuItems.map((m) => {
+                const disabled = memberStatus === "suspended" && m.label === "クーポン";
+                if (disabled) {
+                  return (
+                    <div key={m.label} className="w-full flex items-center gap-4 px-5 py-4 bg-[var(--color-bg)] opacity-40">
+                      <span className="font-display text-sm flex-1">{m.label}</span>
+                      <span className="font-display text-[10px] text-[var(--color-mute)]">休会中は利用不可</span>
+                    </div>
+                  );
+                }
+                return (
+                  <Link
+                    key={m.label}
+                    href={m.href}
+                    className="w-full flex items-center gap-4 px-5 py-4 bg-[var(--color-bg)] hover:bg-[var(--color-bg-soft)] transition"
+                  >
+                    <span className="font-display text-sm flex-1">{m.label}</span>
+                    {m.badge && <span className="tag tag-accent">{m.badge}</span>}
+                    <span className="text-[var(--color-mute)]">›</span>
+                  </Link>
+                );
+              })}
               <Link href="/contact" className="w-full flex items-center gap-4 px-5 py-4 bg-[var(--color-bg)] hover:bg-[var(--color-bg-soft)] transition">
                 <span className="font-display text-sm flex-1">お問い合わせ</span>
                 <span className="text-[var(--color-mute)]">›</span>

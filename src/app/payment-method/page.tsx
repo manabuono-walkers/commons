@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import BottomNav from "@/components/BottomNav";
 
 export default function PaymentMethodPage() {
   const router = useRouter();
@@ -8,8 +9,6 @@ export default function PaymentMethodPage() {
   const [expiry, setExpiry] = useState("08 / 28");
   const [cvv, setCvv] = useState("");
   const [name, setName] = useState("RIKU AOYAMA");
-  const [coupon, setCoupon] = useState("");
-  const [couponMsg, setCouponMsg] = useState("");
   const [done, setDone] = useState(false);
 
   function formatCardNum(v: string) {
@@ -18,15 +17,6 @@ export default function PaymentMethodPage() {
   function formatExpiry(v: string) {
     const d = v.replace(/\D/g, "").slice(0, 4);
     return d.length >= 3 ? `${d.slice(0, 2)} / ${d.slice(2)}` : d;
-  }
-
-  function applyCoupon() {
-    const valid = ["COMMONS500", "WINE1000", "SUMMER2026"];
-    if (valid.includes(coupon.trim().toUpperCase())) {
-      setCouponMsg("✓ クーポンを適用しました");
-    } else {
-      setCouponMsg("このクーポンは無効です");
-    }
   }
 
   if (done) {
@@ -50,7 +40,7 @@ export default function PaymentMethodPage() {
 
   return (
     <div className="flex justify-center bg-[var(--color-bg)] min-h-screen">
-      <div className="w-full max-w-[430px] pb-16">
+      <div className="w-full max-w-[430px] pb-24">
         {/* Header */}
         <header className="sticky top-0 z-40 bg-[var(--color-bg)]/95 backdrop-blur-md border-b border-[var(--color-line)] px-5 py-3">
           <div className="flex items-center justify-between">
@@ -130,29 +120,6 @@ export default function PaymentMethodPage() {
             </div>
           </div>
 
-          {/* Coupon */}
-          <div className="card p-5">
-            <p className="font-display text-xs text-[var(--color-accent-deep)] mb-3">クーポンコード</p>
-            <div className="flex gap-2">
-              <input
-                className="input-field !py-2.5 text-sm flex-1"
-                placeholder="コードを入力"
-                value={coupon}
-                onChange={e => { setCoupon(e.target.value); setCouponMsg(""); }}
-              />
-              <button
-                onClick={applyCoupon}
-                disabled={!coupon.trim()}
-                className="font-display text-xs px-4 py-2.5 rounded-xl border border-[var(--color-accent)] text-[var(--color-accent-deep)] hover:bg-[var(--color-accent)]/10 transition disabled:opacity-40 whitespace-nowrap"
-              >
-                適用
-              </button>
-            </div>
-            {couponMsg && (
-              <p className={`text-xs mt-2 ${couponMsg.startsWith("✓") ? "text-[var(--color-accent-deep)]" : "text-red-400"}`}>{couponMsg}</p>
-            )}
-          </div>
-
           {/* Payment summary */}
           <div className="card p-5 space-y-3">
             <p className="font-display text-xs text-[var(--color-accent-deep)] mb-1">お支払い情報</p>
@@ -191,6 +158,8 @@ export default function PaymentMethodPage() {
             </p>
           </div>
         </div>
+
+        <BottomNav />
       </div>
     </div>
   );

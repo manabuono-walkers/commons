@@ -16,11 +16,18 @@ const WITHDRAW_REASONS = [
 export default function SettingsPage() {
   const router = useRouter();
   const [showWithdraw, setShowWithdraw] = useState(false);
+  const [withdrawStep, setWithdrawStep] = useState<"suggest" | "reason">("suggest");
   const [reason, setReason] = useState<string | null>(null);
   const [otherReason, setOtherReason] = useState("");
 
+  function openWithdraw() {
+    setWithdrawStep("suggest");
+    setShowWithdraw(true);
+  }
+
   function closeWithdraw() {
     setShowWithdraw(false);
+    setWithdrawStep("suggest");
     setReason(null);
     setOtherReason("");
   }
@@ -55,8 +62,20 @@ export default function SettingsPage() {
               <span className="font-display text-sm flex-1">通知設定</span>
               <span className="text-[var(--color-mute)]">›</span>
             </Link>
+            <Link href="/mypage/password-change" className="w-full flex items-center gap-4 px-5 py-4 bg-[var(--color-bg)] hover:bg-[var(--color-bg-soft)] transition">
+              <span className="font-display text-sm flex-1">パスワード変更</span>
+              <span className="text-[var(--color-mute)]">›</span>
+            </Link>
+            <Link href="/payment-method" className="w-full flex items-center gap-4 px-5 py-4 bg-[var(--color-bg)] hover:bg-[var(--color-bg-soft)] transition">
+              <span className="font-display text-sm flex-1">お支払い方法の変更</span>
+              <span className="text-[var(--color-mute)]">›</span>
+            </Link>
+            <Link href="/mypage/suspend" className="w-full flex items-center gap-4 px-5 py-4 bg-[var(--color-bg)] hover:bg-[var(--color-bg-soft)] transition">
+              <span className="font-display text-sm flex-1">休会する</span>
+              <span className="text-[var(--color-mute)]">›</span>
+            </Link>
             <button
-              onClick={() => setShowWithdraw(true)}
+              onClick={openWithdraw}
               className="w-full flex items-center gap-4 px-5 py-4 bg-[var(--color-bg)] hover:bg-[var(--color-bg-soft)] transition text-left"
             >
               <span className="font-display text-sm flex-1 text-red-400">退会する</span>
@@ -65,7 +84,43 @@ export default function SettingsPage() {
           </div>
         </main>
 
-        {showWithdraw && (
+        {showWithdraw && withdrawStep === "suggest" && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={closeWithdraw}>
+            <div className="w-full max-w-[430px] bg-[var(--color-bg-soft)] rounded-t-3xl p-6 pb-10 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="w-10 h-1 bg-[var(--color-line)] rounded-full mx-auto mb-6" />
+              <h2 className="font-display text-xl font-semibold">退会の前に、休会はいかがですか？</h2>
+              <p className="mt-3 text-sm text-[var(--color-mute)] leading-relaxed">
+                退会すると会員資格・ランクやポイント、参加履歴などのデータがすべて削除され、復元できません。長期出張やお忙しい時期などで一時的に参加が難しいだけであれば、「休会」で会員資格を維持したまま参加を一時停止できます。
+              </p>
+              <div className="mt-4 card p-4 space-y-1.5">
+                <p className="font-display text-xs text-[var(--color-accent-deep)] mb-1">休会制度の概要</p>
+                <p className="font-display text-xs text-[var(--color-mute)]">・休会中の月額：¥330（税込）</p>
+                <p className="font-display text-xs text-[var(--color-mute)]">・期間：1ヶ月〜最長6ヶ月（申請制・承認制）</p>
+                <p className="font-display text-xs text-[var(--color-mute)]">・ランクは維持されます（XPは付与されません）</p>
+                <p className="font-display text-xs text-[var(--color-mute)]">・休会期間終了で自動的に復帰します</p>
+              </div>
+
+              <div className="mt-6 space-y-3">
+                <Link
+                  href="/mypage/suspend"
+                  onClick={closeWithdraw}
+                  className="w-full btn-primary justify-center py-3.5 text-sm"
+                >
+                  休会について詳しく見る
+                </Link>
+                <button
+                  onClick={() => setWithdrawStep("reason")}
+                  className="w-full py-3.5 rounded-full font-display text-sm border border-[var(--color-line)] text-[var(--color-mute)] hover:text-[var(--color-ink)] hover:border-[var(--color-ink)] transition"
+                >
+                  このまま退会手続きを進める
+                </button>
+                <button onClick={closeWithdraw} className="w-full py-2 font-display text-xs text-[var(--color-mute)] hover:text-[var(--color-ink)] transition">キャンセル</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showWithdraw && withdrawStep === "reason" && (
           <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={closeWithdraw}>
             <div className="w-full max-w-[430px] bg-[var(--color-bg-soft)] rounded-t-3xl p-6 pb-10 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
               <div className="w-10 h-1 bg-[var(--color-line)] rounded-full mx-auto mb-6" />
