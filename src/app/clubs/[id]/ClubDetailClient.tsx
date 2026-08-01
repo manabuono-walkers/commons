@@ -256,7 +256,7 @@ export default function ClubDetailClient({ id }: { id: string }) {
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5">
             {club.reports.map(r => (
-              <Link key={r.id} href={`/clubs/${id}/reports#report-${r.id}`} className="flex-none w-[200px] rounded-2xl overflow-hidden border border-[var(--color-line)] hover:border-[var(--color-accent)]/60 transition cursor-pointer">
+              <Link key={r.id} href={`/clubs/${id}/reports/${r.id}`} className="flex-none w-[200px] rounded-2xl overflow-hidden border border-[var(--color-line)] hover:border-[var(--color-accent)]/60 transition cursor-pointer">
                 <div className="relative h-[100px] bg-[var(--color-bg-soft)] flex items-center justify-center">
                   <div className="flex gap-1.5 p-2">
                     {Array.from({ length: Math.min(r.images, 3) }).map((_, i) => (
@@ -307,6 +307,12 @@ export default function ClubDetailClient({ id }: { id: string }) {
                   </div>
                 ))}
               </div>
+              <Link
+                href={`/clubs/${id}/members`}
+                className="mt-4 w-full py-2.5 rounded-xl border border-[var(--color-line)] font-display text-xs text-[var(--color-accent-deep)] hover:border-[var(--color-accent)]/60 transition flex items-center justify-center gap-1"
+              >
+                すべて表示（<span className="num">{club.members}</span>人）→
+              </Link>
             </div>
 
             <div className="card p-6 text-center">
@@ -552,6 +558,12 @@ export default function ClubDetailClient({ id }: { id: string }) {
                 {club.members > club.memberList.length && (
                   <div className="py-4 text-center font-display text-xs text-[var(--color-mute)]">他 {club.members - club.memberList.length}名参加中</div>
                 )}
+                <Link
+                  href={`/clubs/${id}/members`}
+                  className="mt-2 w-full py-3 rounded-xl border border-[var(--color-line)] font-display text-xs text-[var(--color-accent-deep)] hover:border-[var(--color-accent)]/60 transition flex items-center justify-center gap-1"
+                >
+                  すべて表示（<span className="num">{club.members}</span>人）→
+                </Link>
               </div>
             )}
           </>
