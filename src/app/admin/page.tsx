@@ -26,6 +26,7 @@ const memberSummary = {
   newThisMonth: 51,
   cumulativeTotal: 1570, // 累計会員数（退会者含む、これまでの入会総数）
   activeTotal: 1412,     // 在籍会員数（現在アクティブ）
+  suspendedTotal: 24,    // 休会中会員数
   withdrawnTotal: 158,   // 退会済み累計
 };
 
@@ -213,7 +214,7 @@ export default function AnalyticsPage() {
             {/* 会員数（新規・累計・在籍） */}
             <div className="card p-6">
               <div className="font-display text-sm mb-4">会員数（{PERIOD_LABELS[period]}）</div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 <div className="bg-[var(--color-bg)] rounded-xl p-4 border border-[var(--color-line)]">
                   <div className="font-display text-[10px] text-[var(--color-mute)] mb-1">新規入会数</div>
                   <div className="num text-2xl text-green-400">+{memberSummary.newThisMonth}<span className="font-display text-xs text-[var(--color-mute)] ml-1">名</span></div>
@@ -226,6 +227,10 @@ export default function AnalyticsPage() {
                 <div className="bg-[var(--color-bg)] rounded-xl p-4 border border-[var(--color-accent)]/30">
                   <div className="font-display text-[10px] text-[var(--color-mute)] mb-1">在籍会員数</div>
                   <div className="num text-2xl text-[var(--color-accent-deep)]">{memberSummary.activeTotal.toLocaleString()}<span className="font-display text-xs text-[var(--color-mute)] ml-1">名</span></div>
+                </div>
+                <div className="bg-[var(--color-bg)] rounded-xl p-4 border border-[var(--color-line)]">
+                  <div className="font-display text-[10px] text-[var(--color-mute)] mb-1">休会中会員数</div>
+                  <div className="num text-2xl">{memberSummary.suspendedTotal.toLocaleString()}<span className="font-display text-xs text-[var(--color-mute)] ml-1">名</span></div>
                 </div>
               </div>
             </div>
